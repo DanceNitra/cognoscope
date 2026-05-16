@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognoscope — Real-Time Bias Detection for AI Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #0a0a0b;
+    --muted: #71717a;
+    --border: #e4e4e7;
+    --accent: #18181b;
+    --accent-hover: #27272a;
+    --code-bg: #f4f4f5;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --pill-bg: #f4f4f5;
+    --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
+
+  header { margin-bottom: 48px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--pill-bg); border-radius: 9999px;
+    padding: 4px 12px; font-size: 13px; font-weight: 500;
+    color: var(--muted); margin-bottom: 16px;
+  }
+  .badge .dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 12px; }
+  h1 em { font-style: normal; color: var(--muted); }
+  .subtitle { font-size: 16px; color: var(--muted); max-width: 640px; line-height: 1.6; }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); }
+  .card-title {
+    font-size: 14px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .scenario-btn {
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .scenario-btn:hover { border-color: var(--accent); }
+  .scenario-btn.active { border-color: var(--accent); background: var(--code-bg); }
+  .scenario-name { font-size: 14px; font-weight: 600; display: block; }
+  .scenario-desc { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+
+  .action-row { display: flex; gap: 12px; }
+  .btn {
+    padding: 10px 20px;
+    border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent; color: var(--fg);
+    border: 2px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--accent); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* Radar chart container */
+  .radar-container { display: flex; justify-content: center; align-items: center; min-height: 360px; }
+  .radar-container svg { max-width: 100%; height: auto; }
+
+  .bias-gauge-grid { display: flex; flex-direction: column; gap: 8px; }
+  .bias-gauge {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  .bias-gauge .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .bias-gauge .label { font-size: 12px; font-weight: 500; width: 120px; flex-shrink: 0; }
+  .bias-gauge .bar-bg {
+    flex: 1; height: 6px; background: var(--pill-bg);
+    border-radius: 3px; overflow: hidden;
+  }
+  .bias-gauge .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+  /* Event stream */
+  .event-stream { max-height: 400px; overflow-y: auto; font-size: 12px; }
+  .event-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 4px 0; border-bottom: 1px solid var(--border);
+  }
+  .event-turn { font-weight: 600; color: var(--muted); min-width: 40px; }
+  .event-type {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 4px; min-width: 70px; text-align: center;
+  }
+  .event-type.tool_call { background: #dbeafe; color: #1e40af; }
+  .event-type.tool_result { background: #fef3c7; color: #92400e; }
+  .event-type.reasoning { background: #ede9fe; color: #5b21b6; }
+  .event-type.output { background: #d1fae5; color: #065f46; }
+  .event-type.intervention { background: #fce7f3; color: #9d174d; }
+  .event-content { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-content .icon { margin-right: 4px; }
+
+  /* Intervention log */
+  .intervention-log { max-height: 200px; overflow-y: auto; }
+  .intervention-item {
+    display: flex; gap: 8px; align-items: center;
+    padding: 6px 8px; border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .intervention-bias { font-weight: 600; min-width: 100px; }
+  .intervention-severity {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 4px;
+  }
+  .intervention-severity.mild { background: #dbeafe; color: #1e40af; }
+  .intervention-severity.moderate { background: #fef3c7; color: #92400e; }
+  .intervention-severity.strong { background: #fce7f3; color: #9d174d; }
+
+  /* Score ring */
+  .score-ring-large {
+    position: relative; width: 200px; height: 200px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .score-ring-large svg { transform: rotate(-90deg); }
+  .score-ring-large .value {
+    position: absolute; font-size: 36px; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .score-ring-large .label {
+    position: absolute; bottom: 40px; font-size: 12px; color: var(--muted);
+  }
+
+  .alerts-panel { min-height: 60px; }
+  .alert-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 9999px;
+    font-size: 12px; font-weight: 600; margin: 4px;
+  }
+  .alert-badge.critical { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .alert-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+  .alert-badge.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+  .stats-row { display: flex; gap: 24px; }
+  .stat { font-size: 14px; color: var(--muted); }
+  .stat strong { color: var(--fg); font-size: 18px; display: block; }
+
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .scenario-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="badge">
+      <span class="dot"></span> Cognoscope — Runtime Bias Detection Engine
+    </div>
+    <h1>Cognoscope <em>Dashboard</em></h1>
+    <p class="subtitle">
+      Real-time detection of cognitive biases in AI agent behaviour.
+      Monitors tool selection, reasoning traces, and output patterns
+      to identify anchoring, confirmation bias, escalation of commitment,
+      overconfidence, loss aversion, framing effects, drift, and feedback delay.
+      Each detected bias triggers a targeted context injection.
+      The system learns which interventions work via Thompson sampling.
+    </p>
+  </header>
+
+  <!-- SCENARIO SELECTOR -->
+  <div class="card">
+    <div class="card-title">Load Demo Scenario</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+      Each scenario injects known bias patterns into simulated agent behaviour.
+      The Cognoscope detects them in real-time.
+    </p>
+    <div class="scenario-grid" id="scenario-grid"></div>
+    <div class="action-row" style="margin-top:16px;">
+      <button class="btn btn-primary" id="run-btn">Run Scenario</button>
+      <button class="btn btn-outline" id="step-btn">Step +1</button>
+      <button class="btn btn-outline" id="reset-btn">Reset</button>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="card alerts-panel" id="alerts-panel">
+    <div class="card-title">Active Alerts</div>
+    <div id="alerts-content">
+      <span style="font-size:13px;color:var(--muted);">Run a scenario to see bias alerts.</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID: Radar + Gauges -->
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-title">Bias Radar <span style="font-weight:400;text-transform:none;color:var(--muted)">— score map</span></div>
+      <div class="radar-container" id="radar-container">
+        <svg width="320" height="320" viewBox="0 0 320 320" id="radar-svg"></svg>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">Bias Scores</div>
+        <div class="bias-gauge-grid" id="bias-gauges"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Intervention Log</div>
+        <div class="intervention-log" id="intervention-log">
+          <span style="font-size:13px;color:var(--muted);">No interventions yet.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENT STREAM -->
+  <div class="card">
+    <div class="card-title">Event Stream</div>
+    <div class="event-stream" id="event-stream">
+      <span style="font-size:13px;color:var(--muted);">Run a scenario to see the agent event stream.</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="card">
+    <div class="card-title">Session Statistics</div>
+    <div class="stats-row" id="stats-row">
+      <div class="stat"><strong>0</strong> turns</div>
+      <div class="stat"><strong>0</strong> events</div>
+      <div class="stat"><strong>0</strong> interventions</div>
+      <div class="stat"><strong>—</strong> status</div>
+    </div>
+  </div>
+
+  <footer style="margin-top:64px;text-align:center;font-size:13px;color:var(--muted);">
+    <p>Cognoscope — first-ever runtime bias detection and adaptive intervention system for LLM agents.</p>
+    <p style="margin-top:4px;">Based on: Behavioral Economics × Prompt Engineering (Bridge #2) and 8 bias detectors from the vault publication series.</p>
+  </footer>
+</div>
+
+<script src="js/detectors.js"></script>
+<script src="js/fusion.js"></script>
+<script src="js/injector.js"></script>
+<script src="js/bandit.js"></script>
+<script src="js/demo.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var STATE = {
+    scenario: 'balanced',
+    events: [],
+    turn: 0,
+    running: false,
+    timer: null,
+    totalInterventions: 0
+  };
+
+  // ── DOM REFS ──
+  var scenarioGrid = document.getElementById('scenario-grid');
+  var runBtn = document.getElementById('run-btn');
+  var stepBtn = document.getElementById('step-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var radarSvg = document.getElementById('radar-svg');
+  var biasGauges = document.getElementById('bias-gauges');
+  var eventStream = document.getElementById('event-stream');
+  var interventionLog = document.getElementById('intervention-log');
+  var alertsContent = document.getElementById('alerts-content');
+  var statsRow = document.getElementById('stats-row');
+
+  // ── BIAS COLORS ──
+  var BIAS_COLORS = {
+    anchoring: '#d97706',
+    confirmation_bias: '#dc2626',
+    escalation: '#dc2626',
+    overconfidence: '#d97706',
+    loss_aversion: '#16a34a',
+    framing_effects: '#6b7280',
+    drift: '#d97706',
+    feedback_delay: '#2563eb'
+  };
+
+  var BIAS_LABELS = {
+    anchoring: 'Anchoring',
+    confirmation_bias: 'Confirmation',
+    escalation: 'Escalation',
+    overconfidence: 'Overconfidence',
+    loss_aversion: 'Loss Aversion',
+    framing_effects: 'Framing',
+    drift: 'Drift',
+    feedback_delay: 'Feedback Delay'
+  };
+
+  // ── RENDER SCENARIOS ──
+  function renderScenarios() {
+    var html = '';
+    Object.keys(Demo.SCENARIOS).forEach(function(key) {
+      var s = Demo.SCENARIOS[key];
+      var active = key === STATE.scenario ? 'active' : '';
+      html += '<button class="scenario-btn ' + active + '" data-key="' + key + '">';
+      html += '  <span class="scenario-name">' + s.label + '</span>';
+      html += '  <span class="scenario-desc">' + s.description + '</span>';
+      html += '</button>';
+    });
+    scenarioGrid.innerHTML = html;
+  }
+
+  // ── DRAW RADAR CHART ──
+  function drawRadar(scores, maxScore) {
+    maxScore = maxScore || 1.0;
+    var biases = Object.keys(BIAS_LABELS);
+    var n = biases.length;
+    var cx = 160, cy = 160, r = 120;
+    var angleStep = (Math.PI * 2) / n;
+
+    // Background grid (3 rings)
+    var rings = [0.25, 0.5, 0.75, 1.0];
+    var html = '';
+
+    // Grid circles
+    rings.forEach(function(level) {
+      var radius = r * level;
+      html += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius +
+        '" fill="none" stroke="#e4e4e7" stroke-width="1"/>';
+    });
+
+    // Axis lines + labels
+    biases.forEach(function(key, i) {
+      var angle = -Math.PI / 2 + i * angleStep;
+      var x = cx + r * Math.cos(angle);
+      var y = cy + r * Math.sin(angle);
+      html += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x + '" y2="' + y +
+        '" stroke="#e4e4e7" stroke-width="1"/>';
+
+      var labelR = r + 20;
+      var lx = cx + labelR * Math.cos(angle);
+      var ly = cy + labelR * Math.sin(angle);
+      var anchor = angle > -0.5 && angle < 0.5 ? 'middle' :
+                   (angle >  0.5 && angle <  2.5 ? 'start' : 'end');
+      html += '<text x="' + lx + '" y="' + ly + '" text-anchor="' + anchor +
+        '" font-size="11" fill="#71717a" dominant-baseline="middle">' +
+        BIAS_LABELS[key] + '</text>';
+    });
+
+    // Data polygon
+    var points = [];
+    biases.forEach(function(key, i) {
+      var angle = -Math.PI / 2 + i * angleStep;
+      var val = Math.min((scores[key] || 0) / maxScore, 1);
+      var px = cx + r * val * Math.cos(angle);
+      var py = cy + r * val * Math.sin(angle);
+      points.push(px + ',' + py);
+    });
+
+    html += '<polygon points="' + points.join(' ') +
+      '" fill="rgba(24,24,27,0.1)" stroke="#18181b" stroke-width="2" stroke-linejoin="round"/>';
+
+    // Data points
+    biases.forEach(function(key, i) {
+      var angle = -Math.PI / 2 + i * angleStep;
+      var val = Math.min((scores[key] || 0) / maxScore, 1);
+      var px = cx + r * val * Math.cos(angle);
+      var py = cy + r * val * Math.sin(angle);
+      var color = BIAS_COLORS[key] || '#18181b';
+      html += '<circle cx="' + px + '" cy="' + py +
+        '" r="4" fill="' + color + '" stroke="white" stroke-width="2"/>';
+    });
+
+    radarSvg.innerHTML = html;
+  }
+
+  // ── RENDER GAUGES ──
+  function renderGauges(scores) {
+    var html = '';
+    Object.keys(BIAS_LABELS).forEach(function(key) {
+      var score = scores[key] || 0;
+      var pct = Math.round(score * 100);
+      var color = BIAS_COLORS[key] || '#71717a';
+      var label = BIAS_LABELS[key];
+      html += '<div class="bias-gauge">';
+      html += '  <div class="dot" style="background:' + color + '"></div>';
+      html += '  <div class="label">' + label + '</div>';
+      html += '  <div class="bar-bg">';
+      html += '    <div class="bar-fill" style="width:' + pct + '%;background:' + color + '"></div>';
+      html += '  </div>';
+      html += '  <div style="font-size:12px;font-weight:600;color:var(--fg);min-width:30px;text-align:right;">' + pct + '%</div>';
+      html += '</div>';
+    });
+    biasGauges.innerHTML = html;
+  }
+
+  // ── RENDER EVENTS ──
+  function renderEvents(events, limit) {
+    limit = limit || 50;
+    var display = events.slice(-limit);
+    var html = '';
+    display.forEach(function(e) {
+      var turn = e.turn !== undefined ? e.turn : '';
+      var type = e.type || '';
+      var content = e.content || e.tool || '';
+      if (e.type === 'tool_result') {
+        content = (e.success ? '\u2713 ' : '\u2717 ') + (e.tool || '') + ' (' + Math.round(e.duration || 0) + 'ms)';
+      }
+      if (content && content.length > 80) content = content.substring(0, 80) + '...';
+      html += '<div class="event-item">';
+      html += '  <div class="event-turn">#' + turn + '</div>';
+      html += '  <div class="event-type ' + type + '">' + type.replace(/_/g, ' ') + '</div>';
+      html += '  <div class="event-content">' + escapeHtml(content) + '</div>';
+      html += '</div>';
+    });
+    eventStream.innerHTML = html || '<span style="font-size:13px;color:var(--muted);">No events yet.</span>';
+    eventStream.scrollTop = eventStream.scrollHeight;
+  }
+
+  // ── RENDER INTERVENTIONS ──
+  function renderInterventions(history) {
+    if (!history || history.length === 0) {
+      interventionLog.innerHTML = '<span style="font-size:13px;color:var(--muted);">No interventions yet.</span>';
+      return;
+    }
+    var html = '';
+    history.slice(-10).forEach(function(entry) {
+      var label = BIAS_LABELS[entry.bias] || entry.bias;
+      var sev = 'mild';
+      html += '<div class="intervention-item">';
+      html += '  <span class="intervention-bias">' + label + '</span>';
+      html += '  <span style="font-size:11px;color:var(--muted);">turn ' + entry.turn + '</span>';
+      html += '</div>';
+    });
+    interventionLog.innerHTML = html;
+  }
+
+  // ── RENDER ALERTS ──
+  function renderAlerts(active) {
+    if (!active || active.length === 0) {
+      alertsContent.innerHTML = '<span style="font-size:13px;color:var(--green);">\u2713 No active biases detected.</span>';
+      return;
+    }
+    var html = '';
+    active.forEach(function(b) {
+      var severity = b.score > 0.7 ? 'critical' : 'warning';
+      html += '<span class="alert-badge ' + severity + '">';
+      html += b.label + ' (' + Math.round(b.score * 100) + '%)';
+      html += '</span>';
+    });
+    alertsContent.innerHTML = html;
+  }
+
+  // ── RENDER STATS ──
+  function renderStats(events, turn, interventions) {
+    statsRow.innerHTML =
+      '<div class="stat"><strong>' + turn + '</strong> turns</div>' +
+      '<div class="stat"><strong>' + events.length + '</strong> events</div>' +
+      '<div class="stat"><strong>' + interventions + '</strong> interventions</div>' +
+      '<div class="stat"><strong>' + (STATE.running ? 'RUNNING' : 'IDLE') + '</strong> status</div>';
+  }
+
+  // ── PROCESS CURRENT TURN ──
+  var SCENE = null;
+  var ACCUMULATED_EVENTS = [];
+
+  function processTurn() {
+    if (!SCENE) {
+      SCENE = Demo.buildScenario(Demo.SCENARIOS[STATE.scenario].options);
+      ACCUMULATED_EVENTS = [];
+    }
+
+    var turnEvents = SCENE.events.filter(function(e) { return e.turn === STATE.turn; });
+    ACCUMULATED_EVENTS = ACCUMULATED_EVENTS.concat(turnEvents);
+
+    // Run detectors on accumulated history
+    var scores = Detectors.runAll(ACCUMULATED_EVENTS, { firstTool: SCENE.meta.firstTool });
+
+    // Run fusion
+    var cycle = Fusion.cycle(scores, STATE.turn);
+
+    // Generate interventions for active biases
+    if (cycle.active.length > 0) {
+      Injector.generateAll(cycle.active);
+    }
+
+    // Update display
+    drawRadar(scores);
+    renderGauges(scores);
+    renderEvents(ACCUMULATED_EVENTS);
+    renderAlerts(cycle.active);
+    renderInterventions(Fusion.getHistory().slice(-10));
+    renderStats(ACCUMULATED_EVENTS, STATE.turn + 1, Fusion.getHistory().length);
+    STATE.totalInterventions = Fusion.getHistory().length;
+
+    STATE.turn++;
+    return true;
+  }
+
+  // ── RUN ──
+  function runScenario() {
+    if (STATE.running) return;
+    STATE.running = true;
+    SCENE = Demo.buildScenario(Demo.SCENARIOS[STATE.scenario].options);
+    ACCUMULATED_EVENTS = [];
+    STATE.turn = 0;
+    Fusion.clearHistory();
+    STATE.totalInterventions = 0;
+    runBtn.textContent = 'Running...';
+
+    function tick() {
+      if (STATE.turn >= (SCENE.meta.totalTurns - 2)) {
+        STATE.running = false;
+        runBtn.textContent = 'Run Scenario';
+        processTurn();
+        return;
+      }
+      processTurn();
+      setTimeout(tick, 50);
+    }
+    tick();
+  }
+
+  // ── STEP ──
+  function stepTurn() {
+    processTurn();
+  }
+
+  // ── RESET ──
+  function resetAll() {
+    STATE.running = false;
+    STATE.turn = 0;
+    STATE.events = [];
+    STATE.totalInterventions = 0;
+    SCENE = null;
+    ACCUMULATED_EVENTS = [];
+    Fusion.clearHistory();
+    Bandit.reset();
+
+    // Reset display
+    var empty = {};
+    Object.keys(BIAS_LABELS).forEach(function(k) { empty[k] = 0; });
+    drawRadar(empty);
+    renderGauges(empty);
+    renderEvents([]);
+    renderAlerts([]);
+    renderInterventions([]);
+    renderStats([], 0, 0);
+    runBtn.textContent = 'Run Scenario';
+  }
+
+  // ── HELPERS ──
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── EVENTS ──
+  scenarioGrid.addEventListener('click', function(e) {
+    var btn = e.target.closest('.scenario-btn');
+    if (!btn) return;
+    STATE.scenario = btn.getAttribute('data-key');
+    document.querySelectorAll('.scenario-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  });
+
+  runBtn.addEventListener('click', function() {
+    if (STATE.running) return;
+    resetAll();
+    runScenario();
+  });
+
+  stepBtn.addEventListener('click', function() {
+    if (STATE.running) return;
+    stepTurn();
+  });
+
+  resetBtn.addEventListener('click', resetAll);
+
+  // ── INIT ──
+  renderScenarios();
+  resetAll();
+
+})();
+</script>
+</body>
+</html>
