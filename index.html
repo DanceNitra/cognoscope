@@ -255,6 +255,12 @@
           <span style="font-size:13px;color:var(--muted);">No interventions yet.</span>
         </div>
       </div>
+      <div class="card">
+        <div class="card-title">Senolytic Therapy Engine <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--muted);">— biologically-inspired agent repair</span></div>
+        <div id="therapy-panel">
+          <span style="font-size:13px;color:var(--muted);">Run a scenario to see therapy decisions.</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -288,6 +294,7 @@
 <script src="js/injector.js"></script>
 <script src="js/bandit.js"></script>
 <script src="js/demo.js"></script>
+<script src="js/senolytic.js"></script>
 <script>
 (function() {
   'use strict';
@@ -500,6 +507,92 @@
       '<div class="stat"><strong>' + (STATE.running ? 'RUNNING' : 'IDLE') + '</strong> status</div>';
   }
 
+  // ── RENDER THERAPY ──
+  function renderTherapy(decision, activeBiases) {
+    var panel = document.getElementById('therapy-panel');
+    if (!decision) {
+      if (!activeBiases || activeBiases.length === 0) {
+        panel.innerHTML = '<span style="font-size:13px;color:var(--green);">\u2713 No therapy needed — no active senescence markers.</span>';
+      } else {
+        panel.innerHTML = '<span style="font-size:13px;color:var(--muted);">Monitoring biases... therapy engine ready to deploy.</span>';
+      }
+      return;
+    }
+
+    var t = decision.therapy;
+    var a = decision.action;
+    var html = '';
+
+    // Therapy header
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--code-bg);">';
+    html += '  <div style="font-size:28px;">' + t.icon + '</div>';
+    html += '  <div style="flex:1;">';
+    html += '    <div style="font-size:14px;font-weight:600;">' + t.label + '</div>';
+    html += '    <div style="font-size:12px;color:var(--muted);">' + t.drugAnalog + ' \u2014 ' + t.description + '</div>';
+    html += '  </div>';
+    html += '  <div style="text-align:right;">';
+    html += '    <div style="font-size:12px;color:var(--muted);">Recovery</div>';
+    html += '    <div style="font-size:16px;font-weight:600;">~' + t.recoveryTime + ' turns</div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // Target bias
+    if (decision.targetBias) {
+      html += '<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">';
+      html += '  <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#fef3c7;color:#92400e;">Target: ' + decision.targetBias.label + ' (' + Math.round(decision.targetBias.score * 100) + '%)</span>';
+      html += '  <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#ede9fe;color:#5b21b6;">Active biases: ' + decision.activeCount + '</span>';
+      html += '  <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#dbeafe;color:#1e40af;">Session: turn ' + decision.sessionAge + '</span>';
+      html += '  <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#d1fae5;color:#065f46;">Collateral risk: ' + Math.round(t.collateralDamage * 100) + '%</span>';
+      html += '</div>';
+    }
+
+    // Action
+    html += '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);">';
+    html += '  <div style="display:flex;gap:8px;align-items:flex-start;">';
+    html += '    <span style="font-weight:600;white-space:nowrap;">' + a.type.toUpperCase() + '</span>';
+    html += '    <span>' + a.instruction + '</span>';
+    html += '  </div>';
+    html += '  <div style="margin-top:8px;font-size:12px;color:var(--muted);">Effect: ' + a.effect + '</div>';
+    html += '</div>';
+
+    // Therapy log (last 3)
+    var log = Senolytic.getTherapyLog(3);
+    if (log.length > 0) {
+      html += '<div style="margin-top:12px;">';
+      html += '  <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">THERAPY LOG (last ' + log.length + ')</div>';
+      log.forEach(function(entry) {
+        var tKey = entry.therapy;
+        var tMeta = Senolytic.THERAPIES[tKey];
+        html += '  <div style="display:flex;gap:8px;align-items:center;padding:3px 0;font-size:12px;">';
+        html += '    <span style="font-weight:500;color:var(--fg);">#' + entry.turn + '</span>';
+        html += '    <span style="color:var(--muted);">' + (tMeta ? tMeta.label : tKey) + '</span>';
+        html += '    <span style="color:var(--muted);font-size:11px;">\u2192 ' + (entry.targetBias || 'none') + '</span>';
+        html += '  </div>';
+      });
+      html += '</div>';
+    }
+
+    // Effectiveness
+    var eff = Senolytic.getEffectiveness();
+    if (Object.keys(eff).length > 0) {
+      html += '<div style="margin-top:12px;">';
+      html += '  <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">THERAPY EFFECTIVENESS</div>';
+      Object.keys(eff).forEach(function(key) {
+        var e = eff[key];
+        if (e.tried === 0) return;
+        var rateColor = e.successRate > 70 ? 'var(--green)' : e.successRate > 40 ? 'var(--amber)' : 'var(--red)';
+        html += '  <div style="display:flex;gap:8px;align-items:center;padding:2px 0;font-size:12px;">';
+        html += '    <span style="width:120px;font-weight:500;">' + e.label + '</span>';
+        html += '    <span style="width:60px;">' + e.tried + ' uses</span>';
+        html += '    <span style="font-weight:600;color:' + rateColor + ';">' + e.successRate + '% success</span>';
+        html += '  </div>';
+      });
+      html += '</div>';
+    }
+
+    panel.innerHTML = html;
+  }
+
   // ── PROCESS CURRENT TURN ──
   var SCENE = null;
   var ACCUMULATED_EVENTS = [];
@@ -522,6 +615,17 @@
     // Generate interventions for active biases
     if (cycle.active.length > 0) {
       Injector.generateAll(cycle.active);
+
+      // Senolytic therapy engine
+      var therapy = Senolytic.applyTherapy(cycle.active, {
+        turn: STATE.turn,
+        interventionCount: Fusion.getHistory().length,
+        saspScore: scores.escalation * 0.5 + scores.drift * 0.3 + scores.confirmation_bias * 0.2,
+        lastTool: SCENE.meta.firstTool
+      });
+      renderTherapy(therapy, cycle.active);
+    } else {
+      renderTherapy(null, []);
     }
 
     // Update display
