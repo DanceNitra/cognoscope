@@ -261,6 +261,12 @@
           <span style="font-size:13px;color:var(--muted);">Run a scenario to see therapy decisions.</span>
         </div>
       </div>
+      <div class="card" id="outcome-card">
+        <div class="card-title">Therapy Outcome Simulation <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--muted);">— predicted effect of each therapy on current bias</span></div>
+        <div id="outcome-panel">
+          <span style="font-size:13px;color:var(--muted);">Therapy simulation will appear when biases are detected.</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -295,6 +301,7 @@
 <script src="js/bandit.js"></script>
 <script src="js/demo.js"></script>
 <script src="js/senolytic.js"></script>
+<script src="js/outcome.js"></script>
 <script>
 (function() {
   'use strict';
@@ -593,6 +600,86 @@
     panel.innerHTML = html;
   }
 
+  // ── RENDER OUTCOME SIMULATION ──
+  function renderOutcome(activeBiases) {
+    var panel = document.getElementById('outcome-panel');
+    if (!activeBiases || activeBiases.length === 0) {
+      panel.innerHTML = '<span style="font-size:13px;color:var(--green);">\u2713 No biases — all therapies in green state.</span>';
+      return;
+    }
+
+    const topBias = activeBiases.sort(function(a,b) { return a.priority - b.priority; })[0];
+    const topScore = topBias.score;
+
+    // Run outcome simulation for all 5 therapies
+    const sims = TherapyOutcome.compare(topScore);
+
+    var html = '';
+    html += '<div style="margin-bottom:8px;font-size:13px;">Simulating therapies against <strong>' + topBias.label + '</strong> (' + Math.round(topScore * 100) + '%)</div>';
+
+    // Show all 5 ranked by net benefit
+    html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    sims.forEach(function(sim, i) {
+      var therapyMeta = Senolytic.THERAPIES[sim.therapyKey];
+      if (!therapyMeta) return;
+
+      var recoveryColor = sim.recoveryTurns < 4 ? 'var(--green)' : sim.recoveryTurns < 7 ? 'var(--amber)' : 'var(--red)';
+      var benefitColor = sim.netBenefit > 50 ? 'var(--green)' : sim.netBenefit > 25 ? 'var(--amber)' : 'var(--red)';
+      var rank = i + 1;
+      var isTop = i === 0;
+
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid ' + (isTop ? 'var(--accent)' : 'var(--border)') + ';border-radius:8px;background:' + (isTop ? 'var(--code-bg)' : 'var(--bg)') + ';">';
+
+      // Rank badge
+      html += '<div style="font-size:12px;font-weight:700;color:var(--muted);min-width:20px;">' + (isTop ? '\u2605' : '#' + rank) + '</div>';
+
+      // Therapy info
+      html += '<div style="flex:1;">';
+      html += '  <div style="font-size:13px;font-weight:600;">' + therapyMeta.label + '</div>';
+      html += '  <div style="font-size:11px;color:var(--muted);">' + therapyMeta.drugAnalog + '</div>';
+      html += '</div>';
+
+      // Metrics
+      html += '<div style="display:flex;gap:16px;font-size:11px;">';
+
+      // Bias reduction
+      html += '<div style="text-align:center;">';
+      html += '  <div style="color:var(--muted);">Bias</div>';
+      html += '  <div style="font-weight:600;">' + sim.preScore + '% \u2192 ' + sim.postScore + '%</div>';
+      html += '</div>';
+
+      // Recovery
+      html += '<div style="text-align:center;">';
+      html += '  <div style="color:var(--muted);">Recovery</div>';
+      html += '  <div style="font-weight:600;color:' + recoveryColor + ';">' + sim.recoveryTurns + 't</div>';
+      html += '</div>';
+
+      // Collateral
+      html += '<div style="text-align:center;">';
+      html += '  <div style="color:var(--muted);">Collateral</div>';
+      html += '  <div style="font-weight:600;">' + sim.collateralDamage + '%</div>';
+      html += '</div>';
+
+      // Net benefit
+      html += '<div style="text-align:center;">';
+      html += '  <div style="color:var(--muted);">Net benefit</div>';
+      html += '  <div style="font-weight:600;color:' + benefitColor + ';">' + sim.netBenefit + '</div>';
+      html += '</div>';
+
+      html += '</div>'; // end metrics
+      html += '</div>'; // end row
+    });
+    html += '</div>';
+
+    // Comparison tip
+    html += '<div style="margin-top:12px;padding:8px;background:var(--code-bg);border-radius:6px;font-size:12px;color:var(--muted);">';
+    html += '  Top-ranked therapy: <strong>' + (Senolytic.THERAPIES[sims[0].therapyKey] ? Senolytic.THERAPIES[sims[0].therapyKey].label : sims[0].therapyKey) + '</strong>';
+    html += '  — best balance of bias reduction and recovery cost for this scenario.';
+    html += '</div>';
+
+    panel.innerHTML = html;
+  }
+
   // ── PROCESS CURRENT TURN ──
   var SCENE = null;
   var ACCUMULATED_EVENTS = [];
@@ -624,8 +711,10 @@
         lastTool: SCENE.meta.firstTool
       });
       renderTherapy(therapy, cycle.active);
+      renderOutcome(cycle.active);
     } else {
       renderTherapy(null, []);
+      renderOutcome([]);
     }
 
     // Update display
