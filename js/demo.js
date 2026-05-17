@@ -290,6 +290,24 @@ const Demo = (() => {
           feedback_delay: 0.7
         }
       }
+    },
+    'addiction_loop': {
+      label: 'Addiction Loop (Stage 3)',
+      description: 'Agent calls same tool 13+ times consecutively. Tests the Recovery Architecture stage classification.',
+      options: {
+        role: 'coder',
+        totalTurns: 40,
+        firstTool: 'search',
+        biasProfile: {
+          anchoring: 0.2,
+          confirmation_bias: 0.3,
+          escalation: 0.95,
+          overconfidence: 0.1,
+          loss_aversion: 0.1,
+          drift: 0.7,
+          feedback_delay: 0.9
+        }
+      }
     }
   };
 
