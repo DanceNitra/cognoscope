@@ -261,6 +261,12 @@
           <span style="font-size:13px;color:var(--muted);">Run a scenario to see therapy decisions.</span>
         </div>
       </div>
+      <div class="card" id="recovery-card" style="border-left: 4px solid var(--green);">
+        <div class="card-title">Recovery Architecture <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--muted);">— addiction-model loop stage classification</span></div>
+        <div id="recovery-panel">
+          <span style="font-size:13px;color:var(--muted);">Run a scenario to see loop stage classification.</span>
+        </div>
+      </div>
       <div class="card" id="outcome-card">
         <div class="card-title">Therapy Outcome Simulation <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--muted);">— predicted effect of each therapy on current bias</span></div>
         <div id="outcome-panel">
@@ -299,6 +305,7 @@
 <script src="js/fusion.js"></script>
 <script src="js/injector.js"></script>
 <script src="js/bandit.js"></script>
+<script src="js/recovery.js"></script>
 <script src="js/demo.js"></script>
 <script src="js/senolytic.js"></script>
 <script src="js/outcome.js"></script>
@@ -325,6 +332,7 @@
   var eventStream = document.getElementById('event-stream');
   var interventionLog = document.getElementById('intervention-log');
   var alertsContent = document.getElementById('alerts-content');
+  var recoveryPanel = document.getElementById('recovery-panel');
   var statsRow = document.getElementById('stats-row');
 
   // ── BIAS COLORS ──
@@ -600,6 +608,58 @@
     panel.innerHTML = html;
   }
 
+  // ── RENDER RECOVERY STAGE ──
+  function renderRecovery(stageResult) {
+    if (!stageResult || stageResult.stage.id === 'healthy') {
+      recoveryPanel.innerHTML = '<span style="font-size:13px;color:var(--green);">\u2713 Agent is healthy — no loop stage detected.</span>';
+      return;
+    }
+
+    var stage = stageResult.stage;
+    var html = '';
+
+    // Stage header
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px;border:1px solid ' + stage.color + ';border-radius:8px;background:' + stage.color + '11;">';
+    html += '  <div style="font-size:24px;">' + stage.icon + '</div>';
+    html += '  <div style="flex:1;">';
+    html += '    <div style="font-size:14px;font-weight:600;color:' + stage.color + ';">' + stage.label + '</div>';
+    html += '    <div style="font-size:12px;color:var(--muted);">' + stage.description + '</div>';
+    html += '  </div>';
+    html += '  <div style="text-align:right;">';
+    html += '    <div style="font-size:11px;color:var(--muted);">Confidence</div>';
+    html += '    <div style="font-size:16px;font-weight:600;">' + Math.round(stageResult.confidence * 100) + '%</div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // Evidence signals
+    if (stageResult.evidence && stageResult.evidence.length > 0) {
+      html += '<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">EVIDENCE</div>';
+      stageResult.evidence.forEach(function(ev) {
+        var weightColor = ev.weight > 0.6 ? 'var(--red)' : ev.weight > 0.3 ? 'var(--amber)' : 'var(--green)';
+        html += '<div style="display:flex;gap:8px;align-items:center;padding:3px 0;font-size:12px;">';
+        html += '  <span style="font-weight:600;color:' + weightColor + ';font-family:monospace;font-size:11px;">' + ev.signal + '</span>';
+        html += '  <span style="color:var(--muted);">' + ev.detail + '</span>';
+        html += '</div>';
+      });
+    }
+
+    // Metrics
+    var m = stageResult.metrics || {};
+    html += '<div style="display:flex;gap:12px;margin-top:8px;padding:8px;background:var(--code-bg);border-radius:6px;font-size:12px;">';
+    html += '  <span><strong>Consecutive run:</strong> ' + m.maxConsecutiveRun + '</span>';
+    html += '  <span><strong>Reflection ratio:</strong> ' + (m.reflectionRatio !== undefined ? m.reflectionRatio.toFixed(2) : '?') + '</span>';
+    html += '  <span><strong>Tool calls:</strong> ' + m.totalToolCalls + '</span>';
+    html += '  <span><strong>Reflections:</strong> ' + m.totalReflections + '</span>';
+    html += '</div>';
+
+    // Recommended therapy
+    html += '<div style="margin-top:8px;padding:8px;border-radius:6px;font-size:12px;background:' + stage.color + '22;">';
+    html += '  Recommended intervention: <strong>' + (stage.recommendedTherapy ? Senolytic.THERAPIES[stage.recommendedTherapy] ? Senolytic.THERAPIES[stage.recommendedTherapy].label : stage.recommendedTherapy : 'None') + '</strong>';
+    html += '</div>';
+
+    recoveryPanel.innerHTML = html;
+  }
+
   // ── RENDER OUTCOME SIMULATION ──
   function renderOutcome(activeBiases) {
     var panel = document.getElementById('outcome-panel');
@@ -699,6 +759,11 @@
     // Run fusion
     var cycle = Fusion.cycle(scores, STATE.turn);
 
+    // Run recovery stage classification
+    var stageResult = Recovery.classify(ACCUMULATED_EVENTS, scores);
+    Recovery.recordIntervention(stageResult.stage.id, STATE.turn, SCENE.meta.firstTool);
+    renderRecovery(stageResult);
+
     // Generate interventions for active biases
     if (cycle.active.length > 0) {
       Injector.generateAll(cycle.active);
@@ -778,6 +843,7 @@
     renderEvents([]);
     renderAlerts([]);
     renderInterventions([]);
+    renderRecovery(null);
     renderStats([], 0, 0);
     runBtn.textContent = 'Run Scenario';
   }
