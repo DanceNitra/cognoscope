@@ -308,6 +308,10 @@ class RecursiveImprovementKernel:
         self.meta_kernel = MetaKernel()
         self.last_exhaustion_status = {}
         
+        # ── Code Space Monitor (CodeCMP → Meta-Kernel bridge) ──
+        self.code_cmp_scores: list[dict] = []  # Most recent CMP scores per tool
+        self.code_space_exhausted: bool = False
+        
         print(f"[RSI] Kernel initialized. Generation 0.")
         print(f"[RSI] Starting coupling: detect={self.config.detect_every_n}, "
               f"msr_check={self.config.msr_check_every_n}, "
@@ -405,8 +409,12 @@ class RecursiveImprovementKernel:
         """
         self.generation += 1
         
+        # Feed CodeCMP scores to MetaKernel (for code space exhaustion)
+        if self.code_cmp_scores:
+            self.meta_kernel.set_code_cmp_scores(self.code_cmp_scores)
+        
         # ── Level 6 Check: Kuhnian Crisis? ──
-        # If the Meta-Kernel detects parameter space exhaustion,
+        # If the Meta-Kernel detects parameter space OR code space exhaustion,
         # the paradigm shift takes priority over all L5 actions.
         exhaustion = self.meta_kernel.check_and_shift(
             self.meta_kernel.detector.detect_exhaustion()
@@ -687,6 +695,8 @@ class RecursiveImprovementKernel:
                 "kuhnian_crisis": self.last_exhaustion_status.get(
                     'kuhnian_crisis', False) if self.last_exhaustion_status else False,
                 "safe_mode": self.meta_kernel.safe_mode,
+                "code_space_crisis": self.meta_kernel.code_space_crisis,
+                "code_cmp_count": len(self.meta_kernel.code_cmp_scores),
             },
         }
 
@@ -1167,6 +1177,25 @@ class MetaKernel:
         self.transition_history: list[dict] = []
         self.safe_mode = False
         self._cooldown_remaining = 0  # Generations to wait before next shift
+        
+        # ── Code Space Monitoring ──
+        self.code_cmp_scores: list[dict] = []
+        self.code_space_crisis = False
+    
+    def set_code_cmp_scores(self, scores: list[dict]):
+        """Feed CodeCMP scores to the Meta-Kernel for code space exhaustion detection."""
+        self.code_cmp_scores = scores
+        
+        # Code space exhaustion: ALL tools with sufficient history have low CMP
+        tools_with_history = [s for s in scores if s.get('versions', 0) >= 2]
+        if len(tools_with_history) < 2:
+            self.code_space_crisis = False
+            return
+        
+        # Crisis if 80%+ of tools are LOW_METAPRODUCTIVITY
+        low_cmp = [s for s in tools_with_history 
+                   if s.get('classification') == 'LOW_METAPRODUCTIVITY']
+        self.code_space_crisis = len(low_cmp) / len(tools_with_history) >= 0.8
     
     def observe_generation(self, free_energy: float, recovery_time: float | None = None) -> dict:
         """Observe a generation and check for exhaustion."""
@@ -1178,11 +1207,58 @@ class MetaKernel:
         """
         If exhaustion is detected, trigger a paradigm shift.
         Returns the action taken.
+        
+        Checks TWO spaces:
+        1. Parameter space: CSD signals from the coupling config's free energy
+        2. Code space: CodeCMP scores indicating all tools are exhausted
+        
+        Either can trigger a Kuhnian crisis.
         """
         # Decrement cooldown
         if self._cooldown_remaining > 0:
             self._cooldown_remaining -= 1
         
+        # ── Check 1: Code space crisis ──
+        # If all synthesized tools have low CMP, the entire code space is
+        # exhausted. This triggers a "tool space expansion" paradigm shift.
+        code_crisis = status.get('code_space_crisis', False) or self.code_space_crisis
+        
+        if code_crisis and self._cooldown_remaining <= 0 and not self.safe_mode:
+            self._cooldown_remaining = 10
+            self.paradigm_shifts += 1
+            
+            # Code space shift: expand parameter bounds to give tools more room
+            shift_type = "code_space_expansion"
+            new_genotype = self.genotype.apply_mutation("expand_bounds", "forge_trigger_threshold")
+            new_genotype = new_genotype.apply_mutation("add_parameter", "code_versatility")
+            
+            self.old_parameter_count = len(self.genotype.genotype)
+            self.genotype = new_genotype
+            self.code_space_crisis = False
+            
+            signals = status.get('signals', {})
+            transition = {
+                'paradigm_shift': self.paradigm_shifts,
+                'shift_type': shift_type,
+                'old_parameter_count': self.old_parameter_count,
+                'new_parameter_count': len(self.genotype.genotype),
+                'delta': len(self.genotype.genotype) - self.old_parameter_count,
+                'signals_before_shift': dict(signals),
+                'code_cmp_scores': self.code_cmp_scores,
+            }
+            self.transition_history.append(transition)
+            
+            return {
+                'action': 'paradigm_shift',
+                'shift_type': shift_type,
+                'old_count': self.old_parameter_count,
+                'new_count': len(self.genotype.genotype),
+                'delta': len(self.genotype.genotype) - self.old_parameter_count,
+                'reason': f"Code space exhausted ({len(self.code_cmp_scores)} tools low CMP)",
+                'transition': transition,
+            }
+        
+        # ── Check 2: Parameter space crisis (existing CSD logic) ──
         if not status.get('kuhnian_crisis'):
             return {'action': 'none', 'reason': 'no_crisis'}
         
