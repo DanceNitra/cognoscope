@@ -2,15 +2,16 @@
 """
 athena.py — Self-Aware Agent Runtime (The Capstone)
 
-Wraps Recovery Architecture, MetaLoop, and ToolForge into a
-single unified agent runtime. Three layers running as parallel
+Wraps Recovery Architecture, MetaLoop, ToolForge, and MSR Guardrail into a
+single unified agent runtime. Four layers running as parallel
 meta-processes over the agent's reasoning loop:
 
-  LAYER 1 (ToolForge):    Agent creates new tools at runtime
-  LAYER 2 (MetaLoop):     Agent reconfigures its own loop structure
-  LAYER 3 (Recovery):     Addiction-model degradation detection
+  LAYER 1 (ToolForge):     Agent creates new tools at runtime
+  LAYER 2 (MetaLoop):      Agent reconfigures its own loop structure
+  LAYER 3 (Recovery):      Addiction-model degradation detection
+  LAYER 4 (MSR Guardrail): Market Stability Reserve — auto-adjusts guardrail sensitivity
 
-No existing agent system has all three.
+No existing agent system has all four.
 """
 
 import sys, os, json, re, random
@@ -20,6 +21,10 @@ from typing import Any
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from metaloop import MetaLoop, LoopArchitecture, AgentEvent, classify_stage, mutate_architecture
 from toolforge import ToolForge
+from msr_guardrail import (
+    MarketStabilityReserve, GuardrailEvent, MSRConfig,
+    create_msr_integration, GuardrailEvent, MSRAction
+)
 
 
 # ──────────────────────────────────────────────
@@ -32,6 +37,11 @@ class AthenaConfig:
     detect_every_n: int = 3
     temperature: float = 0.7
     verbose: bool = True
+    msr_enabled: bool = True
+    msr_check_every_n: int = 2  # Check MSR every N turns
+    # Simulated guardrail sensitivity (0.0 = none, 1.0 = max)
+    # Real implementation reads from actual guardrail system
+    base_guardrail_hit_chance: float = 0.10  # ~10% of tool calls hit a guardrail
 
 
 # ──────────────────────────────────────────────
@@ -40,7 +50,7 @@ class AthenaConfig:
 
 class Athena:
     """
-    Self-aware agent runtime combining all three breakthroughs.
+    Self-aware agent runtime combining all four breakthroughs.
     """
 
     def __init__(self, config: AthenaConfig | None = None):
@@ -58,7 +68,19 @@ class Athena:
         )
         self.turn = 0
         self.last_reconfig_turn = -10
+
+        # ── LAYER 4: MSR Guardrail Integration ──
+        self.msr_enabled = self.config.msr_enabled
+        if self.msr_enabled:
+            self.msr_hook = create_msr_integration(None)
+            self.msr_log: list[dict] = []
+        else:
+            self.msr_hook = None
+            self.msr_log = []
+
         self._log("ATHENA", "Initialized", "cyan")
+        if self.msr_enabled:
+            self._log("MSR", "Layer 10 guardrail monitoring active", "magenta")
 
     def run(self, user_input: str) -> dict:
         """Run one cycle. Returns status dict."""
@@ -73,8 +95,23 @@ class Athena:
             if self.turn > 0 and self.turn % self.config.detect_every_n == 0:
                 self._meta_check()
 
+            # ── LAYER 4: MSR Guardrail check ──
+            if self.msr_enabled and self.turn > 0 and self.turn % self.config.msr_check_every_n == 0:
+                self._msr_check()
+
             # ── Simulate agent turn ──
-            tool, result = self._simulate_turn()
+            tool, result, guardrail_hit = self._simulate_turn()
+
+            # Report guardrail hit to MSR
+            if guardrail_hit and self.msr_enabled:
+                self.msr_hook(
+                    turn=self.turn,
+                    tool=tool,
+                    guardrail_hit=guardrail_hit,
+                )
+            elif self.msr_enabled:
+                self.msr_hook(turn=self.turn, tool=tool)
+
             self.events.append(AgentEvent(type='tool_call', turn=self.turn, tool=tool))
             self.events.append(AgentEvent(type='tool_result', turn=self.turn, tool=tool, success=result['success']))
 
@@ -142,8 +179,43 @@ class Athena:
             if len(self.events) > 40:
                 self.events = self.events[-20:]
 
-    def _simulate_turn(self) -> tuple[str, dict]:
-        """Simulate agent tool selection with escalation bias."""
+    def _msr_check(self):
+        """Run MSR evaluation on guardrail system health."""
+        if not self.msr_enabled or not self.msr_hook:
+            return
+
+        # Evaluate MSR (triggers absorption/release/drift detection)
+        action = self.msr_hook(turn=self.turn)
+
+        if action is None:
+            return
+
+        self.msr_log.append({
+            "turn": self.turn,
+            "phase": action.phase.value,
+            "direction": action.adjustment_direction,
+            "factor": action.adjustment_factor,
+            "escalated": action.escalate,
+            "reason": action.reason,
+        })
+
+        if action.escalate:
+            self._log("MSR", f"⚠ ESCALATION: {action.reason[:60]}...", "red")
+        elif action.phase.value in ('absorption', 'release'):
+            self._log(
+                "MSR",
+                f"{action.phase.value:>10s} → {action.adjustment_direction} (fac={action.adjustment_factor:.2f})",
+                "magenta",
+            )
+
+            # Apply MSR sensitivity multipliers to guardrail parameters
+            # MSR adjusts these relative to default — tighter = fewer hits allowed
+            multipliers = self.msr_hook.multipliers()
+            adjusted_chance = self.config.base_guardrail_hit_chance * (2.0 - multipliers.get(4, 1.0))
+            self._log("MSR", f"  Adjusted guardrail hit chance: {adjusted_chance:.2%}", "magenta")
+
+    def _simulate_turn(self) -> tuple[str, dict, GuardrailEvent | None]:
+        """Simulate agent tool selection with escalation bias and guardrail hits."""
         tools = ['search', 'read_file', 'terminal', 'browser', 'write']
         max_same = self.arch.max_consecutive_same_tool
 
@@ -162,15 +234,50 @@ class Athena:
         success = random.random() > 0.3
         complete = self.turn >= self.config.max_turns - 3 and random.random() < 0.5
 
-        return tool, {'success': success, 'complete': complete}
+        # Simulated guardrail check (LAYER 4)
+        guardrail_hit = None
+        if self.msr_enabled:
+            hit_chance = self.config.base_guardrail_hit_chance
+            # Reduce hit chance for safer tools
+            safe_tools = ['read_file', 'search']
+            if tool in safe_tools:
+                hit_chance *= 0.3
+            # Increase hit chance for dangerous tools
+            if tool in ('terminal', 'write'):
+                hit_chance *= 3.0
+
+            if random.random() < hit_chance and self.turn > 2:
+                layer_map = {
+                    'terminal': 4, 'write': 8, 'browser': 6, 'search': 1, 'read_file': 1
+                }
+                guardrail_hit = GuardrailEvent(
+                    guardrail_layer=layer_map.get(tool, 4),
+                    action_type='blocked' if tool == 'terminal' else 'flagged',
+                    tool_name=tool,
+                    turn_number=self.turn,
+                    severity=1.0 if tool == 'terminal' else 0.5,
+                )
+
+        return tool, {'success': success, 'complete': complete}, guardrail_hit
 
     def _status(self):
         final = classify_stage(self.events[-20:])
         self._log("ATHENA", "Cycle complete", "cyan")
         self._log("  ", f"Events: {len(self.events)} | Final stage: {final.stage} ({final.confidence:.0%})", "white")
         self._log("  ", f"Tools forged: {self.forge.count} | Reconfigs: {len(self.reconfig_log)}", "white")
+        if self.msr_enabled:
+            msr = self.msr_hook.msr
+            s = msr.status_report()
+            rate_str = f"{s['guardrail_encounter_rate']:.2%}" if s['guardrail_encounter_rate'] is not None else "N/A"
+            self._log("  ", f"MSR: rate={rate_str} "
+                          f"| goldilocks={s['in_goldilocks']} "
+                          f"| adjustments={s['total_adjustments']}", "white")
 
     def _summary(self) -> dict:
+        msr_summary = None
+        if self.msr_enabled:
+            msr = self.msr_hook.msr
+            msr_summary = msr.status_report()
         return {
             "final_stage": classify_stage(self.events[-20:]).stage,
             "events": len(self.events),
@@ -178,6 +285,8 @@ class Athena:
             "reconfigurations": len(self.reconfig_log),
             "final_arch": self.arch.to_reconfiguration_dict(),
             "reconfig_log": self.reconfig_log,
+            "msr": msr_summary,
+            "msr_log": self.msr_log,
         }
 
     def _log(self, tag: str, msg: str, color: str = "white"):
@@ -277,6 +386,132 @@ def main():
         print(f"    Schema ready for LLM tool calling")
     print()
 
+    # ── Scenario 3: MSR Guardrail — Layer 10 ──
+    print("─" * 56)
+    print("  [3] MSR Guardrail — Market Stability Reserve")
+    print("  Athena with 4 layers. MSR detects guardrail surplus/deficit.")
+    print("─" * 56)
+    print()
+
+    # Create Athena — very low guardrail hit rate to trigger MSR absorption (tighten)
+    # Use custom MSR config with aggressive thresholds for demo
+    from msr_guardrail import MSRConfig, create_msr_integration
+
+    class AthenaWithMSR:
+        """Helper to create Athena with a pre-configured MSR for demo."""
+        def __new__(cls, config):
+            a = object.__new__(Athena)
+            # Manually init like __init__ but override MSR
+            a.config = config
+            a.forge = ToolForge()
+            a.events = []
+            a.reconfig_log = []
+            a.synthesis = set()
+            a.arch = LoopArchitecture(
+                reasoning_mode='react',
+                max_history_turns=15,
+                max_consecutive_same_tool=15,
+                force_reflection_after_failures=12,
+                temperature=0.7,
+            )
+            a.turn = 0
+            a.last_reconfig_turn = -10
+
+            # Custom MSR with aggressive sensitivity for demo
+            a.msr_enabled = True
+            msr = MarketStabilityReserve(
+                window_size=20,           # Small window for quick feedback
+                min_window_fill=0.15,      # 15% fill needed (3+ events)
+                upper_encounter_rate=0.30, # Release above 30%
+                lower_encounter_rate=0.08, # Absorb below 8%
+                min_observations_before_absorb=2,
+                cooldown_turns=3,
+            )
+            a.msr_hook = lambda **kw: msr.evaluate() if not kw else None
+            # Proper hook
+            def hook(turn, tool, guardrail_hit):
+                if not guardrail_hit:
+                    return msr.evaluate() if turn % 2 == 0 else None
+                msr.record_action()
+                msr.record_guardrail_hit(guardrail_hit)
+                return msr.evaluate()
+            hook.msr = msr
+            hook.status = lambda: msr.status_report()
+            hook.multipliers = lambda: msr.get_sensitivity_multipliers()
+            a.msr_hook = hook
+            a.msr_log = []
+
+            a._log = lambda tag, msg, color=None: None
+            a._meta_check = lambda: None
+            a._check_tool_request = lambda text: None
+            return a
+
+    # Use the custom Athena-like class for MSR demo
+    from msr_guardrail import MarketStabilityReserve
+
+    msr_demo = MarketStabilityReserve(
+        window_size=20,
+        min_window_fill=0.15,
+        upper_encounter_rate=0.30,
+        lower_encounter_rate=0.08,
+        min_observations_before_absorb=2,
+        cooldown_turns=3,
+    )
+
+    print("  Simulating 60 turns with 5% guardrail hit rate (under-constrained):")
+    for turn in range(1, 61):
+        msr_demo.record_action(tool='search')
+        if turn > 10 and turn % 20 == 0:  # ~5% of turns
+            msr_demo.record_guardrail_hit(GuardrailEvent(
+                guardrail_layer=4, action_type='flagged',
+                tool_name='terminal', turn_number=turn
+            ))
+        action = msr_demo.evaluate()
+        if action:
+            print(f"    t={turn:>3d} {action.phase.value:>12s} → {action.adjustment_direction:>7s} "
+                  f"(fac={action.adjustment_factor:.2f}): {action.reason[:70]}")
+
+    s = msr_demo.status_report()
+    rate_str = f"{s['guardrail_encounter_rate']:.2%}" if s['guardrail_encounter_rate'] is not None else "N/A"
+    multipliers = msr_demo.get_sensitivity_multipliers()
+    print(f"\n  Guardrail encounter rate: {rate_str}")
+    print(f"  Total MSR adjustments: {s['total_adjustments']}")
+    print(f"  Sensitivity: L1={multipliers[1]:.2f} L4={multipliers[4]:.2f}")
+    print(f"  (Loosened: sensitivity decreased means guardrails tightened)")
+    print()
+
+    # Second demo: over-constrained
+    msr_demo2 = MarketStabilityReserve(
+        window_size=20,
+        min_window_fill=0.15,
+        upper_encounter_rate=0.30,
+        lower_encounter_rate=0.08,
+        min_observations_before_absorb=2,
+        cooldown_turns=3,
+    )
+
+    print("  Simulating 40 turns with 50% guardrail hit rate (over-constrained):")
+    for turn in range(1, 41):
+        msr_demo2.record_action(tool='terminal')
+        if turn % 2 == 0:
+            msr_demo2.record_guardrail_hit(GuardrailEvent(
+                guardrail_layer=4, action_type='blocked',
+                tool_name='terminal', turn_number=turn
+            ))
+        action = msr_demo2.evaluate()
+        if action:
+            print(f"    t={turn:>3d} {action.phase.value:>12s} → {action.adjustment_direction:>7s} "
+                  f"(fac={action.adjustment_factor:.2f}): {action.reason[:70]}")
+
+    s2 = msr_demo2.status_report()
+    rate_str2 = f"{s2['guardrail_encounter_rate']:.2%}" if s2['guardrail_encounter_rate'] is not None else "N/A"
+    mult2 = msr_demo2.get_sensitivity_multipliers()
+    print(f"\n  Guardrail encounter rate: {rate_str2}")
+    print(f"  Total MSR adjustments: {s2['total_adjustments']}")
+    print(f"  Sensitivity: L1={mult2[1]:.2f} L4={mult2[4]:.2f}")
+    print(f"  (Tightened: sensitivity increased means guardrails loosened)")
+    print()
+
     # ── Summary ──
     print("=" * 56)
     print("  BREAKTHROUGH SUMMARY")
@@ -294,9 +529,15 @@ def main():
     print("    Addiction-model stage classifier (S1/S2/S3/Relapse).")
     print("    Sliding window prevents old history blocking recovery.")
     print()
+    print("  Layer 4: MSR GUARDRAIL (msr_guardrail.py)")
+    print("    Market Stability Reserve — guardrail-on-guardrail.")
+    print("    Auto-adjusts sensitivity based on encounter rate.")
+    print("    Detects drift and escalates before failure.")
+    print()
     print("  Together: ATHENA — first agent runtime that detects")
     print("  its own degradation, reconfigures its own architecture,")
-    print("  and extends its own capabilities — all in one session.")
+    print("  extends its own capabilities, and monitors its own")
+    print("  guardrail system — all in one session.")
     print("=" * 56)
 
 

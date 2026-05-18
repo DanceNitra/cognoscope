@@ -273,6 +273,12 @@
           <span style="font-size:13px;color:var(--muted);">Therapy simulation will appear when biases are detected.</span>
         </div>
       </div>
+      <div class="card" id="pattern-card" style="border-left: 4px solid #6366f1;">
+        <div class="card-title">Pattern Archive <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--muted);">— cross-session degradation memory</span></div>
+        <div id="pattern-panel">
+          <span style="font-size:13px;color:var(--muted);">Run a scenario to see pattern archive predictions.</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -306,6 +312,7 @@
 <script src="js/injector.js"></script>
 <script src="js/bandit.js"></script>
 <script src="js/recovery.js"></script>
+<script src="js/patterns.js"></script>
 <script src="js/demo.js"></script>
 <script src="js/senolytic.js"></script>
 <script src="js/outcome.js"></script>
@@ -333,6 +340,7 @@
   var interventionLog = document.getElementById('intervention-log');
   var alertsContent = document.getElementById('alerts-content');
   var recoveryPanel = document.getElementById('recovery-panel');
+  var patternPanel = document.getElementById('pattern-panel');
   var statsRow = document.getElementById('stats-row');
 
   // ── BIAS COLORS ──
@@ -764,6 +772,9 @@
     Recovery.recordIntervention(stageResult.stage.id, STATE.turn, SCENE.meta.firstTool);
     renderRecovery(stageResult);
 
+    // Run Pattern Archive prediction
+    PatternDisplay.render(ACCUMULATED_EVENTS, scores);
+
     // Generate interventions for active biases
     if (cycle.active.length > 0) {
       Injector.generateAll(cycle.active);
@@ -844,6 +855,7 @@
     renderAlerts([]);
     renderInterventions([]);
     renderRecovery(null);
+    PatternDisplay.render([], {});
     renderStats([], 0, 0);
     runBtn.textContent = 'Run Scenario';
   }
@@ -883,6 +895,7 @@
   // ── INIT ──
   renderScenarios();
   resetAll();
+  PatternDisplay.init('pattern-panel');
 
 })();
 </script>
