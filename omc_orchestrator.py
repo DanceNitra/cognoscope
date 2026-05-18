@@ -123,7 +123,7 @@ class AgentProfile:
         
         noise = random.uniform(-0.1, 0.1)
         task_success = min(0.95, max(0.1, 
-            capability * 0.5 + coupling_quality * 0.2 - difficulty * 0.15 + noise
+            capability * 0.55 + coupling_quality * 0.15 - difficulty * 0.12 + noise
         ))
         
         # Tool failure rate
@@ -295,7 +295,7 @@ class TalentMarket:
         """
         if self.market_generation < 10 or len(self.agents) < 3:
             # Strategy 1: Spawn new agent
-            new_id = f"agent_{len(self.agents) + len(self.retired_agents)}"
+            new_id = f"a{len(self.agents) + len(self.retired_agents)}"
             new_agent = AgentProfile(agent_id=new_id)
             
             # Give the new agent a slight random advantage
@@ -351,8 +351,9 @@ class TalentMarket:
                 print(f"[OMC] REVIEW: Retired {agent.agent_id} "
                       f"(success={avg_success:.2f}, FE={avg_fe:.3f})")
                 
-                # Spawn a replacement
-                new_id = f"agent_{len(self.agents) + len(self.retired_agents)}"
+                # Spawn a replacement with a global counter
+                next_id = len(self.agents) + len(self.retired_agents) + 1
+                new_id = f"a{next_id}"
                 new_agent = AgentProfile(agent_id=new_id)
                 self.agents[new_id] = new_agent
                 print(f"[OMC] REVIEW: Spawned replacement {new_id}")
