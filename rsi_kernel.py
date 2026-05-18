@@ -308,6 +308,12 @@ class RecursiveImprovementKernel:
         self.meta_kernel = MetaKernel()
         self.last_exhaustion_status = {}
         
+        # ── Backup MetaKernel (self-heal: SPOF protection) ──
+        # If primary MetaKernel is in cooldown, backup runs parallel
+        # detection and can trigger shifts the primary would miss.
+        self._backup_meta_kernel = MetaKernel()
+        self._use_backup = False
+        
         # ── Code Space Monitor (CodeCMP → Meta-Kernel bridge) ──
         self.code_cmp_scores: list[dict] = []  # Most recent CMP scores per tool
         self.code_space_exhausted: bool = False
@@ -413,13 +419,38 @@ class RecursiveImprovementKernel:
         if self.code_cmp_scores:
             self.meta_kernel.set_code_cmp_scores(self.code_cmp_scores)
         
+        # ── SPOF Protection: sync backup MetaKernel ──
+        # If primary is in cooldown for multiple consecutive generations,
+        # the backup monitors independently and can override.
+        self._backup_meta_kernel.detector.fe_history = list(
+            self.meta_kernel.detector.fe_history
+        )
+        self._backup_meta_kernel.code_cmp_scores = list(
+            self.meta_kernel.code_cmp_scores
+        )
+        
         # ── Level 6 Check: Kuhnian Crisis? ──
-        # If the Meta-Kernel detects parameter space OR code space exhaustion,
-        # the paradigm shift takes priority over all L5 actions.
+        # Uses primary MetaKernel. If primary is in cooldown and exhaustion
+        # persists, backup takes over.
         exhaustion = self.meta_kernel.check_and_shift(
             self.meta_kernel.detector.detect_exhaustion()
         )
         self.last_exhaustion_status = exhaustion
+        
+        # If primary is blocked by cooldown but exhaustion is real, use backup
+        if (exhaustion.get('action') in ('cooldown', 'none') 
+            and exhaustion.get('reason', '') != 'no_crisis'
+            and self.meta_kernel.detector.detect_exhaustion().get('kuhnian_crisis')):
+            backup_exhaustion = self._backup_meta_kernel.check_and_shift(
+                self._backup_meta_kernel.detector.detect_exhaustion()
+            )
+            if backup_exhaustion.get('action') == 'paradigm_shift':
+                # Backup fired a shift the primary missed — adopt it
+                self.meta_kernel.genotype = self._backup_meta_kernel.genotype
+                self.meta_kernel.paradigm_shifts = self._backup_meta_kernel.paradigm_shifts
+                self.meta_kernel._cooldown_remaining = 10
+                exhaustion = backup_exhaustion
+                self._use_backup = True
         
         if exhaustion.get('action') == 'paradigm_shift':
             # Paradigm shift occurred. Rehydrate the coupling config
@@ -697,6 +728,8 @@ class RecursiveImprovementKernel:
                 "safe_mode": self.meta_kernel.safe_mode,
                 "code_space_crisis": self.meta_kernel.code_space_crisis,
                 "code_cmp_count": len(self.meta_kernel.code_cmp_scores),
+                "health": self.meta_kernel.health,
+                "backup_active": self._use_backup,
             },
         }
 
@@ -1197,6 +1230,16 @@ class MetaKernel:
                    if s.get('classification') == 'LOW_METAPRODUCTIVITY']
         self.code_space_crisis = len(low_cmp) / len(tools_with_history) >= 0.8
     
+    @property
+    def health(self) -> dict:
+        """Runtime health status of the MetaKernel."""
+        return {
+            "paradigm_shifts": self.paradigm_shifts,
+            "cooldown": self._cooldown_remaining,
+            "safe_mode": self.safe_mode,
+            "code_space_crisis": self.code_space_crisis,
+        }
+    
     def observe_generation(self, free_energy: float, recovery_time: float | None = None) -> dict:
         """Observe a generation and check for exhaustion."""
         self.detector.observe(free_energy, recovery_time)
@@ -1336,6 +1379,12 @@ class MetaKernel:
             "exhaustion": exhaustion,
             "safe_mode": self.safe_mode,
             "recent_transitions": self.transition_history[-3:],
+            "health": {
+                "paradigm_shifts": self.paradigm_shifts,
+                "cooldown": self._cooldown_remaining,
+                "safe_mode": self.safe_mode,
+                "code_space_crisis": self.code_space_crisis,
+            },
         }
 
 
