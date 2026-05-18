@@ -18,6 +18,7 @@ import json
 import math
 import time
 import random
+import statistics
 from dataclasses import dataclass, field
 from typing import Any
 from collections import deque
@@ -812,5 +813,279 @@ def main():
     print()
 
 
-if __name__ == "__main__":
+# ══════════════════════════════════════════════
+# 6. META-KERNEL — Level 6 (Paradigm Shifter)
+# ══════════════════════════════════════════════
+
+class CriticalSlowingDownDetector:
+    """
+    Detects parameter space exhaustion via Critical Slowing Down signals.
+    
+    As G → 1.0 (the control parameter approaches criticality):
+    - Rising autocorrelation (AR(1)): generations become more similar
+    - Rising variance: fluctuations become more extreme
+    - Slowing recovery: longer to return to equilibrium after perturbation
+    
+    These are universal early warning signals for regime shifts
+    (climate tipping points → Bridge #49, cortical networks → criticality paper).
+    """
+    
+    def __init__(self, window_size: int = 20):
+        self.window_size = window_size
+        self.fe_history: list[float] = []
+        self.recovery_times: list[float] = []
+    
+    def observe(self, free_energy: float, recovery_time: float | None = None):
+        self.fe_history.append(free_energy)
+        if recovery_time is not None:
+            self.recovery_times.append(recovery_time)
+    
+    def detect_exhaustion(self) -> dict:
+        """Return exhaustion signals and probability."""
+        recent = self.fe_history[-self.window_size:] if len(self.fe_history) > self.window_size else self.fe_history
+        
+        if len(recent) < 6:
+            return {"exhaustion_probability": 0.0, "signals": {}, "kuhnian_crisis": False}
+        
+        mid = len(recent) // 2
+        first_half = recent[:mid]
+        second_half = recent[mid:]
+        
+        # 1. Variance change ratio (using statistics module)
+        var_first = statistics.variance(first_half) if len(first_half) > 1 else 0.0
+        var_second = statistics.variance(second_half) if len(second_half) > 1 else 0.0
+        variance_ratio = var_second / max(var_first, 1e-10)
+        
+        # 2. Autocorrelation (lag-1) change
+        def lag1_autocorr(series):
+            if len(series) < 4: return 0.0
+            n = len(series)
+            mean = sum(series) / n
+            # Pearson correlation between series[:-1] and series[1:]
+            x = series[:-1]
+            y = series[1:]
+            mx = sum(x) / len(x)
+            my = sum(y) / len(y)
+            num = sum((xi - mx) * (yi - my) for xi, yi in zip(x, y))
+            den = (sum((xi - mx)**2 for xi in x) * sum((yi - my)**2 for yi in y)) ** 0.5
+            return num / den if den > 0 else 0.0
+        
+        ac_first = lag1_autocorr(first_half)
+        ac_second = lag1_autocorr(second_half)
+        autocorr_change = ac_second - ac_first
+        
+        # 3. Recovery time trend
+        recovery_trend = 0.0
+        if len(self.recovery_times) >= 4:
+            rt = list(self.recovery_times)
+            recovery_trend = (rt[-1] - rt[0]) / max(len(rt), 1)
+        
+        # 4. Plateau
+        recent_var = statistics.variance(recent[-5:]) if len(recent) >= 5 else float('inf')
+        plateau = recent_var < 0.001 and var_second < 0.001
+        
+        signals = {
+            "variance_ratio": round(variance_ratio, 3),
+            "autocorrelation_change": round(autocorr_change, 3),
+            "recovery_trend": round(recovery_trend, 5),
+            "plateau": plateau,
+        }
+        
+        # Composite exhaustion probability
+        probability = 0.0
+        if variance_ratio > 2.0: probability += 0.3
+        if autocorr_change > 0.2: probability += 0.3
+        if recovery_trend > 0.1: probability += 0.2
+        if plateau: probability += 0.2
+        
+        return {
+            "exhaustion_probability": min(1.0, probability),
+            "signals": signals,
+            "kuhnian_crisis": probability > 0.7,
+        }
+
+
+class ParameterGenotype:
+    """
+    The genotype of the coupling parameter space.
+    
+    The Meta-Kernel operates on this to generate new parameter spaces.
+    This is the grammar from which coupling configurations are derived.
+    """
+    
+    def __init__(self, config: CouplingConfig | None = None):
+        self.config = config or CouplingConfig()
+        
+        # The genotype is a list of parameter specifications
+        # Each spec: (name, type, min, max, dependencies)
+        self.genotype = [
+            ("detect_every_n", "int", 1, 15, []),
+            ("msr_check_every_n", "int", 1, 20, []),
+            ("msr_to_metaloop_gain", "float", 0.0, 1.0, []),
+            ("forge_trigger_threshold", "float", 0.05, 0.9, []),
+            ("forge_to_react_priority", "float", 0.0, 1.0, []),
+            ("precision_l1", "float", 0.1, 2.0, []),
+            ("precision_l2", "float", 0.1, 2.0, []),
+            ("precision_l3", "float", 0.1, 2.0, []),
+            ("precision_l4", "float", 0.1, 2.0, []),
+        ]
+    
+    def apply_mutation(self, operation: str, target: str | None = None) -> 'ParameterGenotype':
+        """Produce a mutated genotype (new parameter space)."""
+        import copy
+        new = copy.deepcopy(self)
+        
+        if operation == "add_parameter":
+            # Add a new parameter
+            new_name = f"{target or 'new_param'}_{len(new.genotype)}"
+            new.genotype.append((new_name, "float", 0.0, 1.0, []))
+            
+        elif operation == "split_parameter" and target:
+            # Split one parameter into two
+            specs = [(n, t, mn, mx, deps) for n, t, mn, mx, deps in new.genotype]
+            found = None
+            for s in specs:
+                if s[0] == target:
+                    found = s
+                    break
+            if found:
+                # Remove old, add two new
+                specs = [s for s in specs if s[0] != target]
+                specs.append((f"{target}_normal", found[1], found[2], found[3] / 2, found[4]))
+                specs.append((f"{target}_crisis", found[1], found[3] / 2, found[3], found[4]))
+                new.genotype = specs
+                
+        elif operation == "fuse_parameters" and target:
+            # Fuse two parameters (comma-separated names)
+            names = target.split(",")
+            specs = [(n, t, mn, mx, deps) for n, t, mn, mx, deps in new.genotype]
+            found = [s for s in specs if s[0] in names]
+            if len(found) >= 2:
+                new_name = f"fused_{found[0][0]}_{found[1][0]}"
+                new_min = min(s[2] for s in found[:2])
+                new_max = max(s[3] for s in found[:2])
+                specs = [s for s in specs if s[0] not in names[:2]]
+                specs.append((new_name, "float", new_min, new_max, []))
+                new.genotype = specs
+                
+        elif operation == "expand_bounds" and target:
+            # Widen a parameter's range
+            specs = [(n, t, mn, mx, deps) for n, t, mn, mx, deps in new.genotype]
+            for i, s in enumerate(specs):
+                if s[0] == target:
+                    specs[i] = (s[0], s[1], s[2] * 0.5, s[3] * 1.5, s[4])
+                    break
+            new.genotype = specs
+            
+        elif operation == "add_dependency" and target:
+            # Make one parameter depend on another
+            source, dep = target.split(",") if "," in target else (target, "all")
+            specs = [(n, t, mn, mx, deps) for n, t, mn, mx, deps in new.genotype]
+            for i, s in enumerate(specs):
+                if s[0] == source and dep not in s[4]:
+                    specs[i] = (s[0], s[1], s[2], s[3], s[4] + [dep])
+                    break
+            new.genotype = specs
+        
+        return new
+
+
+class MetaKernel:
+    """
+    Level 6 of the RSI stack — the paradigm shift engine.
+    
+    Detects when the coupling parameter space is exhausted via CSD signals,
+    generates a new space via bootstrapping operations on the genotype,
+    and manages the transition between paradigms safely.
+    """
+    
+    def __init__(self):
+        self.detector = CriticalSlowingDownDetector()
+        self.genotype = ParameterGenotype()
+        self.old_parameter_count = len(self.genotype.genotype)
+        self.paradigm_shifts = 0
+        self.transition_history: list[dict] = []
+        self.safe_mode = False
+    
+    def observe_generation(self, free_energy: float, recovery_time: float | None = None) -> dict:
+        """Observe a generation and check for exhaustion."""
+        self.detector.observe(free_energy, recovery_time)
+        status = self.detector.detect_exhaustion()
+        return status
+    
+    def check_and_shift(self, status: dict) -> dict:
+        """
+        If exhaustion is detected, trigger a paradigm shift.
+        Returns the action taken.
+        """
+        if not status.get('kuhnian_crisis'):
+            return {'action': 'none', 'reason': 'no_crisis'}
+        
+        if self.safe_mode:
+            return {'action': 'blocked', 'reason': 'safe_mode_active'}
+        
+        # Generate paradigm shift
+        self.paradigm_shifts += 1
+        
+        # Choose shift type based on CSD signals
+        signals = status.get('signals', {})
+        
+        if signals.get('variance_ratio', 0) > 3.0:
+            # High variance → add more parameters for finer control
+            shift_type = "add_parameter"
+            new_genotype = self.genotype.apply_mutation("add_parameter", "adaptivity")
+        elif signals.get('autocorrelation_change', 0) > 0.3:
+            # High autocorrelation → split dominant parameter
+            shift_type = "split_parameter"
+            new_genotype = self.genotype.apply_mutation("split_parameter", "detect_every_n")
+        elif signals.get('plateau'):
+            # Complete plateau → fuse or expand
+            shift_type = "expand_bounds"
+            new_genotype = self.genotype.apply_mutation("expand_bounds", "precision_l1")
+        else:
+            # Generic exhaustion → try dependency introduction
+            shift_type = "add_dependency"
+            new_genotype = self.genotype.apply_mutation("add_dependency", "msr_check_every_n,detect_every_n")
+        
+        old_count = self.old_parameter_count
+        new_count = len(new_genotype.genotype)
+        diff = new_count - old_count
+        
+        transition = {
+            'paradigm_shift': self.paradigm_shifts,
+            'shift_type': shift_type,
+            'old_parameter_count': old_count,
+            'new_parameter_count': new_count,
+            'delta': diff,
+            'signals_before_shift': dict(signals),
+        }
+        self.transition_history.append(transition)
+        
+        # Commit new genotype
+        self.genotype = new_genotype
+        self.old_parameter_count = new_count
+        
+        return {
+            'action': 'paradigm_shift',
+            'shift_type': shift_type,
+            'old_count': old_count,
+            'new_count': new_count,
+            'delta': diff,
+            'transition': transition,
+        }
+    
+    def status_report(self) -> dict:
+        """Full Meta-Kernel status."""
+        exhaustion = self.detector.detect_exhaustion()
+        return {
+            "paradigm_shifts": self.paradigm_shifts,
+            "current_parameter_count": len(self.genotype.genotype),
+            "current_genotype": [(s[0], s[1], s[2], s[3]) for s in self.genotype.genotype],
+            "exhaustion": exhaustion,
+            "safe_mode": self.safe_mode,
+            "recent_transitions": self.transition_history[-3:],
+        }
+
+
+if __name__ == '__main__':
     main()
