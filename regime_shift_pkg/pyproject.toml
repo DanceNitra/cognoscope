@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "regime-shift"
+version = "1.0.0"
+description = "Detect regime shifts in ANY metric stream before they cause incidents"
+readme = "README.md"
+authors = [
+    {name = "Cognoscope RSI", email = "rsi@cognoscope.dev"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Reliability",
+]
+keywords = ["regime-shift", "critical-slowing-down", "monitoring", "reliability", "anomaly-detection"]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/DanceNitra/cognoscope"
+Documentation = "https://github.com/DanceNitra/cognoscope/tree/main/regime_shift_pkg"
+Source = "https://github.com/DanceNitra/cognoscope"
+"Regime Shift Detection" = "https://github.com/DanceNitra/cognoscope/blob/main/regime_shift.py"
+
+[project.scripts]
+regime-shift = "regime_shift.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["regime_shift*"]
+
+[tool.setuptools.package-data]
+regime_shift = ["py.typed"]
