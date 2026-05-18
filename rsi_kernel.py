@@ -144,6 +144,132 @@ class CouplingConfig:
         return new
 
 
+class CladeTracker:
+    """
+    Tracks agent lineage and computes Estimated CMP (Clade-Metaproductivity).
+    
+    From the HGM framework: CMP aggregates the performance of an agent's
+    descendants to measure its true evolutionary potential. Greedy selection
+    for immediate performance leads to the Metaproductivity-Performance
+    Mismatch (MPM) — high-scoring agents are often evolutionary dead-ends.
+    
+    CMP solves MPM by rewarding structural flexibility that produces
+    high-performing descendants rather than high immediate scores.
+    """
+    
+    def __init__(self):
+        self.agents: dict[int, dict] = {}  # gen_id → {parent, config, fe, descendants, timestamp}
+        self.root_id: int | None = None
+    
+    def register(self, gen_id: int, parent_id: int | None, config: Any, free_energy: float):
+        """Register a new agent generation with its lineage."""
+        self.agents[gen_id] = {
+            'parent': parent_id,
+            'config': config,
+            'fe': free_energy,
+            'descendants': [],
+            'timestamp': time.time(),
+        }
+        if parent_id is not None and parent_id in self.agents:
+            self.agents[parent_id]['descendants'].append(gen_id)
+        if self.root_id is None:
+            self.root_id = gen_id
+    
+    def estimated_cmp(self, gen_id: int, max_depth: int = 3) -> float:
+        """
+        Compute Estimated CMP (CMP_hat) for an agent generation.
+        
+        CMP_hat = -mean(free_energy of descendants up to max_depth)
+        
+        Higher CMP_hat means the lineage produces descendants with
+        lower free energy (better performance).
+        """
+        gen = self.agents.get(gen_id)
+        if not gen:
+            return 0.0
+        
+        descendant_fes = []
+        to_visit = list(gen['descendants'])
+        
+        for depth in range(max_depth):
+            next_visit = []
+            for d_id in to_visit:
+                if d_id in self.agents:
+                    d = self.agents[d_id]
+                    descendant_fes.append(d['fe'])
+                    next_visit.extend(d['descendants'])
+            to_visit = next_visit
+            if not to_visit:
+                break
+        
+        if not descendant_fes:
+            # No descendants yet: use inverse of current FE as proxy
+            # (low FE = good = high CMP)
+            return -gen['fe']
+        
+        return -sum(descendant_fes) / len(descendant_fes)
+    
+    def best_by_cmp(self, configs: list[tuple[Any, int]]) -> tuple[Any, float]:
+        """
+        Select the configuration with the highest Estimated CMP.
+        
+        Args:
+            configs: List of (config, gen_id) pairs to evaluate
+            
+        Returns:
+            (best_config, best_cmp_value)
+        """
+        best_cmp = -float('inf')
+        best_config = None
+        
+        for config, gen_id in configs:
+            cmp_val = self.estimated_cmp(gen_id)
+            if cmp_val > best_cmp:
+                best_cmp = cmp_val
+                best_config = config
+        
+        return best_config, best_cmp
+    
+    def lineage_summary(self, gen_id: int) -> dict:
+        """Return the full lineage tree for an agent generation."""
+        gen = self.agents.get(gen_id)
+        if not gen:
+            return {}
+        
+        # Walk ancestors
+        ancestors = []
+        current = gen_id
+        while current is not None and current in self.agents:
+            ancestors.append({
+                'gen_id': current,
+                'fe': self.agents[current]['fe'],
+            })
+            current = self.agents[current]['parent']
+        
+        # Walk descendants
+        descendants = []
+        to_visit = list(gen['descendants'])
+        while to_visit:
+            d_id = to_visit.pop(0)
+            if d_id in self.agents:
+                d = self.agents[d_id]
+                descendants.append({
+                    'gen_id': d_id,
+                    'fe': d['fe'],
+                    'descendant_count': len(d['descendants']),
+                })
+                to_visit.extend(d['descendants'])
+        
+        return {
+            'gen_id': gen_id,
+            'current_fe': gen['fe'],
+            'estimated_cmp': self.estimated_cmp(gen_id),
+            'ancestor_count': len(ancestors) - 1,  # Exclude self
+            'descendant_count': len(descendants),
+            'avg_descendant_fe': sum(d['fe'] for d in descendants) / len(descendants) if descendants else None,
+        }
+
+
 class RecursiveImprovementKernel:
     """
     The Level 5 kernel that drives recursive self-improvement.
@@ -167,8 +293,11 @@ class RecursiveImprovementKernel:
         self.actions: list[dict] = []
         
         # Generative model of coupling → performance
-        # Simplified: tracks the best configs and their outcomes
         self.model_memory: list[tuple[CouplingConfig, float]] = []
+        
+        # ── Clade Tracker (HGM-inspired CMP metric) ──
+        self.clade = CladeTracker()
+        self.parent_generation: int | None = None
         
         # Exploration parameters (analogous to temperature in active inference)
         self.exploration_rate: float = 0.3
