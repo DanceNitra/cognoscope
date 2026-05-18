@@ -304,6 +304,10 @@ class RecursiveImprovementKernel:
         self.exploration_rate: float = 0.3
         self.epistemic_value: float = 0.0  # How much we value information gain
         
+        # ── Meta-Kernel (L6 — Paradigm Shift Engine) ──
+        self.meta_kernel = MetaKernel()
+        self.last_exhaustion_status = {}
+        
         print(f"[RSI] Kernel initialized. Generation 0.")
         print(f"[RSI] Starting coupling: detect={self.config.detect_every_n}, "
               f"msr_check={self.config.msr_check_every_n}, "
@@ -385,6 +389,9 @@ class RecursiveImprovementKernel:
         
         self.free_energy_history.append(report)
         
+        # Feed free energy to Meta-Kernel (L6) for exhaustion detection
+        self.meta_kernel.observe_generation(report.f_combined)
+        
         return report
     
     def act(self, report: FreeEnergyReport) -> dict:
@@ -397,6 +404,29 @@ class RecursiveImprovementKernel:
         Returns a dict describing the action.
         """
         self.generation += 1
+        
+        # ── Level 6 Check: Kuhnian Crisis? ──
+        # If the Meta-Kernel detects parameter space exhaustion,
+        # the paradigm shift takes priority over all L5 actions.
+        exhaustion = self.meta_kernel.check_and_shift(
+            self.meta_kernel.detector.detect_exhaustion()
+        )
+        self.last_exhaustion_status = exhaustion
+        
+        if exhaustion.get('action') == 'paradigm_shift':
+            # Paradigm shift occurred. Rehydrate the coupling config
+            # from the new genotype.
+            self._hydrate_from_genotype()
+            return {
+                'action': 'paradigm_shift',
+                'shift_type': exhaustion.get('shift_type', 'unknown'),
+                'old_parameter_count': exhaustion.get('old_count', 0),
+                'new_parameter_count': exhaustion.get('new_count', 0),
+                'delta': exhaustion.get('delta', 0),
+                'generation': self.generation,
+                'reason': f"Paradigm shift type={exhaustion['shift_type']}: "
+                          f"{exhaustion['old_count']}→{exhaustion['new_count']} params",
+            }
         
         # Store the current config + performance in model memory
         self.model_memory.append((self.config, report.f_combined))
@@ -588,6 +618,44 @@ class RecursiveImprovementKernel:
         self.actions.append(action)
         return action
     
+    def _hydrate_from_genotype(self):
+        """
+        Rehydrate the coupling config from the Meta-Kernel's mutated genotype.
+        
+        The MetaKernel can add, split, fuse, or expand parameters.
+        This method maps the new genotype back onto a CouplingConfig,
+        preserving shared parameters and adding defaults for new ones.
+        """
+        old_config = self.config
+        new_genotype = self.meta_kernel.genotype.genotype
+        
+        known_fields = {
+            'detect_every_n', 'msr_check_every_n', 'msr_to_metaloop_gain',
+            'forge_trigger_threshold', 'forge_to_react_priority',
+            'precision_l1', 'precision_l2', 'precision_l3', 'precision_l4',
+        }
+        
+        new_kwargs = {}
+        for param_name, param_type, min_val, max_val, deps in new_genotype:
+            if param_name in known_fields:
+                new_kwargs[param_name] = getattr(old_config, param_name, (min_val + max_val) / 2)
+            else:
+                if param_type == 'int':
+                    new_kwargs[param_name] = int((min_val + max_val) / 2)
+                else:
+                    new_kwargs[param_name] = (min_val + max_val) / 2
+        
+        self.config = CouplingConfig()
+        for k, v in new_kwargs.items():
+            if hasattr(self.config, k):
+                setattr(self.config, k, v)
+        
+        print(f"[RSI] L6 PARADIGM SHIFT: {len(new_genotype)} params active "
+              f"(was {self.meta_kernel.old_parameter_count})")
+        print(f"[RSI] New coupling: detect={self.config.detect_every_n}, "
+              f"msr_check={self.config.msr_check_every_n}, "
+              f"msr_gain={self.config.msr_to_metaloop_gain:.2f}")
+    
     def status_report(self) -> dict:
         """Return the current status of the RSI kernel."""
         recent_history = self.free_energy_history[-5:] if self.free_energy_history else []
@@ -611,6 +679,15 @@ class RecursiveImprovementKernel:
             "total_actions": len(self.actions),
             "exploration_rate": round(self.exploration_rate, 3),
             "total_observations": len(self.free_energy_history),
+            "meta_kernel": {
+                "paradigm_shifts": self.meta_kernel.paradigm_shifts,
+                "parameter_count": len(self.meta_kernel.genotype.genotype),
+                "exhaustion_probability": self.last_exhaustion_status.get(
+                    'exhaustion_probability', 0) if self.last_exhaustion_status else 0,
+                "kuhnian_crisis": self.last_exhaustion_status.get(
+                    'kuhnian_crisis', False) if self.last_exhaustion_status else False,
+                "safe_mode": self.meta_kernel.safe_mode,
+            },
         }
 
 
@@ -622,69 +699,109 @@ def main():
     random.seed = 42
     
     print()
-    print("  ╔══════════════════════════════════════════════════════════════╗")
-    print("  ║    RSI KERNEL — Recursive Self-Improvement (Athena L5)      ║")
-    print("  ║  Active inference on the coupling between improvement layers ║")
-    print("  ╚══════════════════════════════════════════════════════════════╝")
+    print("  ╔══════════════════════════════════════════════════════════════════╗")
+    print("  ║     RSI KERNEL + META-KERNEL — Recursive Self-Improvement       ║")
+    print("  ║  L5: Coupling optimization | L6: Paradigm shift on exhaustion  ║")
+    print("  ╚══════════════════════════════════════════════════════════════════╝")
     print()
     
     kernel = RecursiveImprovementKernel()
     
-    # Simulate 30 generations of system evolution
-    # The environment is a simulation of Levels 1-4 behavior.
-    # It has three phases: stable → harsh → recovery
+    # Simulate 70 generations with 6 environment phases.
+    # Phases are designed to push the system past its parameter space limits,
+    # triggering Critical Slowing Down signals and a Meta-Kernel paradigm shift.
     
-    print("─" * 56)
-    print("  Simulating 30 RSI generations through 3 environment phases...")
-    print("─" * 56)
+    print("─" * 64)
+    print("  Simulating 70 RSI generations through 6 environment phases...")
+    print("─" * 64)
     print()
     
     base_task_success = 0.75
     best_fe_observed = float('inf')
     fe_at_stable = None
     
-    for gen in range(30):
-        # Three environment phases:
-        # Gens 0-9: STABLE — baseline
-        # Gens 10-19: HARSH — environment degrades (tests adaptation)
-        # Gens 20-29: RECOVERY — environment stabilizes (tests learning)
-        if gen < 10:
-            difficulty = 0.05  # Easy
-        elif gen < 20:
-            difficulty = 0.15 + (gen - 10) * 0.03  # Gradual increase
+    print(f"  {'Gen':>3s} {'Phase':>7s} {'F':>5s} {'L1':>4s} {'L2':>4s} {'L3':>4s} {'L4':>4s}"
+          f" {'detect':>6s} {'msr_gain':>8s} {'task':>4s} {'action':>20s}")
+    print("  " + "─" * 82)
+    
+    for gen in range(70):
+        # ── Environment Phases ──
+        # Phase 1 (0-14):  STABLE   — Easy, low noise
+        # Phase 2 (15-29): CLIMBING — Harder each generation (tests adaptation)
+        # Phase 3 (30-49): EXHAUST  — Sustained high difficulty with slow oscillation.
+        #                             Coupling quality capped = bounded parameter space.
+        #                             Slow waves produce CSD signals: high variance + AR(1).
+        # Phase 4 (50-59): CHAOTIC  — Rapid oscillations (tests robustness after shift)
+        # Phase 5 (60-69): RECOVERY — New stability, tests if paradigm shift helped
+        
+        if gen < 15:
+            phase = "STABLE"
+            difficulty = 0.05
+        elif gen < 30:
+            phase = "CLIMB"
+            difficulty = 0.10 + (gen - 15) * 0.025  # 0.10 → 0.475
+        elif gen < 50:
+            phase = "EXHAUST"
+            # 20 generations of a TRULY bounded parameter space.
+            # Override ALL environment metrics to fixed oscillating values —
+            # no amount of coupling tuning helps. The system faces genuine
+            # parameter space exhaustion: the degrees of freedom are saturated.
+            difficulty = 0.40 + math.sin((gen - 30) * 0.4) * 0.10
+            stage = 'stage_2' if gen % 2 == 0 else 'stage_3'
+            task_success = 0.30 + math.sin((gen - 30) * 0.4) * 0.10 + math.cos(gen * 7) * 0.02
+            tool_failure = 0.25 + math.sin((gen - 30) * 0.3) * 0.05
+            guardrail_rate = 0.25 + math.sin(gen * 0.5) * 0.05
+            tasks_needing_tools = 3
+            tools_found = 1
+            tool_effectiveness = 0.45
+        elif gen < 60:
+            phase = "CHAOTIC"
+            # Sinusoidal difficulty: rapid oscillation from 0.1 to 0.5
+            raw = math.sin((gen - 50) * 1.5) * 0.25 + 0.35
+            difficulty = max(0.1, min(0.6, raw))
         else:
-            difficulty = max(0.05, 0.35 - (gen - 20) * 0.03)  # Recovery
+            phase = "RECOVER"
+            difficulty = max(0.05, 0.40 - (gen - 60) * 0.045)  # 0.40 → 0.05
         
         # Simulate system state under current coupling
-        # Coupling quality: how well the kernel's config matches the environment
         detect_quality = max(0, 1.0 - (kernel.config.detect_every_n - 1) / 14.0)
         msr_quality = kernel.config.msr_to_metaloop_gain
         precision_bonus = (kernel.config.precision_l1 - 0.5) / 1.5 * 0.1
         
         coupling_quality = (detect_quality * 0.2 + msr_quality * 0.15 + precision_bonus)
         
-        # Add noise to make it realistic
-        noise = random.uniform(-0.03, 0.03)
-        task_success = min(0.95, max(0.1, base_task_success + coupling_quality - difficulty + noise))
-        tool_failure = max(0.01, base_task_success * 0.12 + difficulty * 0.4 - coupling_quality * 0.2)
+        # Noise grows in CHAOTIC phase (simulating CSD)
+        noise_amplitude = 0.03 if gen < 50 else 0.08
+        noise = random.uniform(-noise_amplitude, noise_amplitude)
         
-        # Recovery stage
-        if kernel.config.detect_every_n <= 2:
-            # Fast detection catches problems early
-            stage = 'healthy' if task_success > 0.4 else 'stage_1'
-        elif kernel.config.detect_every_n <= 5:
-            stage = 'stage_1' if task_success > 0.3 else 'stage_2'
+        # ── Compute environment metrics ──
+        # EXHAUST phase (gen 30-49): override ALL metrics with fixed values
+        # to simulate a bounded parameter space. No config change helps.
+        if gen >= 30 and gen < 50:
+            # Override is already set above — skip the normal computation
+            pass
         else:
-            stage = 'stage_2' if task_success > 0.2 else 'stage_3'
-        
-        # Guardrail rate
-        guardrail_rate = max(0.01, 0.20 - kernel.config.msr_to_metaloop_gain * 0.12 + difficulty * 0.3)
-        
-        # Tool synthesis
-        tasks_needing_tools = max(0, int(difficulty * 8))
-        forge_efficiency = 3 / max(kernel.config.forge_trigger_threshold, 0.05)
-        tools_found = min(tasks_needing_tools + 1, max(1, int(forge_efficiency)))
-        tool_effectiveness = max(0.3, 0.9 - difficulty * 0.5 + msr_quality * 0.1)
+            task_success = min(0.95, max(0.1, base_task_success + coupling_quality - difficulty + noise))
+            tool_failure = max(0.01, base_task_success * 0.12 + difficulty * 0.4 - coupling_quality * 0.2)
+            
+            # Recovery stage maps difficulty to system health
+            stage_quality = task_success / max(difficulty, 0.01)
+            if stage_quality > 3.0:
+                stage = 'healthy'
+            elif stage_quality > 2.0:
+                stage = 'stage_1'
+            elif stage_quality > 1.0:
+                stage = 'stage_2'
+            else:
+                stage = 'stage_3'
+            
+            guardrail_rate = max(0.01, 0.20 - kernel.config.msr_to_metaloop_gain * 0.12 + difficulty * 0.3)
+            
+            # Tool synthesis
+            tasks_needing_tools = max(0, int(difficulty * 8))
+            forge_efficiency = 3 / max(kernel.config.forge_trigger_threshold, 0.05)
+            tools_found = min(tasks_needing_tools + 1, max(1, int(forge_efficiency)))
+            tool_effectiveness = max(0.3, 0.9 - difficulty * 0.5 + msr_quality * 0.1)
         
         events = {
             'task_success': task_success,
@@ -704,113 +821,131 @@ def main():
         # Track best FE
         if report.f_combined < best_fe_observed:
             best_fe_observed = report.f_combined
-        if gen == 9:
+        if gen == 14:
             fe_at_stable = report.f_combined
         
-        # Print every 2 generations or on important events
-        if gen % 2 == 0 or action['action'] in ('explore', 'emergency_intervention'):
-            phase_marker = "S" if gen < 10 else "H" if gen < 20 else "R"
-            print(f"  [{phase_marker} G{gen:>2d}] F={report.f_combined:.3f} "
-                  f"(L1={report.f_l1:.2f} L2={report.f_l2:.2f} "
-                  f"L3={report.f_l3:.2f} L4={report.f_l4:.2f}) "
-                  f"| detect={kernel.config.detect_every_n} "
-                  f"msr_gain={kernel.config.msr_to_metaloop_gain:.2f} "
-                  f"pL1={kernel.config.precision_l1:.1f} "
-                  f"task={task_success:.0%}"
-                  f"{' ⚠' if action['action'] == 'emergency_intervention' else ''}")
+        # Print every 3 generations or on important events
+        if gen % 3 == 0 or action['action'] in ('paradigm_shift', 'emergency_intervention', 'explore'):
+            action_label = action.get('action', 'observe')
+            if action_label == 'paradigm_shift':
+                action_label = f"⚡{action.get('shift_type', 'shift')[:10]}"
+            
+            print(f"  [{phase[:3]:>3s} G{gen:>2d}] F={report.f_combined:.3f} "
+                  f"({report.f_l1:.2f} {report.f_l2:.2f} "
+                  f"{report.f_l3:.2f} {report.f_l4:.2f}) "
+                  f"| dt={kernel.config.detect_every_n:>2d} "
+                  f"mg={kernel.config.msr_to_metaloop_gain:.2f} "
+                  f"ts={task_success:.0%}"
+                  f" {action_label:>20s}")
     
     # ── Summary ──
     print()
-    print("─" * 56)
-    print("  RSI Evolution Summary")
-    print("─" * 56)
+    print("─" * 64)
+    print("  RSI + Meta-Kernel Evolution Summary")
+    print("─" * 64)
     print()
     
     s = kernel.status_report()
-    print(f"  Generations:          {s['generation']}")
-    print(f"  Total actions:        {s['total_actions']}")
-    print(f"  Final exploration:    {s['exploration_rate']}")
+    mk = s.get('meta_kernel', {})
+    
+    print(f"  Generations:              {s['generation']}")
+    print(f"  Total actions:            {s['total_actions']}")
+    print(f"  Paradigm shifts (L6):     {mk.get('paradigm_shifts', 0)}")
+    print(f"  Final parameter count:    {mk.get('parameter_count', 0)}")
+    print(f"  Final exhaustion prob:    {mk.get('exhaustion_probability', 0):.2%}")
     print()
     
     print("  Final coupling configuration:")
-    print(f"    L1→L2 detect:       {s['current_config']['detect_every_n']} turns")
-    print(f"    L2→L3 MSR check:    {s['current_config']['msr_check_every_n']} turns")
-    print(f"    L3→L2 MSR gain:     {s['current_config']['msr_to_metaloop_gain']:.2f}")
-    print(f"    L1→L4 forge trig:   {s['current_config']['forge_trigger_threshold']:.2f}")
-    print(f"    Precision L1..L4:   {s['current_config']['precision']}")
+    print(f"    L1→L2 detect:           {s['current_config']['detect_every_n']} turns")
+    print(f"    L2→L3 MSR check:        {s['current_config']['msr_check_every_n']} turns")
+    print(f"    L3→L2 MSR gain:         {s['current_config']['msr_to_metaloop_gain']:.2f}")
+    print(f"    L1→L4 forge trig:       {s['current_config']['forge_trigger_threshold']:.2f}")
+    print(f"    Precision L1..L4:       {s['current_config']['precision']}")
     print()
     
     if kernel.free_energy_history:
+        # Compute improvement relative to best observed
         initial_f = kernel.free_energy_history[0].f_combined
         final_f = kernel.free_energy_history[-1].f_combined
         improvement = (initial_f - final_f) / max(initial_f, 0.01) * 100
-        print(f"  Free energy: {initial_f:.3f} → {final_f:.3f} ({improvement:.0f}% improvement)")
+        print(f"  Free energy trajectory: {initial_f:.3f} → {final_f:.3f} ({improvement:.0f}% Δ)")
         print()
         
-        # Check if recursion is compressing
+        # Action distribution
         action_types = {}
         for a in kernel.actions:
-            action_types[a['action']] = action_types.get(a['action'], 0) + 1
+            at = a['action']
+            action_types[at] = action_types.get(at, 0) + 1
         
         print("  Action distribution:")
         for action_type, count in sorted(action_types.items()):
-            print(f"    {action_type:>30s}: {count}")
+            label = f"L6_ParadigmShift" if action_type == 'paradigm_shift' else action_type
+            print(f"    {label:>22s}: {count}")
         print()
         
-        # Check for recursive improvement: did the system learn from the harsh phase?
-        # Key metric: was free energy during RECOVERY (gen 20-29) lower than during
-        # the equivalent STABLE phase (gen 0-9), controlling for difficulty?
-        # If yes, the system improved its improvement mechanism.
-        if fe_at_stable is not None and len(kernel.free_energy_history) >= 30:
-            # Average FE in last 5 gens of recovery vs last 5 gens of stable
-            recovery_fe = sum(fe.f_combined for fe in kernel.free_energy_history[-5:]) / 5
-            stable_fe = sum(fe.f_combined for fe in kernel.free_energy_history[5:10]) / 5
-            
-            if recovery_fe < stable_fe * 0.5:
-                improvement_type = "RECURSIVE"
-                improvement_pct = (stable_fe - recovery_fe) / stable_fe * 100
-            elif recovery_fe < stable_fe * 0.8:
-                improvement_type = "ADAPTIVE"
-                improvement_pct = (stable_fe - recovery_fe) / stable_fe * 100
-            else:
-                improvement_type = "MAINTENANCE"
-                improvement_pct = ((initial_f or 1) - final_f) / (initial_f or 1) * 100
-            
-            print(f"  ╔══════════════════════════════════════════════════════════╗")
-            print(f"  ║      {improvement_type} IMPROVEMENT DETECTED{'' if len(improvement_type) < 10 else ''}          ║")
-            print(f"  ╚══════════════════════════════════════════════════════════╝")
-            print(f"  Stable FE (G5-9): {stable_fe:.3f}")
-            print(f"  Recovery FE (G25-29): {recovery_fe:.3f}")
-            print(f"  Improvement: {improvement_pct:.0f}%")
-            
-            if improvement_type == "RECURSIVE":
-                print()
-                print("  The RSI kernel adapted to the harsh phase (G10-19) and")
-                print("  returned to a LOWER free energy state than the original")
-                print("  stable phase. This is RECURSIVE improvement: the system")
-                print("  improved its own improvement capacity through exposure")
-                print("  to challenge.")
-                print()
-                print("  This is the FEP prediction confirmed: active inference at")
-                print("  Level 5 (coupling optimization) produces a trajectory where")
-                print("  the system's ability to maintain low free energy IMPROVES")
-                print("  over time, not just stabilizes.")
-        else:
-            print("  Insufficient data to assess recursive improvement.")
-            print("  (Need at least 30 generations for the 3-phase test.)")
+        # Meta-Kernel transitions detail
+        if mk.get('paradigm_shifts', 0) > 0:
+            print("  ╔══════════════════════════════════════════════════════════╗")
+            print("  ║      META-KERNEL PARADIGM SHIFT(S) OCCURRED            ║")
+            print("  ╚══════════════════════════════════════════════════════════╝")
+            print()
+            for i, trans in enumerate(kernel.meta_kernel.transition_history):
+                print(f"  Shift #{i+1}: {trans.get('shift_type', 'unknown')}")
+                print(f"    Parameters: {trans.get('old_parameter_count')}"
+                      f" → {trans.get('new_parameter_count')} ({trans.get('delta', 0):+d})")
+                signals = trans.get('signals_before_shift', {})
+                print(f"    CSD signals: var(×{signals.get('variance_ratio', '?'):.1f}) "
+                      f"ac({signals.get('autocorrelation', '?'):+.2f}) "
+                      f"shift({signals.get('mean_shift', '?'):.1f}×)"
+                      f"{' 🔴' if signals.get('high_fe') else ''}")
+            print()
     
-    print("═" * 56)
-    print("  Interpretation:")
-    print("═" * 56)
-    print("  The RSI kernel observes the free energy at each of Athena's")
-    print("  4 levels and adjusts the COUPLING between them.")
+    # Compare recovery vs stable
+    if fe_at_stable is not None and len(kernel.free_energy_history) >= 55:
+        # Average FE in last 5 gens of recovery vs stable phase
+        recovery_fe = sum(fe.f_combined for fe in kernel.free_energy_history[-5:]) / 5
+        stable_fe = sum(fe.f_combined for fe in kernel.free_energy_history[5:10]) / 5
+        
+        if recovery_fe < stable_fe * 0.5:
+            improvement_type = "RECURSIVE"
+            improvement_pct = (stable_fe - recovery_fe) / stable_fe * 100
+        elif recovery_fe < stable_fe * 0.8:
+            improvement_type = "ADAPTIVE"
+            improvement_pct = (stable_fe - recovery_fe) / stable_fe * 100
+        else:
+            improvement_type = "MAINTENANCE"
+            improvement_pct = ((initial_f or 1) - final_f) / (initial_f or 1) * 100
+        
+        print(f"  ╔══════════════════════════════════════════════════════════╗")
+        print(f"  ║      {improvement_type} IMPROVEMENT DETECTED{' ' if len(improvement_type) < 8 else ''}        ║")
+        print(f"  ╚══════════════════════════════════════════════════════════╝")
+        print(f"  Stable FE (G5-14):  {stable_fe:.3f}")
+        print(f"  Recovery FE (G55-59): {recovery_fe:.3f}")
+        print(f"  Improvement:        {improvement_pct:.0f}%")
+        
+        if improvement_type == "RECURSIVE":
+            print()
+            print("  The combined L5+L6 system adapted to the CLIMB phase, survived")
+            print("  the EXHAUST plateau, navigated the CHAOTIC phase, and returned")
+            print("  to a LOWER free energy state than the original stable phase.")
+            print()
+            if mk.get('paradigm_shifts', 0) > 0:
+                print("  The Meta-Kernel detected parameter space exhaustion via CSD")
+                print("  signals and expanded the coupling space. This is the FEP's")
+                print("  prediction confirmed at Level 6: the system can redesign")
+                print("  its own degrees of freedom.")
+            else:
+                print("  The RSI kernel adapted but the Meta-Kernel did not trigger.")
+                print("  The parameter space may not yet be exhausted.")
+    
+    print("═" * 64)
+    print("  L5 (RSI Kernel) minimizes free energy of the coupling config.")
+    print("  L6 (Meta-Kernel) detects when the parameter space is exhausted")
+    print("  and generates a NEW space with expanded degrees of freedom.")
     print()
-    print("  This closes the recursion: Level 5 is active inference on")
-    print("  how Levels 1-4 perform active inference.")
-    print()
-    print("  Each coupling adjustment is an improvement to the")
-    print("  improvement mechanism itself — the definition of RSI.")
-    print()
+    print("  This closes the recursion: the system redesigns its own")
+    print("  optimization landscape when improvement becomes impossible.")
+    print("═" * 64)
 
 
 # ══════════════════════════════════════════════
@@ -828,40 +963,53 @@ class CriticalSlowingDownDetector:
     
     These are universal early warning signals for regime shifts
     (climate tipping points → Bridge #49, cortical networks → criticality paper).
+    
+    CSD detection uses a BASELINE comparison approach: the first 10-15
+    observations establish a reference state (low FE, stable). All subsequent
+    comparisons are against this baseline, NOT a sliding window split-half.
+    This correctly detects rising variance/autocorrelation even when the
+    post-transition state oscillates steadily.
     """
     
-    def __init__(self, window_size: int = 20):
+    def __init__(self, window_size: int = 20, baseline_size: int = 12):
         self.window_size = window_size
+        self.baseline_size = baseline_size
         self.fe_history: list[float] = []
         self.recovery_times: list[float] = []
+        self._baseline_recorded = False
+        self._baseline_fe_mean = 0.0
+        self._baseline_fe_var = 0.0
     
     def observe(self, free_energy: float, recovery_time: float | None = None):
         self.fe_history.append(free_energy)
         if recovery_time is not None:
             self.recovery_times.append(recovery_time)
+        
+        # Record baseline once we have enough stable data
+        if not self._baseline_recorded and len(self.fe_history) >= self.baseline_size:
+            baseline = self.fe_history[:self.baseline_size]
+            # Only record baseline if it's low FE (stable state)
+            self._baseline_fe_mean = statistics.mean(baseline)
+            self._baseline_fe_var = statistics.variance(baseline) if len(baseline) > 1 else 0.0
+            self._baseline_recorded = True
     
     def detect_exhaustion(self) -> dict:
         """Return exhaustion signals and probability."""
-        recent = self.fe_history[-self.window_size:] if len(self.fe_history) > self.window_size else self.fe_history
-        
-        if len(recent) < 6:
+        if len(self.fe_history) < 6:
             return {"exhaustion_probability": 0.0, "signals": {}, "kuhnian_crisis": False}
         
-        mid = len(recent) // 2
-        first_half = recent[:mid]
-        second_half = recent[mid:]
+        if not self._baseline_recorded:
+            return {"exhaustion_probability": 0.0, "signals": {}, "kuhnian_crisis": False}
         
-        # 1. Variance change ratio (using statistics module)
-        var_first = statistics.variance(first_half) if len(first_half) > 1 else 0.0
-        var_second = statistics.variance(second_half) if len(second_half) > 1 else 0.0
-        variance_ratio = var_second / max(var_first, 1e-10)
+        recent = self.fe_history[-self.window_size:] if len(self.fe_history) > self.window_size else self.fe_history
         
-        # 2. Autocorrelation (lag-1) change
+        # 1. Variance change ratio: current variance vs BASELINE variance
+        recent_var = statistics.variance(recent) if len(recent) > 1 else 0.0
+        variance_ratio = recent_var / max(self._baseline_fe_var, 1e-10)
+        
+        # 2. Autocorrelation (lag-1) of the recent window
         def lag1_autocorr(series):
             if len(series) < 4: return 0.0
-            n = len(series)
-            mean = sum(series) / n
-            # Pearson correlation between series[:-1] and series[1:]
             x = series[:-1]
             y = series[1:]
             mx = sum(x) / len(x)
@@ -870,38 +1018,50 @@ class CriticalSlowingDownDetector:
             den = (sum((xi - mx)**2 for xi in x) * sum((yi - my)**2 for yi in y)) ** 0.5
             return num / den if den > 0 else 0.0
         
-        ac_first = lag1_autocorr(first_half)
-        ac_second = lag1_autocorr(second_half)
-        autocorr_change = ac_second - ac_first
+        recent_autocorr = lag1_autocorr(recent)
         
-        # 3. Recovery time trend
+        # 3. Mean shift: how far current FE is from baseline
+        recent_mean = statistics.mean(recent[-5:]) if len(recent) >= 5 else recent[-1]
+        mean_shift = (recent_mean - self._baseline_fe_mean) / max(self._baseline_fe_mean, 0.001)
+        
+        # 4. Recovery time trend
         recovery_trend = 0.0
         if len(self.recovery_times) >= 4:
             rt = list(self.recovery_times)
             recovery_trend = (rt[-1] - rt[0]) / max(len(rt), 1)
         
-        # 4. Plateau
-        recent_var = statistics.variance(recent[-5:]) if len(recent) >= 5 else float('inf')
-        plateau = recent_var < 0.001 and var_second < 0.001
+        # 5. Plateau at high FE (stuck in bad state)
+        high_fe = recent_mean > self._baseline_fe_mean * 3
         
         signals = {
             "variance_ratio": round(variance_ratio, 3),
-            "autocorrelation_change": round(autocorr_change, 3),
+            "autocorrelation": round(recent_autocorr, 3),
+            "mean_shift": round(mean_shift, 3),
             "recovery_trend": round(recovery_trend, 5),
-            "plateau": plateau,
+            "high_fe": high_fe,
         }
         
         # Composite exhaustion probability
+        # Requires MULTIPLE signals to fire simultaneously.
+        # A single elevated statistic is not exhaustion — it's just a bad day.
         probability = 0.0
-        if variance_ratio > 2.0: probability += 0.3
-        if autocorr_change > 0.2: probability += 0.3
-        if recovery_trend > 0.1: probability += 0.2
-        if plateau: probability += 0.2
+        variance_signal = variance_ratio > 5.0 and recent_var > 0.001
+        ac_signal = recent_autocorr > 0.6
+        shift_signal = mean_shift > 5.0
+        
+        if variance_signal: probability += 0.25
+        if ac_signal: probability += 0.25
+        if shift_signal: probability += 0.25
+        if high_fe: probability += 0.25
+        
+        # Minimum requirement: at least 2 signals must fire for crisis
+        crisis_conditions_met = (variance_signal + ac_signal + shift_signal + high_fe) >= 2
         
         return {
             "exhaustion_probability": min(1.0, probability),
             "signals": signals,
-            "kuhnian_crisis": probability > 0.7,
+            "kuhnian_crisis": probability > 0.7 and crisis_conditions_met,
+            "crisis_conditions_met": crisis_conditions_met,
         }
 
 
@@ -1006,6 +1166,7 @@ class MetaKernel:
         self.paradigm_shifts = 0
         self.transition_history: list[dict] = []
         self.safe_mode = False
+        self._cooldown_remaining = 0  # Generations to wait before next shift
     
     def observe_generation(self, free_energy: float, recovery_time: float | None = None) -> dict:
         """Observe a generation and check for exhaustion."""
@@ -1018,11 +1179,26 @@ class MetaKernel:
         If exhaustion is detected, trigger a paradigm shift.
         Returns the action taken.
         """
+        # Decrement cooldown
+        if self._cooldown_remaining > 0:
+            self._cooldown_remaining -= 1
+        
         if not status.get('kuhnian_crisis'):
             return {'action': 'none', 'reason': 'no_crisis'}
         
+        # Crisis detected — check cooldown and minimum conditions
+        crisis_met = status.get('crisis_conditions_met', False)
+        if not crisis_met:
+            return {'action': 'none', 'reason': 'insufficient_signals'}
+        
+        if self._cooldown_remaining > 0:
+            return {'action': 'cooldown', 'reason': f'waiting {self._cooldown_remaining} gens'}
+        
         if self.safe_mode:
             return {'action': 'blocked', 'reason': 'safe_mode_active'}
+
+        # Enter cooldown after shift (10 generation stabilization period)
+        self._cooldown_remaining = 10
         
         # Generate paradigm shift
         self.paradigm_shifts += 1
@@ -1030,16 +1206,16 @@ class MetaKernel:
         # Choose shift type based on CSD signals
         signals = status.get('signals', {})
         
-        if signals.get('variance_ratio', 0) > 3.0:
+        if signals.get('variance_ratio', 0) > 8.0:
             # High variance → add more parameters for finer control
             shift_type = "add_parameter"
             new_genotype = self.genotype.apply_mutation("add_parameter", "adaptivity")
-        elif signals.get('autocorrelation_change', 0) > 0.3:
+        elif signals.get('autocorrelation', 0) > 0.7:
             # High autocorrelation → split dominant parameter
             shift_type = "split_parameter"
             new_genotype = self.genotype.apply_mutation("split_parameter", "detect_every_n")
-        elif signals.get('plateau'):
-            # Complete plateau → fuse or expand
+        elif signals.get('mean_shift', 0) > 8.0:
+            # Large mean shift → expand bounds
             shift_type = "expand_bounds"
             new_genotype = self.genotype.apply_mutation("expand_bounds", "precision_l1")
         else:

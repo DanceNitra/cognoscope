@@ -879,6 +879,260 @@ def rewrite_demo():
 
 
 # ══════════════════════════════════════════════
+# 4. CODE LINEAGE CMP — Clade-Metaproductivity for Code
+# ══════════════════════════════════════════════
+
+class CodeCMP:
+    """
+    Clade-Metaproductivity for code lineages.
+    
+    Measures: given a tool's current code structure, how likely is it
+    that the next rewrite will produce a meaningful improvement?
+    
+    This is the code-space equivalent of the CladeTracker's CMP metric
+    for parameter configurations. Both score lineages by future
+    improvement potential.
+    
+    Bridge #57: Self-rewriting code tracks versions (like coupling configs).
+    The CodeCMP scores these version lineages to predict which tools
+    are worth further rewriting vs which should be retired.
+    """
+    
+    def __init__(self, forge: 'RewritingToolForge'):
+        self.forge = forge
+    
+    def compute(self, tool_name: str) -> dict:
+        """
+        Compute CMP metrics for a tool's version lineage.
+        
+        Returns a composite score and its components.
+        """
+        versions = self.forge.get_lineage(tool_name)
+        if len(versions) < 2:
+            return {'cmp': 0.5, 'reason': 'insufficient_history', 
+                    'components': {}, 'tool': tool_name,
+                    'versions': len(versions),
+                    'classification': 'INSUFFICIENT_HISTORY'}
+        
+        # Component 1: Recent structural difference (improvement rate)
+        recent_deltas = self._compute_deltas(versions[-5:])
+        improvement_rate = sum(recent_deltas) / max(len(recent_deltas), 1) if recent_deltas else 0
+        # Normalize: AST diff count / total nodes (0-1)
+        total_nodes = len(list(ast.walk(ast.parse(versions[-1]))))
+        norm_improvement = min(1.0, improvement_rate / max(total_nodes, 1))
+        
+        # Component 2: Diversity of rewrite patterns
+        pattern_types = self._classify_rewrites(tool_name)
+        if pattern_types:
+            pattern_diversity = len(set(pattern_types)) / len(pattern_types)
+        else:
+            pattern_diversity = 0
+        
+        # Component 3: Structural complexity headroom
+        current_cc = self._get_cyclomatic_complexity(versions[-1])
+        cc_headroom = 1.0 - min(current_cc / 20, 1.0)
+        
+        # Composite CMP
+        cmp = (norm_improvement * 0.4 + pattern_diversity * 0.3 + cc_headroom * 0.3)
+        
+        return {
+            'cmp': round(cmp, 3),
+            'tool': tool_name,
+            'components': {
+                'improvement_rate': round(norm_improvement, 3),
+                'pattern_diversity': round(pattern_diversity, 3),
+                'cc_headroom': round(cc_headroom, 3),
+            },
+            'versions': len(versions),
+            'classification': self._classify(cmp),
+        }
+    
+    def compute_all(self) -> list[dict]:
+        """Compute CMP for every tool in the forge."""
+        results = []
+        for schema in self.forge.list_tools():
+            name = schema.get('function', {}).get('name', '')
+            if not name:
+                continue
+            try:
+                results.append(self.compute(name))
+            except Exception:
+                pass
+        return results
+    
+    def _compute_deltas(self, versions: list) -> list:
+        """Compute AST node difference between consecutive versions."""
+        deltas = []
+        for i in range(1, len(versions)):
+            try:
+                old_tree = ast.parse(versions[i-1])
+                new_tree = ast.parse(versions[i])
+                diff = self._ast_diff_count(old_tree, new_tree)
+                deltas.append(diff)
+            except SyntaxError:
+                deltas.append(0)
+        return deltas
+    
+    def _ast_diff_count(self, old: ast.AST, new: ast.AST) -> int:
+        """Count structural differences between two ASTs."""
+        old_nodes = list(ast.walk(old))
+        new_nodes = list(ast.walk(new))
+        old_sigs = set(self._node_signature(n) for n in old_nodes)
+        new_sigs = set(self._node_signature(n) for n in new_nodes)
+        return len(new_sigs - old_sigs) + len(old_sigs - new_sigs)
+    
+    def _node_signature(self, node: ast.AST) -> str:
+        """Create a unique signature for an AST node."""
+        if isinstance(node, ast.AST):
+            fields = []
+            for f in node._fields:
+                val = getattr(node, f, None)
+                if isinstance(val, ast.AST):
+                    fields.append(f"{f}:{type(val).__name__}")
+                elif isinstance(val, str):
+                    fields.append(f"{f}={val[:20]}")
+                elif isinstance(val, (int, float, bool)):
+                    fields.append(f"{f}={val}")
+            return f"{type(node).__name__}({','.join(fields[:3])})"
+        return str(type(node).__name__)
+    
+    def _classify_rewrites(self, tool_name: str) -> list[str]:
+        """Classify each rewrite in a tool's lineage by modification type."""
+        types = []
+        versions = self.forge.get_lineage(tool_name)
+        for i in range(1, len(versions)):
+            v = versions[i].lower()
+            if 'try' in v and 'except' in v:
+                types.append('error_handling')
+            elif 'print(' in v or 'log' in v:
+                types.append('logging')
+            elif 'type' in v and 'check' in v:
+                types.append('type_check')
+            elif 'validation' in v:
+                types.append('validation')
+            else:
+                types.append('structural')
+        return types
+    
+    def _get_cyclomatic_complexity(self, code: str) -> int:
+        """McCabe cyclomatic complexity of code."""
+        try:
+            tree = ast.parse(code)
+            complexity = 1
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.If, ast.While, ast.For, ast.ExceptHandler)):
+                    complexity += 1
+            return complexity
+        except SyntaxError:
+            return 0
+    
+    def _classify(self, cmp: float) -> str:
+        """Classify CMP score into actionable category."""
+        if cmp > 0.7:
+            return "HIGH_METAPRODUCTIVITY"
+        elif cmp > 0.3:
+            return "MODERATE_METAPRODUCTIVITY"
+        else:
+            return "LOW_METAPRODUCTIVITY"
+
+
+def full_integration_demo():
+    """Demo the full L4→L5→L6 pipeline with code CMP."""
+    from rsi_kernel import RecursiveImprovementKernel, MetaKernel
+    
+    print()
+    print("  ╔══════════════════════════════════════════════════════════════════╗")
+    print("  ║       FULL INTEGRATION — L4 ToolForge + L5 Rewrite + L6 CMP    ║")
+    print("  ╚══════════════════════════════════════════════════════════════════╝")
+    print()
+    
+    # 1. Create the forge
+    forge = RewritingToolForge()
+    cmp = CodeCMP(forge)
+    
+    # 2. Synthesize tools (L4)
+    print("─" * 60)
+    print("  Step 1: Synthesize tools (L4)")
+    print("─" * 60)
+    
+    for tool_def in [
+        ("parse_log", "Parse a log line and extract timestamp, level, message",
+         [{"name": "log_line", "type": "string"}]),
+        ("search_data", "Search through a list of items by query",
+         [{"name": "data", "type": "list"}, {"name": "query", "type": "string"}]),
+        ("validate_config", "Validate a configuration dictionary",
+         [{"name": "config", "type": "dict"}]),
+    ]:
+        spec = forge.synthesize(*tool_def)
+        status = "OK" if not spec.errors else "ERR"
+        print(f"  [{status}] {spec.name}: {len(spec.code)} chars")
+    
+    print(f"  Tools in forge: {forge.count}")
+    print()
+    
+    # 3. Rewrite tools (L5)
+    print("─" * 60)
+    print("  Step 2: Rewrite tools — apply modifications (L5)")
+    print("─" * 60)
+    
+    modifications = [
+        ("parse_log", "add error handling"),
+        ("parse_log", "add logging"),
+        ("search_data", "add error handling"),
+        ("parse_log", "add type hints"),
+    ]
+    
+    for tool_name, mod in modifications:
+        result = forge.rewrite(tool_name, modification=mod)
+        status = "OK" if not result.errors else f"ERR({result.errors[0][:30]})"
+        versions = len(forge.get_lineage(tool_name))
+        print(f"  [{status}] {tool_name}: rewrite '{mod}' → v{versions}")
+    
+    print()
+    
+    # 4. Compute CMP for all tools (L6 code space)
+    print("─" * 60)
+    print("  Step 3: Compute Code CMP (L6 — code lineage scoring)")
+    print("─" * 60)
+    
+    all_scores = cmp.compute_all()
+    for score in all_scores:
+        comp = score.get('components', {})
+        print(f"  [{score['classification']}] {score['tool']}: "
+              f"CMP={score['cmp']:.3f} "
+              f"(Δ={comp.get('improvement_rate', 0):.2f} "
+              f"div={comp.get('pattern_diversity', 0):.2f} "
+              f"cc={comp.get('cc_headroom', 0):.2f}) "
+              f"v{score['versions']}")
+    
+    print()
+    
+    # 5. Show lineage tracking (CladeTracker equivalent)
+    print("─" * 60)
+    print("  Step 4: Code lineages (CladeTracker equivalent)")
+    print("─" * 60)
+    
+    for name in ['parse_log', 'search_data']:
+        lineage = forge.get_lineage(name)
+        print(f"  {name}: {len(lineage)} versions")
+        for i, v in enumerate(lineage):
+            lines = v.count('\\n')
+            print(f"    v{i}: {lines} lines, {len(v)} chars")
+    
+    print()
+    print("═" * 60)
+    print("  Summary: The full L4→L5→L6 pipeline is integrated.")
+    print("  L4 synthesizes tools, L5 rewrites them, L6 scores their")
+    print("  code lineages by metaproductivity (CMP).")
+    print()
+    print("  Code CMP predicts which tools will benefit from further")
+    print("  rewrites — enabling the Meta-Kernel to decide whether to")
+    print("  keep rewriting, retire a tool, or expand the capability space.")
+    print("═" * 60)
+    print()
+
+
+# ══════════════════════════════════════════════
 # 4. DEMO (Original)
 # ══════════════════════════════════════════════
 
