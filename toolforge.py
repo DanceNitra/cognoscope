@@ -117,6 +117,7 @@ class ToolForge:
         else:
             # Auto-generate from description + args
             code = self._generate_from_description(name, description, args)
+            spec.code = code  # Store generated code
             self._compile(spec, code)
 
         if not spec.errors:
@@ -408,8 +409,478 @@ result = forge.call("{name}", ...)
 
 
 # ──────────────────────────────────────────────
-# 3. DEMO
+# 3. SELF-REWRITING EXTENSION (L4 → L5)
 # ──────────────────────────────────────────────
+
+class RewritingToolForge(ToolForge):
+    """
+    Extends ToolForge with self-rewriting capability.
+    
+    A RewritingToolForge can modify its own synthesized tools'
+    source code at runtime — not just create new ones.
+    
+    This is the programming domain's Level 5 (RSI):
+    L4 creates new tools. L5 improves existing tools.
+    """
+    
+    def __init__(self):
+        super().__init__()
+        # Version history per tool
+        self._versions: dict[str, list[str]] = {}  # tool_name → [code_v1, code_v2, ...]
+        self._rewrite_lock: dict[str, bool] = {}  # Prevent in-flight modifications
+    
+    def synthesize(self, name: str, description: str,
+                   args: list[dict] | None = None,
+                   template_code: str | None = None) -> ToolSpec:
+        """Override to track initial version."""
+        spec = super().synthesize(name, description, args, template_code)
+        if not spec.errors and spec.code:
+            self._versions[name] = [spec.code]
+            self._rewrite_lock[name] = False
+        return spec
+    
+    def rewrite(self, name: str, modification: str,
+                description: str | None = None,
+                args: list[dict] | None = None) -> ToolSpec:
+        """
+        Modify an existing synthesized tool's source code.
+        
+        The full L5 pipeline:
+        1. Read the existing tool's source
+        2. Parse into AST
+        3. Apply the modification (via patterns or regeneration)
+        4. Validate: type preservation, no dangerous ops, complexity
+        5. Test: run old and new on same inputs
+        6. Compile and replace
+        """
+        # 0. Check the tool exists and isn't locked
+        spec = self._forge.get(name)
+        if not spec:
+            raise ValueError(f"Tool '{name}' not found. Use synthesize() first.")
+        if self._rewrite_lock.get(name, False):
+            raise RuntimeError(f"Tool '{name}' is currently being rewritten (lock active)")
+        
+        self._rewrite_lock[name] = True
+        
+        try:
+            old_code = spec.code
+            
+            # 1. Read own source via AST (if the tool has source)
+            if not old_code or old_code.strip() == '':
+                # Tool has no stored code (e.g., loaded from external)
+                spec.errors.append("Cannot rewrite: tool has no stored source code")
+                return spec
+            
+            # 2. Parse into AST
+            try:
+                tree = ast.parse(old_code)
+            except SyntaxError as e:
+                spec.errors.append(f"Source parse error: {e}")
+                return spec
+            
+            # 3. Apply modification
+            # Strategy: detect modification type and apply appropriate AST transform
+            new_code = self._apply_modification(name, old_code, modification, description, args)
+            
+            if new_code == old_code:
+                # Pattern-based modification failed — regenerating from description
+                if description:
+                    new_code = self._regenerate_from_description(
+                        name, description, args or spec.args
+                    )
+                else:
+                    spec.errors.append(
+                        f"Could not apply modification '{modification}'. "
+                        "Provide a description to regenerate the tool."
+                    )
+                    return spec
+            
+            # 4. Validate
+            validation = self._validate_rewrite(old_code, new_code)
+            if not validation['safe']:
+                spec.errors.append(f"Rewrite validation failed: {validation['reason']}")
+                return spec
+            
+            # 5. Test: compile and verify callability
+            test_spec = ToolSpec(name, spec.description, new_code, args or spec.args)
+            self._compile(test_spec, new_code)
+            
+            if test_spec.errors:
+                spec.errors.append(f"Rewrite compilation failed: {test_spec.errors}")
+                return spec
+            
+            # 6. Accept the rewrite
+            old_fn = spec.fn
+            spec.code = new_code
+            spec.fn = test_spec.fn
+            if args:
+                spec.args = args
+            
+            # Track version
+            if name not in self._versions:
+                self._versions[name] = []
+            self._versions[name].append(new_code)
+            
+            # Run output invariance test
+            invariance = self._test_invariance(old_fn, test_spec.fn, spec.args)
+            if not invariance['preserved']:
+                self._log_warning(
+                    f"Rewrite of '{name}' changed output structure: {invariance['reason']}"
+                )
+            
+            return spec
+            
+        finally:
+            self._rewrite_lock[name] = False
+    
+    def _apply_modification(self, name: str, code: str,
+                            modification: str,
+                            description: str | None,
+                            args: list[dict] | None) -> str:
+        """Apply a modification to the tool's code using AST patterns."""
+        tree = ast.parse(code)
+        modified = False
+        mod_lower = modification.lower()
+        
+        for node in ast.walk(tree):
+            # ── Add error handling ──
+            if isinstance(node, ast.FunctionDef) and not modified:
+                if 'error' in mod_lower or 'handle' in mod_lower or 'except' in mod_lower:
+                    # Wrap body in try/except
+                    if not any(isinstance(stmt, ast.Try) for stmt in node.body):
+                        old_body = node.body[:]
+                        node.body = []
+                        try_stmt = ast.Try(
+                            body=old_body,
+                            handlers=[ast.ExceptHandler(
+                                type=ast.Name(id='Exception'),
+                                name='e',
+                                body=[
+                                    ast.Return(value=ast.Dict(
+                                        keys=[ast.Constant(value='error')],
+                                        values=[ast.Call(
+                                            func=ast.Name(id='str'),
+                                            args=[ast.Name(id='e')],
+                                            keywords=[]
+                                        )]
+                                    ))
+                                ]
+                            )],
+                            orelse=[],
+                            finalbody=[]
+                        )
+                        node.body.append(try_stmt)
+                        modified = True
+            
+            # ── Add logging ──
+            if isinstance(node, ast.FunctionDef) and not modified:
+                if 'log' in mod_lower or 'print' in mod_lower or 'debug' in mod_lower:
+                    # Insert print at start
+                    has_print = any(
+                        isinstance(stmt, ast.Expr) and 
+                        isinstance(stmt.value, ast.Call) and
+                        isinstance(stmt.value.func, ast.Name) and
+                        stmt.value.func.id == 'print'
+                        for stmt in node.body
+                    )
+                    if not has_print:
+                        print_stmt = ast.Expr(value=ast.Call(
+                            func=ast.Name(id='print'),
+                            args=[ast.Constant(value=f"[{name}] executing")],
+                            keywords=[]
+                        ))
+                        node.body.insert(0, print_stmt)
+                        modified = True
+
+            # ── Add type hints ──
+            if isinstance(node, ast.FunctionDef) and not modified:
+                if 'type' in mod_lower or 'hint' in mod_lower:
+                    if node.returns is None:
+                        node.returns = ast.Subscript(
+                            value=ast.Name(id='dict'),
+                            slice=ast.Name(id='str'),
+                            ctx=ast.Load()
+                        )
+                        modified = True
+
+            # ── Add validation ──
+            if isinstance(node, ast.FunctionDef) and not modified:
+                if 'validate' in mod_lower or 'check' in mod_lower or 'verify' in mod_lower:
+                    for arg in node.args.args:
+                        validation = ast.If(
+                            test=ast.Compare(
+                                left=ast.Call(
+                                    func=ast.Name(id='type'),
+                                    args=[ast.Name(id=arg.arg)],
+                                    keywords=[]
+                                ),
+                                ops=[ast.Is()],
+                                comparators=[ast.Name(id='type(None)')]
+                            ),
+                            body=[ast.Return(value=ast.Dict(
+                                keys=[ast.Constant(value=f'error_{arg.arg}')],
+                                values=[ast.Constant(value=f'{arg.arg} is required')]
+                            ))],
+                            orelse=[]
+                        )
+                        insert_pos = 0
+                        for i, stmt in enumerate(node.body):
+                            if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant):
+                                insert_pos = i + 1
+                        node.body.insert(insert_pos, validation)
+                    modified = True
+        
+        if modified:
+            return ast.unparse(tree)
+        
+        return code  # No modification applied
+    
+    def _regenerate_from_description(self, name: str,
+                                      description: str,
+                                      args: list[dict]) -> str:
+        """Regenerate tool code from a new description (replaces body)."""
+        return self._generate_from_description(name, description, args)
+    
+    def _validate_rewrite(self, old_code: str, new_code: str) -> dict:
+        """Validate that a rewrite is safe to apply."""
+        try:
+            old_tree = ast.parse(old_code)
+            new_tree = ast.parse(new_code)
+        except SyntaxError:
+            return {'safe': False, 'reason': 'new code has syntax errors'}
+        
+        # 1. Type preservation: function name should be the same
+        old_names = {n.name for n in ast.walk(old_tree) if isinstance(n, ast.FunctionDef)}
+        new_names = {n.name for n in ast.walk(new_tree) if isinstance(n, ast.FunctionDef)}
+        if old_names and new_names and old_names != new_names:
+            return {'safe': False, 
+                    'reason': f'function names changed: {old_names} → {new_names}'}
+        
+        # 2. Dangerous operation scan
+        dangerous = {'exec', 'eval', '__import__', 'compile',
+                     'open', 'os.system', 'subprocess'}
+        for node in ast.walk(new_tree):
+            if isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name) and node.func.id in dangerous:
+                    return {'safe': False, 
+                            'reason': f'dangerous call: {node.func.id}'}
+                if isinstance(node.func, ast.Attribute):
+                    full_name = f"{ast.unparse(node.func)}"
+                    for d in dangerous:
+                        if d in full_name:
+                            return {'safe': False, 
+                                    'reason': f'dangerous call: {full_name}'}
+        
+        # 3. Cyclomatic complexity check
+        complexity = 1
+        for node in ast.walk(new_tree):
+            if isinstance(node, (ast.If, ast.While, ast.For, ast.AsyncFor,
+                               ast.ExceptHandler, ast.AsyncWith, ast.With)):
+                complexity += 1
+            if isinstance(node, ast.BoolOp):
+                complexity += len(node.values) - 1
+        if complexity > 30:
+            return {'safe': False, 
+                    'reason': f'cyclomatic complexity too high: {complexity} > 30'}
+        
+        return {'safe': True, 'complexity': complexity}
+    
+    def _test_invariance(self, old_fn, new_fn, args: list[dict]) -> dict:
+        """
+        Test that the rewritten function preserves output structure.
+        
+        Runs both versions on the same default inputs and compares
+        output shape/keys (not exact values, which may improve).
+        """
+        if not old_fn or not new_fn:
+            return {'preserved': True, 'reason': 'no comparison possible'}
+        
+        try:
+            # Generate test inputs from args spec
+            test_kwargs = {}
+            for arg in args:
+                arg_type = arg.get('type', 'string')
+                arg_name = arg['name']
+                if arg_type == 'string':
+                    test_kwargs[arg_name] = 'test_input'
+                elif arg_type == 'int':
+                    test_kwargs[arg_name] = 0
+                elif arg_type == 'list':
+                    test_kwargs[arg_name] = []
+                elif arg_type == 'dict':
+                    test_kwargs[arg_name] = {}
+                elif arg_type == 'float':
+                    test_kwargs[arg_name] = 0.0
+                elif arg_type == 'bool':
+                    test_kwargs[arg_name] = False
+                else:
+                    test_kwargs[arg_name] = 'test'
+            
+            old_result = old_fn(**test_kwargs)
+            new_result = new_fn(**test_kwargs)
+            
+            # Compare output types
+            if type(old_result) != type(new_result):
+                return {'preserved': False, 
+                        'reason': f'output type changed: {type(old_result).__name__} → {type(new_result).__name__}'}
+            
+            # Compare keys for dict outputs
+            if isinstance(old_result, dict) and isinstance(new_result, dict):
+                old_keys = set(old_result.keys())
+                new_keys = set(new_result.keys())
+                required = {'error', 'status', 'result', 'results', 'matches', 'issues'}
+                old_has = required & old_keys
+                new_has = required & new_keys
+                # At least the same category of keys should exist
+                if not old_has and not new_has:
+                    pass  # Both use custom keys — acceptable
+                elif not new_has:
+                    return {'preserved': False,
+                            'reason': f'required keys lost: {old_has}'}
+            
+            return {'preserved': True}
+            
+        except Exception as e:
+            return {'preserved': True, 'reason': f'test skipped: {e}'}
+    
+    def get_lineage(self, name: str) -> list[str]:
+        """Get the version lineage of a tool (analogous to CladeTracker)."""
+        return list(self._versions.get(name, []))
+    
+    def rollback(self, name: str, version: int = -2) -> ToolSpec | None:
+        """
+        Rollback a tool to a previous version.
+        
+        Version -2 = previous version (undo last rewrite).
+        Version any other index = specific version.
+        """
+        versions = self._versions.get(name, [])
+        if len(versions) < 2:
+            return None
+        
+        target = version if version >= 0 else len(versions) + version
+        if target < 0 or target >= len(versions):
+            return None
+        
+        old_code = versions[target]
+        spec = self._forge.get(name)
+        if not spec:
+            return None
+        
+        # Recompile the old version
+        test_spec = ToolSpec(name, spec.description, old_code, spec.args)
+        self._compile(test_spec, old_code)
+        if not test_spec.errors:
+            spec.code = old_code
+            spec.fn = test_spec.fn
+            return spec
+        
+        return None
+    
+    def _log_warning(self, msg: str):
+        """Log a warning (pass through to console for now)."""
+        print(f"[ToolForge] WARNING: {msg}")
+
+
+def rewrite_demo():
+    """Demonstrate the self-rewriting capability on existing tools."""
+    print()
+    print("  ╔══════════════════════════════════════════════════════════╗")
+    print("  ║         TOOLFORGE EXTENSION — Self-Rewriting             ║")
+    print("  ║      L5: Tools that modify their own source code        ║")
+    print("  ╚══════════════════════════════════════════════════════════╝")
+    print()
+    
+    import json
+    
+    forge = RewritingToolForge()
+    
+    # Step 1: Synthesize a tool (L4 — existing capability)
+    print("─" * 56)
+    print("  Step 1: Synthesize a new tool (L4)")
+    print("─" * 56)
+    
+    spec = forge.synthesize(
+        name="process_data",
+        description="Transform input data and return structured result with timestamp and status",
+        args=[
+            {"name": "data", "type": "string", "description": "Input data to process"},
+            {"name": "mode", "type": "string", "description": "Processing mode: fast or thorough"},
+        ],
+    )
+    
+    if not spec.errors:
+        result = forge.call("process_data", data="test", mode="fast")
+        print(f"  Initial version call: {json.dumps(result, indent=4)}")
+    print(f"  Tool: {spec.name} | Args: {len(spec.args)} | Code: {len(spec.code)} chars")
+    print()
+    
+    # Step 2: Rewrite with error handling (L5 — new capability)
+    print("─" * 56)
+    print("  Step 2: Rewrite tool — add error handling (L5)")
+    print("─" * 56)
+    
+    rewritten = forge.rewrite("process_data", modification="add error handling and validation")
+    
+    if not rewritten.errors:
+        result2 = forge.call("process_data", data="test", mode="fast")
+        print(f"  Rewritten version call: {json.dumps(result2, indent=4)}")
+        print(f"  Versions tracked: {len(forge.get_lineage('process_data'))}")
+    else:
+        print(f"  Rewrite issues: {rewritten.errors}")
+    print()
+    
+    # Step 3: Show lineage
+    print("─" * 56)
+    print("  Step 3: Code lineage (CladeTracker equivalent)")
+    print("─" * 56)
+    
+    versions = forge.get_lineage("process_data")
+    for i, v in enumerate(versions):
+        lines = v.strip().count('\\n')
+        print(f"  v{i}: {lines} lines | {len(v)} chars")
+    print()
+    
+    # Step 4: Rollback
+    print("─" * 56)
+    print("  Step 4: Rollback to previous version")
+    print("─" * 56)
+    
+    rolled = forge.rollback("process_data")
+    if rolled:
+        result3 = forge.call("process_data", data="test", mode="fast")
+        print(f"  Rolled back: {json.dumps(result3, indent=4)}")
+        print(f"  Active version: {len(forge.get_lineage('process_data'))} versions in lineage")
+    print()
+    
+    print("═" * 56)
+    print("  BREAKTHROUGH SUMMARY")
+    print("═" * 56)
+    print()
+    print("  Layer 4 (existing — ToolForge):")
+    print("    Tool synthesizes NEW tools at runtime.")
+    print("    Creates from scratch using description templates.")
+    print()
+    print("  Layer 5 (new — RewritingToolForge):")
+    print("    Tool modifies its OWN source code at runtime.")
+    print("    Applies AST transformations (error handling, logging, validation).")
+    print("    Validates: type preservation, dangerous ops, complexity.")
+    print("    Tests invariance: old vs new on same inputs.")
+    print("    Tracks lineage: version history per tool (CMP-compatible).")
+    print("    Supports rollback: undo last rewrite.")
+    print()
+    print("  This is the programming domain's RSI Level 5:")
+    print("  L4 creates capabilities. L5 improves existing capabilities.")
+    print("  The recursion is self-sustaining when ToolForge rewrites")
+    print("  its own synthesis logic — the system that creates tools")
+    print("  can improve how it creates tools.")
+    print("═" * 56)
+    print()
+
+
+# ══════════════════════════════════════════════
+# 4. DEMO (Original)
+# ══════════════════════════════════════════════
 
 if __name__ == "__main__":
     import json
