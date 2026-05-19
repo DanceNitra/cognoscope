@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check Python syntax
+        run: |
+          # Check all .py files for syntax errors
+          failed=0
+          while IFS= read -r -d '' f; do
+            echo "Checking: $f"
+            python -m py_compile "$f" || { failed=1; echo "SYNTAX ERROR in $f"; }
+          done < <(find . -name "*.py" -not -path "./__pycache__/*" -print0)
+          exit $failed
