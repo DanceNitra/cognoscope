@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: ai-eval
+Version: 1.0.0
+Summary: CLI for evaluating LLM prompts and models against benchmarks
+Requires-Python: >=3.10
