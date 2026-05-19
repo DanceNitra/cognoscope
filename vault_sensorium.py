@@ -252,12 +252,13 @@ def poll_arxiv(categories: list[str] | None = None, limit: int = 15) -> list[Sig
 
 
 def guess_domains(text: str) -> list[str]:
-    """Guess which vault domains a signal belongs to. Aggressive matching."""
+    """Guess which vault domains a signal belongs to. Returns only
+    domains with at least 2 keyword matches to avoid false positives."""
     tl = text.lower()
-    hints = []
+    scores = {}
     domain_keywords = {
         'Neuroscience': ['neuron', 'brain', 'neural', 'synapse', 'cortex', 'neuro', 'fmri',
-                         'eeg', 'cognitive', 'memory', 'learning', 'plasticity', 'sleep',
+                         'eeg', 'cognitive', 'memory', 'plasticity', 'sleep',
                          'consciousness', 'mind', 'visual cortex', 'hippocampus'],
         'AI': ['llm', 'agent', 'transformer', 'gpt', 'language model', 'reasoning', 'prompt',
                'alignment', 'safety', 'rlhf', 'rag', 'mcp', 'frontier model', 'gemini',
@@ -267,7 +268,8 @@ def guess_domains(text: str) -> list[str]:
                'dataset', 'overfitting', 'attention mechanism', 'reinforcement learning',
                'supervised', 'unsupervised', 'embedding', 'diffusion model'],
         'Finance': ['trading', 'market', 'portfolio', 'risk', 'stock', 'option', 'volatility',
-                    'asset', 'sharpe', 'backtest', 'quant', 'alpaca', 'broker'],
+                    'asset', 'sharpe', 'backtest', 'quant', 'alpaca', 'broker',
+                    'financial', 'regime detection', 'geometric observables', 'yield', 'bond'],
         'Sleep Science': ['sleep', 'circadian', 'melatonin', 'insomnia', 'dream', 'rem',
                           'slow wave', 'chronotype'],
         'Psychology': ['psychology', 'behavior', 'bias', 'cognition', 'decision', 'attention',
@@ -280,23 +282,19 @@ def guess_domains(text: str) -> list[str]:
                                  'api', 'testing', 'framework', 'library', 'rest', 'database',
                                  'compiler', 'open source', 'npm', 'rust', 'python', 'typescript',
                                  'os kernel', 'operating system', 'linux', 'bsd', 'unix',
-                                 'container', 'kubernetes', 'docker'],
-        'Security': ['security', 'vulnerability', 'attack', 'backdoor', 'corrigibility',
-                     'shutdown', 'exploit', 'cve', 'malware', 'supply chain'],
+                                 'container', 'kubernetes', 'docker', 'vulnerability', 'patch',
+                                 'exploit', 'cve', 'malware', 'supply chain'],
     }
-    # Score each domain
-    scores = {}
     for domain, keywords in domain_keywords.items():
         score = 0
         for kw in keywords:
             if kw in tl:
                 score += 1
-        if score > 0:
+        if score >= 2:  # Require 2+ matches to avoid false positives
             scores[domain] = score
 
-    # Return top matches by score
     sorted_domains = sorted(scores.items(), key=lambda x: -x[1])
-    return [d for d, s in sorted_domains[:3]]
+    return [d for d, s in sorted_domains[:2]]
 
 
 # ──────────────────────────────────────────────
@@ -358,8 +356,19 @@ class NoveltyDetector:
         if not hints:
             hints = guess_domains(signal.title + " " + signal.summary)
 
+        # If even re-checking yields no domains, this signal is too generic
+        if not hints:
+            return {
+                'novel': False,
+                'redundant_with': None,
+                'redundant_score': 0,
+                'suggested_domain': None,
+                'bridging_domains': [],
+                'confidence': 0.0,
+            }
+
         bridging = hints if len(hints) >= 2 else []
-        suggested = hints[0] if hints else 'AI'
+        suggested = hints[0]
 
         confidence = 0.3 + len(hints) * 0.15 + min(signal.score / 200, 0.2)
         if novel and signal.score > 50:
