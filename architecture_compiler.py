@@ -69,7 +69,7 @@ class ProjectDependencyGraph:
     """Parse the cognoscope project into a full dependency graph."""
 
     LAYER_MAP = {
-        'athena': 1, 'metaloop': 2, 'msr_guardrail': 3,
+        'athena': 2, 'metaloop': 2, 'msr_guardrail': 3,
         'toolforge': 4, 'rsi_kernel': 5, 'proof_search': 5,
         'bridge_recommender': 4, 'agent_mesh': 2,
         'social_mesh': 5, 'mesh_orchestrator': 3,
