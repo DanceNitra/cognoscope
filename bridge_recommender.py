@@ -111,29 +111,77 @@ def load_vault():
 
 
 def load_existing_bridges():
-    """Extract domain pairs already connected by bridges."""
+    """Extract domain pairs already connected by bridges.
+    Returns a set of frozenset pairs like {('Neuroscience', 'Physiology')}."""
     bridge_pairs = set()
-    for f in glob.glob(os.path.join(VAULT_PUBS, "Bridge*.md")):
-        with open(f, 'r', encoding='utf-8', errors='replace') as fh:
-            content = fh.read()
-        # Try to find domain from frontmatter
-        dm = re.search(r'^domain:\s*(.+?)$', content, re.MULTILINE)
-        if dm:
-            domain = dm.group(1).strip()
-        # Also look for source domains mentioned
-        sources_m = re.search(r'sources:\s*\[([^\]]*)\]', content)
-        sources = [s.strip() for s in sources_m.group(1).split(',')] if sources_m else []
-        bridge_pairs.add(domain if dm else "")
 
-    # Additionally: read known bridge domain connections from our vault structure
-    # Bridges are all Cross-Domain Synthesis, so we need another approach:
-    # Read what concepts each bridge references
     for f in sorted(glob.glob(os.path.join(VAULT_PUBS, "Bridge*.md"))):
         with open(f, 'r', encoding='utf-8', errors='replace') as fh:
             content = fh.read()
-        # Extract concept references via wikilinks
+        
+        # Extract sources list from frontmatter
+        sources_m = re.search(r'sources:\s*\[([^\]]*)\]', content)
+        if sources_m:
+            sources = [s.strip() for s in sources_m.group(1).split(',')]
+        else:
+            sources = []
+        
+        # Extract the bridge title (first heading)
+        title_m = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+        title = title_m.group(1) if title_m else os.path.basename(f)
+        
+        # The title often names the two domains explicitly
+        # e.g. "The Brain Is a Physiological Organ — Neuroscience and Physiology Were Never Separate"
+        # or "The Ladder of Statistical Inference — Why Causality and Statistics Are the Same Discipline"
+        title_clean = title.replace('—', '-').replace('–', '-')
+        
+        # Extract concept wikilinks from the content
         refs = re.findall(r'\[\[([^\]|]+)', content)
-        bridge_pairs.update(refs)
+        
+        # Build a combined text to search for domain names
+        combined_text = ' '.join(refs + sources + [title_clean]).lower()
+        
+        # Find all domains mentioned in this bridge
+        mentioned_domains = set()
+        if 'neuroscience' in combined_text:
+            mentioned_domains.add('Neuroscience')
+        if 'physiology' in combined_text:
+            mentioned_domains.add('Physiology')
+        if 'immunology' in combined_text or 'immune' in combined_text:
+            mentioned_domains.add('Immunology')
+        if 'causality' in combined_text or 'causal' in combined_text:
+            mentioned_domains.add('Causality')
+        if 'statistic' in combined_text:
+            mentioned_domains.add('Statistics')
+        if 'biology' in combined_text:
+            mentioned_domains.add('Biology')
+        if 'cell' in combined_text and 'biology' in combined_text:
+            mentioned_domains.add('Cell Biology')
+        if 'sleep' in combined_text:
+            mentioned_domains.add('Sleep Science')
+            mentioned_domains.add('Sleep')
+        if 'psychology' in combined_text:
+            mentioned_domains.add('Psychology')
+        if 'stress' in combined_text or 'allostatic' in combined_text:
+            mentioned_domains.add('Stress')
+        if 'finance' in combined_text:
+            mentioned_domains.add('Finance')
+        if 'climate' in combined_text:
+            mentioned_domains.add('Climate')
+        if 'agent' in combined_text:
+            mentioned_domains.add('Agent')
+        if 'software' in combined_text or 'engineering' in combined_text:
+            mentioned_domains.add('Software Engineering')
+        if 'machine' in combined_text and 'learning' in combined_text:
+            mentioned_domains.add('Machine Learning')
+        if 'homeostasis' in combined_text or 'homeostatic' in combined_text:
+            mentioned_domains.add('Homeostasis')
+        
+        # Every pair of mentioned domains in a bridge IS a bridged pair
+        dom_list = sorted(mentioned_domains)
+        for i, d1 in enumerate(dom_list):
+            for d2 in dom_list[i+1:]:
+                bridge_pairs.add(frozenset([d1.lower(), d2.lower()]))
 
     return bridge_pairs
 
@@ -170,13 +218,10 @@ def find_bridge_candidates(all_files, backlinks, outgoing, domains, domain_nodes
 
             # Skip pairs that already have a bridge
             pair_key = frozenset([d1.lower(), d2.lower()])
-            # Check if any bridge publication already covers this pair
-            already_bridged = False
-            for bp in existing_bridges:
-                if isinstance(bp, str):
-                    if d1.lower() in bp.lower() or d2.lower() in bp.lower():
-                        already_bridged = True
-                        break
+            if pair_key in existing_bridges:
+                already_bridged = True
+            else:
+                already_bridged = False
 
             # Shared neighbors (other domains that both domains connect to)
             n1 = neighbor_sets.get(d1, set())
