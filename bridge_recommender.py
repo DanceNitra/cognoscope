@@ -174,8 +174,8 @@ def load_existing_bridges():
             mentioned_domains.add('Software Engineering')
         if 'machine' in combined_text and 'learning' in combined_text:
             mentioned_domains.add('Machine Learning')
-        if 'homeostasis' in combined_text or 'homeostatic' in combined_text:
-            mentioned_domains.add('Homeostasis')
+        if 'meta' in combined_text or 'moc' in combined_text:
+            mentioned_domains.add('Meta')
         
         # Every pair of mentioned domains in a bridge IS a bridged pair
         dom_list = sorted(mentioned_domains)
