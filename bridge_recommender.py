@@ -328,6 +328,78 @@ def main():
     print()
     print(f"  Total candidates: {len(new_candidates)}")
     print(f"  Already bridged: {len(candidates) - len(new_candidates)}")
+    print()
+    
+    # ── V2: Concept-level gaps ──
+    print("  ═══ CONCEPT-LEVEL GAPS ═══")
+    print()
+    
+    concept_gaps = find_concept_gaps(all_files, backlinks, outgoing, domains)
+    
+    print(f"  Isolated orphans (0 backlinks, ≥1 outgoing): {len(concept_gaps['orphans'])}")
+    if concept_gaps["align"]:
+        print(f"  Domain-aligned orphans that should link to hubs:")
+        for g in concept_gaps["align"][:5]:
+            print(f"    🔗 {g['orphan']} → {g['hub']} (Φ={g['hub_bl']/100:.2f})")
+        print()
+    
+    print(f"  Cross-domain concept pairs that share neighbors but lack direct links:")
+    if concept_gaps["cross"]:
+        for g in concept_gaps["cross"][:8]:
+            print(f"    {g['a']:35s} ↔ {g['b']:35s}  ({g['n']} shared: {', '.join(g['shared'][:3])})")
+    else:
+        print("    (none found)")
+    print()
+
+
+# ── V2: Concept-level gap detection ──
+
+def find_concept_gaps(all_files, backlinks, outgoing, domains):
+    """Find concept-level gaps: isolated orphans, domain-align gaps,
+    and cross-domain concept pairs that share neighbors but lack links."""
+    isolates = []
+    for title in all_files:
+        bl = backlinks.get(title, 0)
+        ol = len(outgoing.get(title, []))
+        if bl == 0 and ol >= 1:
+            isolates.append({"title": title, "outgoing": ol, "domain": domains.get(title, "") or "unset"})
+    
+    hub_notes = sorted([(backlinks.get(t, 0), t) for t in all_files if backlinks.get(t, 0) >= 3], key=lambda x: -x[0])
+    hub_titles = [t for _, t in hub_notes[:40]]
+    domain_matches = []
+    seen = set()
+    for iso in isolates:
+        if not iso.get("domain") or iso["domain"] == "unset":
+            continue
+        for hub_title in hub_titles:
+            hub_domain = domains.get(hub_title, "")
+            if hub_domain and hub_domain == iso["domain"] and iso["title"] != hub_title:
+                if iso["title"] not in outgoing.get(hub_title, []):
+                    k = f"{iso['title']}->{hub_title}"
+                    if k not in seen:
+                        seen.add(k)
+                        domain_matches.append({"orphan": iso["title"], "hub": hub_title, "hub_bl": backlinks.get(hub_title, 0)})
+                        break
+    
+    dn = defaultdict(list)
+    for t, d in domains.items():
+        if d: dn[d].append(t)
+    cross_gaps = []
+    dlist = sorted([d for d in dn if len(dn[d]) >= 2])
+    for d1 in dlist:
+        for d2 in dlist:
+            if d1 >= d2: continue
+            for n1 in dn[d1][:5]:
+                s1 = set(outgoing.get(n1, []))
+                if not s1: continue
+                for n2 in dn[d2][:5]:
+                    s2 = set(outgoing.get(n2, []))
+                    if not s2: continue
+                    shared = s1 & s2
+                    if len(shared) >= 2 and n2 not in s1 and n1 not in s2:
+                        cross_gaps.append({"a": n1, "da": d1, "b": n2, "db": d2, "shared": list(shared)[:5], "n": len(shared)})
+    cross_gaps.sort(key=lambda x: -x["n"])
+    return {"orphans": isolates[:15], "align": domain_matches[:10], "cross": cross_gaps[:10]}
 
 
 def generate_rationale(a, b, c, domain_nodes):
