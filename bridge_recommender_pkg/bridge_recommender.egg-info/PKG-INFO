@@ -1,0 +1,89 @@
+Metadata-Version: 2.4
+Name: bridge-recommender
+Version: 1.0.0
+Summary: Find structural knowledge gaps in your vault — the connectome tells you what to write next
+Author-email: Cognoscope <bridge@cognoscope.dev>
+License: MIT
+Project-URL: Homepage, https://github.com/DanceNitra/cognoscope
+Project-URL: Documentation, https://github.com/DanceNitra/cognoscope
+Project-URL: Source, https://github.com/DanceNitra/cognoscope
+Keywords: knowledge-graph,bridge-recommender,second-brain,vault,knowledge-management,gaps,connectome
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Text Processing :: Markup :: Markdown
+Classifier: Topic :: Knowledge Management
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+
+# bridge-recommender
+
+**Find structural knowledge gaps in your knowledge base before they become blind spots.**
+
+The Bridge Recommender scans a connected knowledge base (Obsidian vault, Notion workspace, markdown wiki) and finds domain pairs that are structurally close but have no direct bridge between them. These are the highest-value connections to write next.
+
+The insight: if two domains share neighbors in your knowledge graph but have no direct connection, that gap is a structural bridge candidate. Your vault has already done the groundwork — it just hasn't made the final link.
+
+## Quick Start
+
+```bash
+pip install bridge-recommender
+
+# Scan your Obsidian vault
+bridge-recommender scan ~/my-vault --top 5
+
+# Output as JSON for tool chaining
+bridge-recommender scan ~/my-vault --json | jq '.[0]'
+
+# Generate a bridge draft from the top gap
+bridge-recommender write ~/my-vault --gap 1 --output bridge.md
+
+# Run a full health audit
+bridge-recommender audit ~/my-vault
+```
+
+## Algorithm
+
+For each pair of domains in your knowledge graph:
+
+1. **Shared neighbor ratio** (Jaccard similarity) — how many domains both connect to
+2. **Combined Φ** — mean integration of both domains' top notes
+3. **Domain size factor** — prefers substantive domains (2+ notes)
+4. **Already bridged** — existing cross-references are subtracted
+
+Score = Jaccard × Combined Φ × Size Factor × 10
+
+Top recommendations are domain pairs with HIGH structural proximity and NO existing bridge — the vault's blind spots.
+
+## Output
+
+```
+[1] Neuroscience  ↔  Cognitive Psychology
+    Score: 0.1806  |  Shared neighbors: 10  |  Jaccard: 0.25
+    Φ-a: 0.175  |  Φ-b: 0.146  |  Combined: 0.160
+    Sizes: 43 + 2 nodes
+    Bridge terrain: cognitive function, stress response, cortisol, LTP, sleep
+    Why: Neuroscience and Cognitive Psychology share 10 neighbor domains —
+    both connect to cognitive function. A bridge here would connect two
+    structurally adjacent regions with high integration potential.
+
+[2] Finance  ↔  AI / Machine Learning
+    Score: 0.1731  |  Shared neighbors: 5  |  Jaccard: 0.294
+    ...
+```
+
+## Theory
+
+Every vault is a connected knowledge graph. Most vaults grow unevenly — deep in some domains, shallow in others, with structural gaps between them that the vault owner never notices. The Bridge Recommender makes those gaps visible.
+
+This approach was developed for the cognoscope project, which has generated 86+ cross-domain bridge publications using this exact algorithm. Each bridge increased the vault's structural integration (Φ). The recommender is the vault's self-correcting mechanism.
+
+## License
+
+MIT

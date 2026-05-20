@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bridge-recommender"
+version = "1.0.0"
+description = "Find structural knowledge gaps in your vault — the connectome tells you what to write next"
+readme = "README.md"
+authors = [
+    {name = "Cognoscope", email = "bridge@cognoscope.dev"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Topic :: Knowledge Management",
+]
+keywords = ["knowledge-graph", "bridge-recommender", "second-brain", "vault", "knowledge-management", "gaps", "connectome"]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/DanceNitra/cognoscope"
+Documentation = "https://github.com/DanceNitra/cognoscope"
+Source = "https://github.com/DanceNitra/cognoscope"
+
+[project.scripts]
+bridge-recommender = "bridge_recommender.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bridge_recommender*"]
+
+[tool.setuptools.package-data]
+bridge_recommender = ["py.typed"]

@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+bridge_recommender/__init__.py
+bridge_recommender/cli.py
+bridge_recommender/scanner.py
+bridge_recommender.egg-info/PKG-INFO
+bridge_recommender.egg-info/SOURCES.txt
+bridge_recommender.egg-info/dependency_links.txt
+bridge_recommender.egg-info/entry_points.txt
+bridge_recommender.egg-info/top_level.txt

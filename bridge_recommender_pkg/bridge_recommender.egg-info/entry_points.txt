@@ -1,0 +1,2 @@
+[console_scripts]
+bridge-recommender = bridge_recommender.cli:main
