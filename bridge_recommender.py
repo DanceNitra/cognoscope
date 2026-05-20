@@ -119,12 +119,16 @@ def load_existing_bridges():
         with open(f, 'r', encoding='utf-8', errors='replace') as fh:
             content = fh.read()
         
-        # Extract sources list from frontmatter
+        # Extract sources list from frontmatter — handle both inline [a, b] and block (- item) YAML
+        sources = []
         sources_m = re.search(r'sources:\s*\[([^\]]*)\]', content)
         if sources_m:
             sources = [s.strip() for s in sources_m.group(1).split(',')]
         else:
-            sources = []
+            # Try YAML block list format
+            sources_block = re.search(r'sources:\n((?:\s+- .+\n?)+)', content)
+            if sources_block:
+                sources = [re.sub(r'^\s*-\s*', '', s).strip() for s in sources_block.group(1).split('\n') if s.strip()]
         
         # Extract the bridge title (first heading)
         title_m = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
@@ -137,9 +141,17 @@ def load_existing_bridges():
         
         # Extract concept wikilinks from the content
         refs = re.findall(r'\[\[([^\]|]+)', content)
-        
+
+        # Extract tags from frontmatter
+        tags_m = re.search(r'tags:\s*\[([^\]]*)\]', content)
+        if tags_m:
+            tags = [t.strip() for t in tags_m.group(1).split(',')]
+            tags_text = ' '.join(tags)
+        else:
+            tags_text = ''
+
         # Build a combined text to search for domain names
-        combined_text = ' '.join(refs + sources + [title_clean]).lower()
+        combined_text = ' '.join(refs + sources + [title_clean, tags_text]).lower()
         
         # Find all domains mentioned in this bridge
         mentioned_domains = set()
@@ -156,6 +168,8 @@ def load_existing_bridges():
         if 'biology' in combined_text:
             mentioned_domains.add('Biology')
         if 'cell' in combined_text and 'biology' in combined_text:
+            mentioned_domains.add('Cell Biology')
+        if 'cell-biology' in combined_text:
             mentioned_domains.add('Cell Biology')
         if 'sleep' in combined_text:
             mentioned_domains.add('Sleep Science')
