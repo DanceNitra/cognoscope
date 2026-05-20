@@ -157,6 +157,8 @@ def load_existing_bridges():
         mentioned_domains = set()
         if 'neuroscience' in combined_text:
             mentioned_domains.add('Neuroscience')
+        if 'neuroscience' in combined_text and ('cognitive psychology' in combined_text or 'cognitive' in combined_text):
+            mentioned_domains.add('Neuroscience / Cognitive Psychology')
         if 'physiology' in combined_text:
             mentioned_domains.add('Physiology')
         if 'immunology' in combined_text or 'immune' in combined_text:
