@@ -186,6 +186,8 @@ def load_existing_bridges():
             mentioned_domains.add('Agent')
         if 'software' in combined_text or 'engineering' in combined_text:
             mentioned_domains.add('Software Engineering')
+        if 'software engineering' in combined_text and 'ai' in combined_text:
+            mentioned_domains.add('Software Engineering / AI')
         if 'machine' in combined_text and 'learning' in combined_text:
             mentioned_domains.add('Machine Learning')
         if 'meta' in combined_text or 'moc' in combined_text:
