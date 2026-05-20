@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+regime_shift/__init__.py
+regime_shift/cli.py
+regime_shift/detector.py
+regime_shift.egg-info/PKG-INFO
+regime_shift.egg-info/SOURCES.txt
+regime_shift.egg-info/dependency_links.txt
+regime_shift.egg-info/entry_points.txt
+regime_shift.egg-info/top_level.txt
