@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-05-21T16:47:23.151682+00:00",
+    "score": 25,
+    "total_issues": 25,
+    "broken_links": 10,
+    "orphans": 184,
+    "stale": 0,
+    "index_gaps": 5
+  }
+]

@@ -165,7 +165,18 @@ def format_brief() -> str:
             lines.append(f"  Latest: {ari['latest'][0].split('/')[-1]}")
     lines.append("")
     
-    # ── 5. Summary ──
+    # ── 5. ARI Feedback Loop ──
+    try:
+        from ari_feedback import full_report, format_feedback
+        fb_report = full_report()
+        fb_text = format_feedback(fb_report)
+        if fb_text:
+            lines.append(fb_text)
+            lines.append("")
+    except Exception as e:
+        pass  # Feedback not available yet
+    
+    # ── 6. Summary ──
     all_ok = alerts["count"] == 0
     status = "✅ ALL SYSTEMS NOMINAL" if all_ok else "⚠️ ISSUES DETECTED — check alerts"
     lines.append(f"**{status}**")
