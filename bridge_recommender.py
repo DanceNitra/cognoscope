@@ -150,8 +150,15 @@ def load_existing_bridges():
         else:
             tags_text = ''
 
+        # Extract domain from frontmatter
+        domain_m = re.search(r'^domain:\s*(.+)$', content, re.MULTILINE)
+        if domain_m:
+            domain_text = domain_m.group(1).strip().lower()
+        else:
+            domain_text = ''
+
         # Build a combined text to search for domain names
-        combined_text = ' '.join(refs + sources + [title_clean, tags_text]).lower()
+        combined_text = ' '.join(refs + sources + [title_clean, tags_text, domain_text]).lower()
         
         # Find all domains mentioned in this bridge
         mentioned_domains = set()
@@ -171,6 +178,12 @@ def load_existing_bridges():
             mentioned_domains.add('Causal Inference')
         if 'statistic' in combined_text:
             mentioned_domains.add('Statistics')
+        if 'statistics / causal inference' in combined_text or ('statistics' in combined_text and 'causal inference' in combined_text and ('bridge' in combined_text or 'research methods' in combined_text)):
+            mentioned_domains.add('Statistics / Causal Inference')
+        if 'statistics / epidemiology' in combined_text or ('epidemiology' in combined_text and 'statistics' in combined_text):
+            mentioned_domains.add('Statistics / Epidemiology')
+        if 'statistics / research methods' in combined_text or ('research methods' in combined_text and 'statistics' in combined_text and not 'causal' in combined_text):
+            mentioned_domains.add('Statistics / Research Methods')
         if 'biology' in combined_text:
             mentioned_domains.add('Biology')
         if 'cell' in combined_text and 'biology' in combined_text:
@@ -181,13 +194,21 @@ def load_existing_bridges():
             mentioned_domains.add('Neuroscience / Sleep Science')
         if 'neuroscience' in combined_text and ('sleep medicine' in combined_text or 'chronobiology' in combined_text or 'chronobio' in combined_text or 'circadian' in combined_text):
             mentioned_domains.add('Sleep Medicine / Chronobiology')
+        if 'sleep' in combined_text and 'neuroscience' in combined_text:
+            mentioned_domains.add('Sleep / Neuroscience')
+        if 'chronobiology' in combined_text or 'circadian' in combined_text:
+            mentioned_domains.add('Chronobiology')
         if 'cell' in combined_text and 'biology' in combined_text and 'neuroscience' in combined_text and 'sleep' in combined_text:
             mentioned_domains.add('Neuroscience / Sleep Science')
         if 'sleep medicine' in combined_text:
             mentioned_domains.add('Sleep Science')
             mentioned_domains.add('Sleep')
+        if 'sleep' in combined_text:
+            mentioned_domains.add('Sleep')
         if 'psychology' in combined_text:
             mentioned_domains.add('Psychology')
+        if 'psychology' in combined_text and 'neuroscience' in combined_text and ('adolescent' in combined_text or 'anhedonia' in combined_text):
+            mentioned_domains.add('Psychology / Neuroscience')
         if 'stress' in combined_text or 'allostatic' in combined_text:
             mentioned_domains.add('Stress')
         if 'finance' in combined_text:
