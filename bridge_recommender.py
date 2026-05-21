@@ -157,6 +157,8 @@ def load_existing_bridges():
         mentioned_domains = set()
         if 'neuroscience' in combined_text:
             mentioned_domains.add('Neuroscience')
+        if 'neuroscience' in combined_text and ('physiology' in combined_text or 'autonomic' in combined_text or 'sympathetic' in combined_text):
+            mentioned_domains.add('Neuroscience / Physiology')
         if 'neuroscience' in combined_text and ('cognitive psychology' in combined_text or 'cognitive' in combined_text):
             mentioned_domains.add('Neuroscience / Cognitive Psychology')
         if 'physiology' in combined_text:
@@ -165,6 +167,8 @@ def load_existing_bridges():
             mentioned_domains.add('Immunology')
         if 'causality' in combined_text or 'causal' in combined_text:
             mentioned_domains.add('Causality')
+        if 'causal inference' in combined_text or 'pearl' in combined_text:
+            mentioned_domains.add('Causal Inference')
         if 'statistic' in combined_text:
             mentioned_domains.add('Statistics')
         if 'biology' in combined_text:
@@ -173,7 +177,13 @@ def load_existing_bridges():
             mentioned_domains.add('Cell Biology')
         if 'cell-biology' in combined_text:
             mentioned_domains.add('Cell Biology')
-        if 'sleep' in combined_text:
+        if 'neuroscience' in combined_text and ('sleep' in combined_text):
+            mentioned_domains.add('Neuroscience / Sleep Science')
+        if 'neuroscience' in combined_text and ('sleep medicine' in combined_text or 'chronobiology' in combined_text or 'chronobio' in combined_text or 'circadian' in combined_text):
+            mentioned_domains.add('Sleep Medicine / Chronobiology')
+        if 'cell' in combined_text and 'biology' in combined_text and 'neuroscience' in combined_text and 'sleep' in combined_text:
+            mentioned_domains.add('Neuroscience / Sleep Science')
+        if 'sleep medicine' in combined_text:
             mentioned_domains.add('Sleep Science')
             mentioned_domains.add('Sleep')
         if 'psychology' in combined_text:
@@ -182,6 +192,8 @@ def load_existing_bridges():
             mentioned_domains.add('Stress')
         if 'finance' in combined_text:
             mentioned_domains.add('Finance')
+        if 'economics' in combined_text:
+            mentioned_domains.add('Economics')
         if 'climate' in combined_text:
             mentioned_domains.add('Climate')
         if 'agent' in combined_text:
@@ -190,8 +202,16 @@ def load_existing_bridges():
             mentioned_domains.add('Software Engineering')
         if 'software engineering' in combined_text and 'ai' in combined_text:
             mentioned_domains.add('Software Engineering / AI')
-        if 'machine' in combined_text and 'learning' in combined_text:
+        if 'ai' in combined_text and 'machine' in combined_text and 'learning' in combined_text:
+            mentioned_domains.add('AI / Machine Learning')
+        elif 'machine' in combined_text and 'learning' in combined_text:
             mentioned_domains.add('Machine Learning')
+        if 'ai' in combined_text and 'safety' in combined_text:
+            mentioned_domains.add('Ai Safety')
+        if 'general' in combined_text and ('control theory' in combined_text or 'feedback' in combined_text or 'universal' in combined_text):
+            mentioned_domains.add('General')
+        if 'longevity' in combined_text or 'aging' in combined_text or 'geroscience' in combined_text:
+            mentioned_domains.add('Longevity')
         if 'meta' in combined_text or 'moc' in combined_text:
             mentioned_domains.add('Meta')
         

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-hermes_selfaware.py — Safe integration of self-awareness into Hermes.
+hermes_selfaware.py - Safe integration of self-awareness into Hermes.
 
 Reads the Pattern Archive and Autobiography at session start.
 Writes session-end updates via a cron job.
@@ -98,7 +98,7 @@ def memory_injection() -> str:
     """
     Generates a short prompt injection block that tells the agent
     who it is, what patterns it has fallen into before, and what
-    it aspires to. Safe — this is just text in the system prompt.
+    it aspires to. Safe - this is just text in the system prompt.
     """
     info = startup_message()
     lines = ["---", "SELF-KNOWLEDGE (from persistent identity)", ""]
@@ -252,7 +252,7 @@ def record_session(session_id: str | None = None) -> dict:
             "status": "healthy",
             "max_run": max_run,
             "events_analyzed": len(events),
-            "message": "No degradation detected — session was healthy"
+            "message": "No degradation detected - session was healthy"
         }
     
     except Exception as e:
@@ -329,7 +329,7 @@ if __name__ == '__main__':
         print("  HERMES SELF-AWARENESS INTEGRATION")
         print("  ==================================================")
         print()
-        print("  Safe integration — zero modifications to Hermes.")
+        print("  Safe integration - zero modifications to Hermes.")
         print()
 
         info = startup_message()
