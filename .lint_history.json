@@ -1,11 +1,22 @@
 [
   {
-    "date": "2026-05-21T16:47:23.151682+00:00",
+    "date": "2026-05-21T16:47:00+00:00",
     "score": 25,
     "total_issues": 25,
     "broken_links": 10,
     "orphans": 184,
     "stale": 0,
-    "index_gaps": 5
+    "index_gaps": 5,
+    "note": "Baseline before fix session"
+  },
+  {
+    "date": "2026-05-21T18:07:30.910309+00:00",
+    "score": 25,
+    "total_issues": 25,
+    "broken_links": 10,
+    "orphans": 183,
+    "stale": 0,
+    "index_gaps": 5,
+    "note": "After 17 concepts created + linter expanded to all vault (new broken visible)"
   }
 ]

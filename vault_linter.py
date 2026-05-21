@@ -45,8 +45,17 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
     broken_links = []
     node_titles = set(g.nodes.keys())
     all_titles = set()
-    for f in glob.glob(os.path.join(p.concepts_dir, "*.md")):
-        all_titles.add(os.path.splitext(os.path.basename(f))[0])
+    # Scan ALL .md files in the vault for link validation
+    for root, dirs, files in os.walk(p.vault_root):
+        for f in files:
+            if f.endswith('.md'):
+                all_titles.add(os.path.splitext(f)[0])
+        # Skip .git and hidden dirs
+        if '.git' in dirs:
+            dirs.remove('.git')
+        for d in list(dirs):
+            if d.startswith('.'):
+                dirs.remove(d)
     # Also scan publications for links
     pub_files = glob.glob(os.path.join(p.pubs_dir, "*.md"))
     
