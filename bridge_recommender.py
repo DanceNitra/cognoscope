@@ -114,6 +114,9 @@ def load_existing_bridges():
     """Extract domain pairs already connected by bridges.
     Returns a set of frozenset pairs like {('Neuroscience', 'Physiology')}."""
     bridge_pairs = set()
+    
+    # Load vault domain nodes for domain_key_from_frontmatter matching
+    _, _, _, _, domain_nodes, _ = load_vault()
 
     for f in sorted(glob.glob(os.path.join(VAULT_PUBS, "Bridge*.md"))):
         with open(f, 'r', encoding='utf-8', errors='replace') as fh:
@@ -160,6 +163,14 @@ def load_existing_bridges():
         # Build a combined text to search for domain names
         combined_text = ' '.join(refs + sources + [title_clean, tags_text, domain_text]).lower()
         
+        # Parse domain_text into individual domain keys
+        domain_keys_from_frontmatter = set()
+        if domain_text:
+            for part in domain_text.split(','):
+                part = part.strip()
+                if part:
+                    domain_keys_from_frontmatter.add(part)
+        
         # Find all domains mentioned in this bridge
         mentioned_domains = set()
         if 'neuroscience' in combined_text:
@@ -176,14 +187,22 @@ def load_existing_bridges():
             mentioned_domains.add('Causality')
         if 'causal inference' in combined_text or 'pearl' in combined_text:
             mentioned_domains.add('Causal Inference')
+        if 'causal inference / statistics' in combined_text or ('berkson' in combined_text and 'causal' in combined_text) or ('omitted variable' in combined_text and 'statistic' in combined_text):
+            mentioned_domains.add('Causal Inference / Statistics')
         if 'statistic' in combined_text:
             mentioned_domains.add('Statistics')
         if 'statistics / causal inference' in combined_text or ('statistics' in combined_text and 'causal inference' in combined_text and ('bridge' in combined_text or 'research methods' in combined_text)):
             mentioned_domains.add('Statistics / Causal Inference')
         if 'statistics / epidemiology' in combined_text or ('epidemiology' in combined_text and 'statistics' in combined_text):
             mentioned_domains.add('Statistics / Epidemiology')
-        if 'statistics / research methods' in combined_text or ('research methods' in combined_text and 'statistics' in combined_text and not 'causal' in combined_text):
+        if 'research methods' in combined_text and 'statistics' in combined_text and 'bridge' in combined_text:
             mentioned_domains.add('Statistics / Research Methods')
+        if 'statistics / research methods' in domain_text or ('research methods' in combined_text and 'statistics' in combined_text and not 'causal' in combined_text):
+            mentioned_domains.add('Statistics / Research Methods')
+        if 'research methods' in domain_text and 'statistics' not in domain_text:
+            mentioned_domains.add('Research Methods')
+        elif 'research methods' in combined_text and not ('statistics' in combined_text or 'causal' in combined_text) and 'bridge' not in combined_text:
+            mentioned_domains.add('Research Methods')
         if 'biology' in combined_text:
             mentioned_domains.add('Biology')
         if 'cell' in combined_text and 'biology' in combined_text:
@@ -198,6 +217,8 @@ def load_existing_bridges():
             mentioned_domains.add('Sleep / Neuroscience')
         if 'chronobiology' in combined_text or 'circadian' in combined_text:
             mentioned_domains.add('Chronobiology')
+        if 'pharmacology' in combined_text or 'drug' in combined_text or 'neuropharmacology' in combined_text:
+            mentioned_domains.add('Pharmacology')
         if 'cell' in combined_text and 'biology' in combined_text and 'neuroscience' in combined_text and 'sleep' in combined_text:
             mentioned_domains.add('Neuroscience / Sleep Science')
         if 'sleep medicine' in combined_text:
@@ -227,14 +248,32 @@ def load_existing_bridges():
             mentioned_domains.add('AI / Machine Learning')
         elif 'machine' in combined_text and 'learning' in combined_text:
             mentioned_domains.add('Machine Learning')
+        if 'ml' in combined_text and 'ai' in combined_text:
+            mentioned_domains.add('ML/AI')
+        if 'ai' in combined_text and 'systems' in combined_text and 'engineering' in combined_text:
+            mentioned_domains.add('AI / Systems Engineering')
+        if 'ai' in combined_text and 'engineering' in combined_text and ('observability' in combined_text or 'deployment' in combined_text or 'cost' in combined_text or 'guardrail' in combined_text or 'moc' in combined_text):
+            mentioned_domains.add('AI Engineering')
         if 'ai' in combined_text and 'safety' in combined_text:
             mentioned_domains.add('Ai Safety')
+        if 'ai' in combined_text and not any(x in combined_text for x in ['machine learning', 'safety', 'systems engineering']):
+            if 'neuroscience' not in combined_text and 'psychology' not in combined_text and 'sleep' not in combined_text and 'engineer' not in combined_text and 'software' not in combined_text:
+                pass  # Too broad — skip standalone 'ai'
+            else:
+                mentioned_domains.add('AI')
         if 'general' in combined_text and ('control theory' in combined_text or 'feedback' in combined_text or 'universal' in combined_text):
             mentioned_domains.add('General')
         if 'longevity' in combined_text or 'aging' in combined_text or 'geroscience' in combined_text:
             mentioned_domains.add('Longevity')
         if 'meta' in combined_text or 'moc' in combined_text:
             mentioned_domains.add('Meta')
+        
+        # Add explicit domain keys from frontmatter (highest priority)
+        for dk in domain_keys_from_frontmatter:
+            # Normalize: title case each word
+            normalized = ' '.join(w.capitalize() for w in dk.split())
+            if normalized in domain_nodes:
+                mentioned_domains.add(normalized)
         
         # Every pair of mentioned domains in a bridge IS a bridged pair
         dom_list = sorted(mentioned_domains)
