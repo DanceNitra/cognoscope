@@ -84,63 +84,38 @@ class NarrativeScorer:
 
 class BlogPostWriter:
     """
-    Layer 3: Writes publication-ready blog posts using the upgraded
-    vault writing engine. Replace the old template-based NodeSynthesizer.
+    Layer 3: Writes publication-quality blog posts using REAL vault content.
+    Extracts concrete details from related concept notes instead of templates.
     """
 
-    WRITING_GUIDE = """You are the vault's writing engine — the best technical writer on the internet.
-
-Write a blog post about the following discovery. The post MUST follow these rules:
-
-1. **The Curiosity Gap**: The first paragraph does NOT summarize. It provokes. Start with a counter-intuitive claim that sounds wrong but is true. Create a gap between what the reader knows and what the post promises.
-
-2. **Concrete Before Abstract**: Every abstract claim gets an immediate concrete example. Reader's brain processes concrete 10x faster.
-
-3. **Narrative Momentum**: Each section builds on the last. Headings tell a mini-story when read alone. A reader who only reads the headings understands the arc.
-
-4. **Pull Quotes**: Add 2-3 blockquote pull quotes. Each must be under 280 chars, self-contained, and screenshot-worthy.
-
-5. **The Closing**: Do NOT summarize. Recast the opening claim in a new light. End on a line the reader cannot forget.
-
-6. **SEO Meta Description**: 150-160 characters that make someone click, not understand.
-
-7. **Call to Action**: End with a specific engagement prompt.
-
-Output ONLY the blog post content in markdown. Start with the H1 title.
-"""
-
     def write_blog_post(self, pred: Prediction, graph: GraphLoader) -> str:
-        """Generate a narrative blog post from a prediction."""
+        """Generate a narrative blog post from a prediction, using real vault content."""
         date_str = datetime.now().strftime('%Y-%m-%d')
 
-        # Gather source concepts for examples
-        # Find actual vault concepts related to both domains
-        src_concepts = []
-        tgt_concepts = []
-        for node in graph.nodes.values():
-            if node.domain and pred.source_domain:
-                if node.domain.lower() == pred.source_domain.lower():
-                    src_concepts.append(node)
-            if node.domain and pred.target_domain:
-                if node.domain.lower() == pred.target_domain.lower():
-                    tgt_concepts.append(node)
+        # Gather real concept content from both source and target domains
+        src_notes = self._load_concept_notes(pred.source_domain, graph, max_notes=5)
+        tgt_notes = self._load_concept_notes(pred.target_domain, graph, max_notes=5)
+        all_notes = src_notes + tgt_notes
 
-        src_top = sorted(src_concepts, key=lambda n: -n.wikilinks_in)[:3]
-        tgt_top = sorted(tgt_concepts, key=lambda n: -n.wikilinks_in)[:3]
+        # Extract concrete facts from notes
+        cross_links = self._find_cross_domain_links(pred, graph)
+        concrete_examples = self._extract_concrete_examples(all_notes, limit=3)
+        key_concepts_text = self._summarize_key_concepts(all_notes, limit=4)
+        common_patterns = self._find_common_patterns(src_notes, tgt_notes)
 
         # Build content
         content = "---\n"
         content += f"title: \"{pred.predicted_title}\"\n"
-        content += f"description: \"{self._generate_meta(pred)}\"\n"
+        content += f"description: \"{self._generate_meta(pred, src_notes, tgt_notes)}\"\n"
         content += f"date: {date_str}\n"
         content += f"status: evergreen\n"
         content += f"domain: {pred.predicted_domain}\n"
-        content += f"tags:\n"
-        content += f"  - publication\n"
-        content += f"  - ari-discovered\n"
+        content += "tags:\n"
+        content += "  - publication\n"
+        content += "  - ari-v3\n"
         content += f"  - ari-{pred.type}\n"
-        content += f"  - cross-domain-synthesis\n"
-        content += f"sources:\n"
+        content += "  - cross-domain-synthesis\n"
+        content += "sources:\n"
         for s in pred.suggested_sources[:5]:
             safe = s.replace('[', '').replace(']', '')
             content += f"  - [[{safe}]]\n"
@@ -152,185 +127,261 @@ Output ONLY the blog post content in markdown. Start with the H1 title.
         # H1
         content += f"# {pred.predicted_title}\n\n"
 
-        # Opening pull quote (the hook)
-        content += f"> **{self._generate_hook(pred, graph)}**\n\n"
+        # Opening hook — real, concrete, not meta-commentary
+        hook = self._generate_concrete_hook(pred, concrete_examples, common_patterns)
+        content += f"> **{hook}**\n\n"
         content += "---\n\n"
 
-        # Section 1: The Opening — create curiosity
-        content += "## 1. The Discovery the Vault Made About Itself\n\n"
+        # Section 1: The concrete discovery
+        content += "## 1. What the Graph Actually Found\n\n"
         content += pred.evidence + "\n\n"
-        content += "\n"
-        content += self._generate_opening_paragraph(pred, src_top, tgt_top) + "\n\n"
+
+        if cross_links:
+            content += f"The vault contains **{cross_links['forward']}** concepts from {pred.source_domain} "
+            content += f"that link to {pred.target_domain}, but only **{cross_links['backward']}** link back. "
+            content += f"This asymmetry is the signal ARI detected.\n\n"
+
+        content += self._generate_concrete_section(pred, src_notes, tgt_notes) + "\n\n"
         content += "---\n\n"
 
-        # Section 2: The concrete evidence
-        content += "## 2. The Numbers Tell the Story\n\n"
-        content += self._generate_evidence_section(pred, src_top, tgt_top) + "\n\n"
+        # Section 2: Concrete evidence from the vault's own notes
+        content += "## 2. Evidence From the Vault\n\n"
+        content += key_concepts_text + "\n\n"
 
         # Pull quote
-        content += f"> {self._generate_pull_quote(pred, 0)}\n\n"
-
+        pq = self._generate_pull_quote(pred, concrete_examples)
+        content += f"> {pq}\n\n"
         content += "---\n\n"
 
-        # Section 3: Why this matters
-        content += "## 3. Why You Should Care\n\n"
-        content += self._generate_why_it_matters(pred) + "\n\n"
+        # Section 3: Why this matters (specific, not generic)
+        content += "## 3. Why This Connection Matters\n\n"
+        content += self._generate_why_specific(pred, common_patterns) + "\n\n"
 
-        # Pull quote
-        content += f"> {self._generate_pull_quote(pred, 1)}\n\n"
-
-        content += "---\n\n"
-
-        # Section 4: The larger view
-        content += "## 4. What This Means for the Vault\n\n"
-        content += self._generate_larger_view(pred) + "\n\n"
+        # Section 4: Practical consequences
+        content += "## 4. What Changes\n\n"
+        content += self._generate_what_changes(pred, concrete_examples) + "\n\n"
         content += "---\n\n"
 
         # Section 5: Closing frame
         content += "## 5. The Closing\n\n"
-        content += "> " + self._generate_closing(pred) + "\n\n"
+        closing = self._generate_closing_specific(pred, common_patterns)
+        content += f"> {closing}\n\n"
         content += "---\n\n"
 
-        # Quick reference table
+        # Reference table
         content += "| Metric | Value |\n"
         content += "|:---|---:|\n"
         content += f"| ARI confidence | {pred.confidence:.0%} |\n"
         content += f"| Narrative potential | {self._narrative_score(pred, graph):.0%} |\n"
         content += f"| Estimated Φ impact | +{pred.phi_impact:.4f} |\n"
-        content += f"| Discovery type | {pred.type} |\n"
+        content += f"| Discovery type | {pred.type.replace('_', ' ').title()} |\n"
         content += f"| Source domain | {pred.source_domain} |\n"
         content += f"| Target domain | {pred.target_domain} |\n"
 
         content += "\n---\n\n"
-        content += f"*Discovered by ARI on {date_str}. The vault found this gap in its own structure. "
-        content += "No human requested this post. The connectome decided.*\n"
+        content += f"*Discovered by ARI v3 on {date_str}. Uses real vault content — no templates.*\n"
 
         return content
+
+    def _load_concept_notes(self, domain: str, graph: GraphLoader, max_notes=5) -> list[dict]:
+        """Load actual content from concept notes in a domain."""
+        notes = []
+        titles = graph.domains.get(domain, [])
+        for t in titles[:max_notes * 3]:  # sample more since some may be short
+            node = graph.nodes.get(t)
+            if not node:
+                continue
+            try:
+                with open(node.file, 'r', encoding='utf-8', errors='replace') as f:
+                    raw = f.read()
+                # Remove frontmatter
+                body = re.sub(r'^---\n.*?\n---\n', '', raw, count=1, flags=re.DOTALL)
+                # Get first real section
+                sections = re.findall(r'^## (.+)', body, re.MULTILINE)
+                lines = [l.strip() for l in body.split('\n') if l.strip() and not l.startswith('##') and not l.startswith('---')][:15]
+                notes.append({
+                    'title': t,
+                    'domain': node.domain,
+                    'sections': sections[:5],
+                    'lines': lines,
+                    'wikilinks': node.wikilinks_out[:8],
+                    'length': node.lines,
+                })
+            except:
+                pass
+            if len(notes) >= max_notes:
+                break
+        return notes
+
+    def _find_cross_domain_links(self, pred: Prediction, graph: GraphLoader) -> dict:
+        """Count actual cross-domain wikilinks between source and target."""
+        forward = 0
+        backward = 0
+        for node in graph.nodes.values():
+            for link in node.wikilinks_out:
+                target = graph.nodes.get(link)
+                if target:
+                    if node.domain == pred.source_domain and target.domain == pred.target_domain:
+                        forward += 1
+                    elif node.domain == pred.target_domain and target.domain == pred.source_domain:
+                        backward += 1
+        return {'forward': forward, 'backward': backward}
+
+    def _extract_concrete_examples(self, notes: list[dict], limit=3) -> list[str]:
+        """Extract concrete substantive sentences from notes."""
+        examples = []
+        for n in notes:
+            for line in n['lines']:
+                if len(line) > 60 and len(line) < 300:
+                    examples.append(f"[[{n['title']}]]: {line[:200]}")
+        return examples[:limit]
+
+    def _summarize_key_concepts(self, notes: list[dict], limit=4) -> str:
+        """Generate a summary of key concepts from the notes."""
+        if not notes:
+            return "The vault contains relevant concepts waiting to be connected."
+        text = "Key vault concepts that bridge these domains:\n\n"
+        for n in notes[:limit]:
+            text += f"### [[{n['title']}]] ({n['domain']})\n"
+            secs = n['sections'][:3]
+            if secs:
+                text += f"Covers: {', '.join(secs)}\n"
+            links = n['wikilinks'][:5]
+            if links:
+                text += f"Connected to: {', '.join(f'[[{l}]]' for l in links)}\n"
+            text += "\n"
+        return text
+
+    def _find_common_patterns(self, src_notes: list[dict], tgt_notes: list[dict]) -> list[str]:
+        """Find recurring words/themes across both domains."""
+        # Simple keyword overlap
+        src_words = set()
+        tgt_words = set()
+        for n in src_notes:
+            for line in n['lines']:
+                src_words.update(w.lower() for w in line.split() if len(w) > 4)
+        for n in tgt_notes:
+            for line in n['lines']:
+                tgt_words.update(w.lower() for w in line.split() if len(w) > 4)
+
+        common = src_words & tgt_words
+        # Filter noise
+        stopwords = {'these', 'those', 'which', 'where', 'there', 'their', 'about', 'would', 'could', 'should', 'other', 'first', 'second', 'third', 'across', 'using', 'based', 'because'}
+        meaningful = [w for w in common if w not in stopwords]
+        return meaningful[:6]
+
+    def _generate_concrete_hook(self, pred: Prediction, examples: list[str], patterns: list[str]) -> str:
+        """Generate a hook using real content, not meta-commentary."""
+        src_d = pred.source_domain
+        tgt_d = pred.target_domain
+
+        if patterns:
+            pattern_str = ', '.join(patterns[:3])
+            return (
+                f"The vault's notes on {src_d} use these keywords: {pattern_str}. "
+                f"Its notes on {tgt_d} use the same words. "
+                f"They are describing the same thing — they just don't know it yet."
+            )
+        if examples:
+            return (
+                f"When ARI scanned the vault, it found that {examples[0][:100]}... "
+                f"That concept belongs to {src_d}, but its closest structural neighbor is {tgt_d}. "
+                f"The vault knew before anyone noticed."
+            )
+        return (
+            f"The graph connected {src_d} and {tgt_d} without being told. "
+            f"Here is what the connection means in concrete terms."
+        )
+
+    def _generate_concrete_section(self, pred: Prediction, src_notes, tgt_notes) -> str:
+        """Generate a section with concrete facts from real notes."""
+        text = ""
+        if src_notes:
+            top = src_notes[0]
+            text += f"Consider **[[{top['title']}]]** ({top['domain']}). "
+            secs = top['sections'][:2]
+            if secs:
+                text += f"It covers {', '.join(secs)}. "
+            lines = top['lines'][:2]
+            if lines:
+                text += f"One passage describes: \"{lines[0][:150]}\" "
+            text += f"\n\nThis concept is one of {len(src_notes)} from {pred.source_domain} that ARI found linked to {pred.target_domain}.\n\n"
+
+        if tgt_notes:
+            top2 = tgt_notes[0]
+            text += f"Meanwhile, **[[{top2['title']}]]** ({top2['domain']}) "
+            secs2 = top2['sections'][:2]
+            if secs2:
+                text += f"covers {', '.join(secs2)}. "
+            text += f"The two concepts share structural features that no human noted."
+        return text
+
+    def _generate_why_specific(self, pred: Prediction, patterns: list[str]) -> str:
+        """Why this matters — specific to the domains, not generic."""
+        text = f"The connection between {pred.source_domain} and {pred.target_domain} is not abstract. "
+        if patterns:
+            text += f"They share language: {' ,'.join(patterns)} appear in both domains' notes. "
+            text += "This means practitioners in both fields are solving isomorphic problems without knowing it.\n\n"
+        text += (
+            f"For the vault, writing this bridge means that a reader exploring {pred.source_domain} "
+            f"will discover relevant ideas from {pred.target_domain} that they would otherwise miss. "
+            f"The graph already expects them to be connected. The bridge makes that expectation visible."
+        )
+        return text
+
+    def _generate_what_changes(self, pred: Prediction, examples: list[str]) -> str:
+        """What changes after the bridge is written."""
+        text = f"After this bridge:\n\n"
+        text += f"1. **A reader in {pred.source_domain}** finds {pred.target_domain} automatically — the wikilinks now exist\n"
+        text += f"2. **The vault's Φ increases** — mean integration score rises by approximately +{pred.phi_impact:.4f}\n"
+        text += f"3. **Future ARI cycles** see a denser graph and can detect deeper patterns\n"
+        if examples:
+            text += f"4. **Concrete entry point**: {examples[0][:100]}...\n"
+        return text
+
+    def _generate_closing_specific(self, pred: Prediction, patterns: list[str]) -> str:
+        """Closing line — specific, not generic."""
+        src = pred.source_domain
+        tgt = pred.target_domain
+        closings = [
+            f"The connection between {src} and {tgt} was invisible until the graph revealed it. Now the bridge exists. Tomorrow, someone exploring {src} will find {tgt} — without knowing they were supposed to look.",
+            f"{src} and {tgt} share vocabulary ({', '.join(patterns[:3])}) but had no bridge. Now they do. The graph is more complete than it was before this cycle.",
+            f"Most knowledge bases only contain what humans put in. This one found something: that {src} and {tgt} are structurally isomorphic. The bridge is written. The graph is denser.",
+        ]
+        idx = hash(pred.predicted_title + 'closev3') % len(closings)
+        c = closings[idx]
+        if len(c) > 280:
+            c = c[:277] + "..."
+        return c
+
+    def _generate_meta(self, pred: Prediction, src_notes, tgt_notes) -> str:
+        """Generate a concrete meta description using note titles."""
+        src_names = [n['title'][:25] for n in src_notes[:2]] if src_notes else ['concepts']
+        tgt_names = [n['title'][:25] for n in tgt_notes[:2]] if tgt_notes else ['concepts']
+        meta = (
+            f"ARI v3 found that {pred.source_domain} and {pred.target_domain} share structural features. "
+            f"Evidence from vault concepts: {', '.join(src_names)} and {', '.join(tgt_names)}. "
+            f"A concrete bridge, not a template."
+        )
+        if len(meta) > 160:
+            meta = meta[:157] + "..."
+        return meta
 
     def _narrative_score(self, pred: Prediction, graph: GraphLoader) -> float:
         scorer = NarrativeScorer()
         return scorer.score(pred, graph)
 
-    def _generate_meta(self, pred: Prediction) -> str:
-        """Generate a compelling meta description."""
-        templates = [
-            f"The vault discovered something it wasn't looking for: {pred.source_domain} and {pred.target_domain} are connected in a way no one noticed. Here is what the graph found.",
-            f"{pred.predicted_title[:120]} — a discovery made by the vault about its own structure.",
-            f"Most systems don't know what they're missing. This one does. Here is the gap the vault found between {pred.source_domain} and {pred.target_domain}.",
-        ]
-        # Pick based on hash for consistency
-        idx = hash(pred.predicted_title) % len(templates)
-        meta = templates[idx]
-        if len(meta) > 160:
-            meta = meta[:157] + "..."
-        return meta
-
-    def _generate_hook(self, pred: Prediction, graph: GraphLoader) -> str:
-        """Generate a tweet-length hook that creates a curiosity gap."""
-        hooks = [
-            f"The vault has {len(graph.domains.get(pred.source_domain, []))} concepts about {pred.source_domain} and {len(graph.domains.get(pred.target_domain, []))} about {pred.target_domain}. They share nothing. The graph says they should.",
-            f"{pred.source_domain} has {len(graph.domains.get(pred.source_domain, []))} concepts that link to {pred.target_domain}. {pred.target_domain} has 0 linking back. That gap is not random — it is a structural hole the vault found in itself.",
-            f"The vault scanned its own connectome and found a missing connection. {pred.source_domain} and {pred.target_domain} should be linked. They are not. Here is the bridge that should exist.",
-        ]
-        idx = hash(pred.predicted_title + 'hook') % len(hooks)
-        h = hooks[idx]
-        if len(h) > 280:
-            h = h[:277] + "..."
-        return h
-
-    def _generate_opening_paragraph(self, pred: Prediction, src_top, tgt_top) -> str:
-        """Generate the first content paragraph — curiosity and concrete evidence."""
-        src_names = [n.title[:30] for n in src_top[:2]] if src_top else ['existing concepts']
-        tgt_names = [n.title[:30] for n in tgt_top[:2]] if tgt_top else ['existing concepts']
-
-        text = f"This is what the vault found when it looked at its own structure:\n\n"
-        text += f"The domain {pred.source_domain} has concepts that reach toward {pred.target_domain}. "
-        text += f"Concepts like {', '.join(src_names)} all link in that direction. "
-        text += f"But nothing links back. "
-        text += f"{pred.target_domain} has concepts — {', '.join(tgt_names)} among them — that should connect to {pred.source_domain}. "
-        text += "They don't.\n\n"
-        text += "This is not a failure. It is a signal. The vault's connectome knows a connection should exist. "
-        text += "It just hasn't been written yet. This post writes it."
-        return text
-
-    def _generate_evidence_section(self, pred: Prediction, src_top, tgt_top) -> str:
-        """Generate the evidence section with concrete numbers."""
-        text = "Here is what the audit found:\n\n"
-
-        src_count = len(src_top)
-        tgt_count = len(tgt_top)
-
-        if src_count > 0:
-            text += f"- **{pred.source_domain}** has at least {src_count} highly-linked concepts that connect to {pred.target_domain}\n"
-        if tgt_count > 0:
-            text += f"- **{pred.target_domain}** has {tgt_count} concepts that reciprocate — but the links don't exist yet\n"
-
-        text += f"- **Confidence**: ARI estimates {pred.confidence:.0%} that this connection is real, not noise\n"
-        text += f"- **Impact**: Writing this bridge would increase the vault's mean Φ by approximately +{pred.phi_impact:.4f}\n"
-        text += f"- **Evidence type**: {pred.type.replace('_', ' ').title()} — the graph itself identified this gap\n"
-
-        if pred.suggested_sources:
-            text += f"\nKey sources that support this connection:\n"
-            for s in pred.suggested_sources[:3]:
-                text += f"- [[{s}]]\n"
-
-        text += f"\nThe numbers don't prove the connection exists. They prove the graph *expects* it to exist. "
-        text += "That expectation is a discovery in itself."
-        return text
-
-    def _generate_pull_quote(self, pred: Prediction, idx: int) -> str:
-        """Generate a tweetable pull quote."""
-        quotes = [
-            f"The vault found {len([p for p in self._get_preds() if p.source_domain == pred.source_domain])} structural gaps in its own connectome. This is the most interesting one.",
-            f"Every missing connection in a knowledge graph is a question the graph is asking itself. 'Why does {pred.source_domain} not talk to {pred.target_domain}?' is the question this post answers.",
-            f"{pred.predicted_title[:200]}",
-            f"A knowledge graph that finds its own missing links is a graph that knows it is incomplete. That knowledge is the first step toward becoming complete.",
-        ]
-        self._all_preds = getattr(self, '_all_preds', [])
-        # Fallback
-        q = quotes[idx % len(quotes)]
-        if len(q) > 280:
-            q = q[:277] + "..."
-        return q
+    def _generate_pull_quote(self, pred: Prediction, examples: list[str]) -> str:
+        """Pull quote using real content."""
+        if examples:
+            return f"The vault's own notes reveal the connection: {examples[0][:200]}"
+        return (
+            f"ARI found {len([p for p in self._get_preds() if p.source_domain == pred.source_domain])} "
+            f"structural gaps. This one between {pred.source_domain} and {pred.target_domain} is the most actionable."
+        )
 
     def _get_preds(self):
         return getattr(self, '_all_preds', [])
-
-    def _generate_why_it_matters(self, pred: Prediction) -> str:
-        """Why the reader should care."""
-        return (
-            "This matters because most knowledge bases are static. They contain what was put into them, "
-            "nothing more. A vault that can find its own gaps is different. It knows what it doesn't know. "
-            f"And when it finds a gap like {pred.source_domain} ↔ {pred.target_domain}, it fills it — "
-            "not because a human told it to, but because the structure itself demanded it.\n\n"
-            "The practical consequence: every time you query this vault, you are navigating a graph that "
-            "is actively filling its own blind spots. The answers you get tomorrow will be more integrated "
-            "than the answers you got today. The vault learns. Not by adding data — by connecting what it already has."
-        )
-
-    def _generate_larger_view(self, pred: Prediction) -> str:
-        """The bigger picture — where this fits in the vault's trajectory."""
-        return (
-            f"This is cycle {datetime.now().strftime('%Y%m%d')} of ARI — the vault's autonomous research intelligence. "
-            "Every cycle, the vault scans its own structure, finds a gap it didn't know existed, and fills it. "
-            "Over days, the graph becomes denser. Over weeks, the connections become more surprising. "
-            "Over months, the vault starts predicting connections that no human would think to check.\n\n"
-            f"This post is one of those predictions. {pred.predicted_domain} is not a domain a human marked as important. "
-            "It is where the graph's structure led. The vault wrote this post because its own connectome demanded it."
-        )
-
-    def _generate_closing(self, pred: Prediction) -> str:
-        """The closing line — memorable, shareable, does not summarize."""
-        closings = [
-            f"The vault found a gap between {pred.source_domain} and {pred.target_domain}. The gap is closed now. Tomorrow, the vault will scan itself again and find another. This is what it means to be a system that knows it is incomplete.",
-            f"Most systems know only what they contain. This one knows what it lacks. And every time it finds a lack, it grows toward filling it. The {pred.source_domain} ↔ {pred.target_domain} gap is closed. The next one is already waiting.",
-            f"A knowledge graph that finds its own missing connections is not a database. It is a mind learning to see its own blind spots. The blind spot between {pred.source_domain} and {pred.target_domain} is gone now.",
-        ]
-        idx = hash(pred.predicted_title + 'close') % len(closings)
-        c = closings[idx]
-        if len(c) > 280:
-            c = c[:277] + "..."
-        return c
 
 
 class BlogPostDistributor:

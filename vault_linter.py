@@ -72,8 +72,23 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
             target = link.split('#')[0].strip()
             if not target or target.startswith('http'):
                 continue
-            if target not in all_titles and target not in node_titles:
+            # Handle titles containing literal # (e.g. "Bridge #89")
+            # Check the FULL link first (with #), then anchor-stripped
+            full_target = link.strip()
+            if full_target in all_titles or full_target in node_titles:
+                continue
+            # Check if the # is part of the title, not an anchor
+            if '#' in link:
+                # Try resolving as-is (the # might be part of the title)
+                if link.strip() in all_titles or link.strip() in node_titles:
+                    continue
+                # Also try without anchor
+                if target in all_titles or target in node_titles:
+                    continue
                 broken_links.append({"source": fname, "target": target})
+            else:
+                if target not in all_titles and target not in node_titles:
+                    broken_links.append({"source": fname, "target": target})
     
     if broken_links:
         for bl in broken_links[:10]:

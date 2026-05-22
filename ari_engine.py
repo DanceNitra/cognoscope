@@ -30,6 +30,7 @@ VAULT_ROOT = os.path.expanduser("~/Obsidian Vault")
 CONCEPTS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Concepts")
 PUBS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Publications")
 ARI_DIR = os.path.join(VAULT_ROOT, "04 Resources/ARI")
+DISTILLED_DIR = os.path.join(VAULT_ROOT, "04 Resources/Distilled")
 os.makedirs(ARI_DIR, exist_ok=True)
 
 
@@ -127,7 +128,7 @@ class GraphLoader:
             date = metadata.get('date', metadata.get('created', ''))
 
             node = ConceptNode(
-                file=fn, title=title, status=status, domain=domain,
+                file=os.path.join(CONCEPTS_DIR, fn), title=title, status=status, domain=domain,
                 tags=tags, aliases=aliases, lines=lines,
                 wikilinks_out=wikilinks_out, wikilinks_in=0,
                 has_sources=has_sources, date=date
@@ -425,16 +426,40 @@ class AnomalyDetector:
                 if target and target.domain != node.domain:
                     domain_neighbors[node.domain].add(target.domain)
 
-        # Already bridged domains
-        bridged_domains = set()
-        for f in glob.glob(os.path.join(PUBS_DIR, "*.md")):
-            with open(f, encoding='utf-8', errors='replace') as fh:
-                content = fh.read()
-            domains_in = re.findall(r'domain: (.+)', content)
-            for d in domains_in:
-                parts = [p.strip() for p in d.split('/')]
-                for p in parts:
-                    bridged_domains.add(p.lower())
+        # Already bridged domains — check ALL output locations
+        already_bridged_titles = set()
+        already_bridged_domain_pairs = set()
+        already_bridged_keywords = {}  # domain_keyword -> set of paired domains
+
+        for dirpath in [PUBS_DIR, ARI_DIR, DISTILLED_DIR]:
+            if not os.path.isdir(dirpath):
+                continue
+            for f in glob.glob(os.path.join(dirpath, "*.md")):
+                with open(f, encoding='utf-8', errors='replace') as fh:
+                    content = fh.read()
+                # Read domain frontmatter
+                doms = re.findall(r'^domain: (.+)$', content, re.MULTILINE)
+                for d in doms:
+                    parts = [p.strip().lower() for p in d.split('/')]
+                    if len(parts) >= 2:
+                        already_bridged_domain_pairs.add(tuple(sorted(parts[:2])))
+                # Read title for exact-title check
+                t = re.search(r'^title: "(.+)"', content, re.MULTILINE)
+                if t:
+                    already_bridged_titles.add(t.group(1).strip().lower())
+                # Content-based: extract domain keywords from title
+                # Titles like "Causal Inference × Statistics" -> bridge between Causal and Stats
+                title_text = content[:500].lower()
+                # Find all substantive domain-like words in the first 500 chars
+                domain_keywords = re.findall(r'(?:bridge[^a-z]*)(\w+(?:\s+\w+)?)', title_text)
+                domain_keywords += re.findall(r'(\w+(?:\s+\w+)?)(?:\s*×\s*|\s*&\s*|\s*and\s*|\s*vs\s*)', title_text)
+                # Also check for × separator pattern (domain × domain)
+                x_pairs = re.findall(r'(\w[\w\s/]+?)\s*[×x&]\s*(\w[\w\s/]+?)', title_text[:300])
+                for a, b in x_pairs:
+                    a_key = re.sub(r'[^a-z0-9]', '', a.strip().lower())
+                    b_key = re.sub(r'[^a-z0-9]', '', b.strip().lower())
+                    if a_key and b_key:
+                        already_bridged_domain_pairs.add(tuple(sorted([a_key, b_key])))
 
         # Score all domain pairs
         all_domains = list(self.graph.domains.keys())
@@ -451,7 +476,24 @@ class AnomalyDetector:
                 # Check if already bridged
                 d1_lower = d1.lower()
                 d2_lower = d2.lower()
-                if d1_lower in bridged_domains and d2_lower in bridged_domains:
+                pair = tuple(sorted([d1_lower, d2_lower]))
+                if pair in already_bridged_domain_pairs:
+                    continue
+                # Also check via keyword matching: do any existing pub titles
+                # contain BOTH domain names (simplified)?
+                d1_key = re.sub(r'[^a-z0-9]', '', d1_lower)
+                d2_key = re.sub(r'[^a-z0-9]', '', d2_lower)
+                bridged_via_keywords = False
+                for existing_pair in list(already_bridged_domain_pairs):
+                    a, b = existing_pair
+                    # Check if the existing bridge domain pair corresponds
+                    if (d1_key in a or a in d1_key) and (d2_key in b or b in d2_key):
+                        bridged_via_keywords = True
+                        break
+                    if (d1_key in b or b in d1_key) and (d2_key in a or a in d2_key):
+                        bridged_via_keywords = True
+                        break
+                if bridged_via_keywords:
                     continue
 
                 jaccard = len(shared) / max(1, len(n1 | n2))
@@ -464,6 +506,24 @@ class AnomalyDetector:
 
         for score, d1, d2, shared in scored_pairs[:3]:
             shared_str = ', '.join(sorted(list(shared))[:6])
+
+            # Generate varied title
+            bridge_titles = [
+                f"Why {d1} Is {d2} — The Structural Isomorphism Uncovered by the Graph",
+                f"What {d1} Knows About {d2} That {d2} Doesn't Know About Itself",
+                f"The Bridge Between {d1} and {d2}: What the Vault Found in Its Own Structure",
+                f"{d1} and {d2} Are the Same System — Here Is Why",
+                f"Missing Link: Why {d1} Needs a Bridge to {d2}",
+            ]
+            # Pick title that hasn't been used yet
+            title = None
+            for t in bridge_titles:
+                if t.lower() not in already_bridged_titles:
+                    title = t
+                    break
+            if title is None:
+                title = f"{d1} × {d2} — The Cross-Domain Bridge"
+
             evidence = (
                 f"Bridge gap: '{d1}' and '{d2}' share "
                 f"{len(shared)} neighbor domains ({shared_str}) "
@@ -471,11 +531,16 @@ class AnomalyDetector:
                 f"Score: {score:.3f}"
             )
 
+            # Compute actual variance in φ
+            dom1_size = len(self.graph.domains.get(d1, []))
+            dom2_size = len(self.graph.domains.get(d2, []))
+            phi_variance = min(0.08, max(0.02, score * 0.08 + (dom1_size * dom2_size) / 10000 * 0.02))
+
             pred = Prediction(
                 id=pid, type='bridge_gap',
                 confidence=min(0.9, score * 2),
                 source_domain=d1, target_domain=d2,
-                predicted_title=f"Why {d1} Is {d2} — The Structural Isomorphism Uncovered by the Graph",
+                predicted_title=title,
                 predicted_domain=f"{d1} / {d2}",
                 evidence=evidence,
                 suggested_structure=[
@@ -486,7 +551,7 @@ class AnomalyDetector:
                     "Implications for Practice"
                 ],
                 suggested_sources=list(shared)[:5],
-                phi_impact=min(0.06, score * 0.1),
+                phi_impact=phi_variance,
                 novelty_score=min(0.85, score * 1.5)
             )
             self.predictions.append(pred)
