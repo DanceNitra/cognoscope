@@ -44,12 +44,19 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
     log.info("Checking broken wikilinks...")
     broken_links = []
     node_titles = set(g.nodes.keys())
+    # Build a mapping: bare_title → exists, rel_path → exists
     all_titles = set()
+    all_rel_paths = {}  # relative path (no ./md ext) → bare title
     # Scan ALL .md files in the vault for link validation
     for root, dirs, files in os.walk(p.vault_root):
         for f in files:
             if f.endswith('.md'):
-                all_titles.add(os.path.splitext(f)[0])
+                bare = os.path.splitext(f)[0]
+                all_titles.add(bare)
+                # Also map relative path from vault root
+                rel = os.path.relpath(os.path.join(root, f), p.vault_root)
+                rel_no_ext = os.path.splitext(rel)[0]
+                all_rel_paths[rel_no_ext] = bare
         # Skip .git and hidden dirs
         if '.git' in dirs:
             dirs.remove('.git')
@@ -67,28 +74,36 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
             continue
         # Skip frontmatter
         body = re.sub(r'^---\n.*?\n---\n', '', content, count=1, flags=re.DOTALL)
+        # Skip code blocks (inline code and fenced blocks)
+        body = re.sub(r'```.*?```', '', body, flags=re.DOTALL)
+        body = re.sub(r'`[^`]+`', '', body)
         links = set(re.findall(r'\[\[([^\]|]+)', body))
+        # Strip escaped pipes (backslash before |) that survive regex capture
+        links = {l.rstrip('\\') for l in links}
         for link in links:
             target = link.split('#')[0].strip()
             if not target or target.startswith('http'):
                 continue
+            # Resolve by: bare title, node title, or relative path
+            exists = (target in all_titles or target in node_titles or target in all_rel_paths)
             # Handle titles containing literal # (e.g. "Bridge #89")
             # Check the FULL link first (with #), then anchor-stripped
             full_target = link.strip()
-            if full_target in all_titles or full_target in node_titles:
+            if full_target in all_titles or full_target in node_titles or full_target in all_rel_paths:
+                continue
+            if exists:
                 continue
             # Check if the # is part of the title, not an anchor
             if '#' in link:
                 # Try resolving as-is (the # might be part of the title)
-                if link.strip() in all_titles or link.strip() in node_titles:
+                if link.strip() in all_titles or link.strip() in node_titles or link.strip() in all_rel_paths:
                     continue
                 # Also try without anchor
-                if target in all_titles or target in node_titles:
+                if target in all_titles or target in node_titles or target in all_rel_paths:
                     continue
                 broken_links.append({"source": fname, "target": target})
             else:
-                if target not in all_titles and target not in node_titles:
-                    broken_links.append({"source": fname, "target": target})
+                broken_links.append({"source": fname, "target": target})
     
     if broken_links:
         for bl in broken_links[:10]:

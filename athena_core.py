@@ -198,6 +198,11 @@ class VaultGraph:
                 title = title_match.group(1).strip()
             yt = metadata.get('title', '')
             if yt:
+                # Strip surrounding quotes if present
+                if yt.startswith('"') and yt.endswith('"'):
+                    yt = yt[1:-1]
+                elif yt.startswith("'") and yt.endswith("'"):
+                    yt = yt[1:-1]
                 title = yt
             
             status = metadata.get('status', 'unknown').strip('# ')
