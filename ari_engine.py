@@ -31,6 +31,7 @@ CONCEPTS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Concepts")
 PUBS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Publications")
 ARI_DIR = os.path.join(VAULT_ROOT, "04 Resources/ARI")
 DISTILLED_DIR = os.path.join(VAULT_ROOT, "04 Resources/Distilled")
+ARI_MEMORY_PATH = os.path.join(ARI_DIR, "ari_memory.json")
 os.makedirs(ARI_DIR, exist_ok=True)
 
 
@@ -214,6 +215,7 @@ class AnomalyDetector:
         pid = self._detect_missing_triads(pid)
         pid = self._detect_bridge_gaps(pid)
         pid = self._detect_stub_isolation(pid)
+        pid = self._detect_multi_hop_chains(pid)
         print(f"[ARI] Generated {pid} predictions")
 
     def _detect_asymmetric_edges(self, start_id):
@@ -224,6 +226,9 @@ class AnomalyDetector:
         If N >> M and both domains are substantive, predict a missing
         concept in Domain B that synthesizes the A→B connections.
         """
+        # Load persistent ARI memory for stale-pair dedup
+        ari_memory = self._load_ari_memory()
+
         # Count cross-domain link pairs
         cross_counts = {}
         for node in self.graph.nodes.values():
@@ -242,6 +247,10 @@ class AnomalyDetector:
             rev_data = cross_counts.get(rev_key, {'out': 0, 'from': []})
             forward = data['out']
             backward = rev_data['out']
+
+            # Skip if this domain pair was already written and neither domain grew
+            if self._is_domain_pair_stale(dom_a, dom_b, ari_memory):
+                continue
 
             # Asymmetry: at least 3:1 ratio and minimum 3 forward links
             if forward >= 3 and backward == 0:
@@ -411,6 +420,43 @@ class AnomalyDetector:
 
         return pid
 
+    def _load_ari_memory(self) -> list[dict]:
+        """Load persistent ARI memory — tracks every completed prediction."""
+        if os.path.exists(ARI_MEMORY_PATH):
+            try:
+                with open(ARI_MEMORY_PATH, 'r') as f:
+                    return json.load(f)
+            except:
+                return []
+        return []
+
+    def _save_ari_memory(self, entry: dict):
+        """Append one entry to persistent ARI memory."""
+        mem = self._load_ari_memory()
+        mem.append(entry)
+        with open(ARI_MEMORY_PATH, 'w') as f:
+            json.dump(mem, f, indent=2)
+
+    def _is_domain_pair_stale(self, dom_a: str, dom_b: str, memory: list[dict]) -> bool:
+        """Check if a domain pair was already bridged and the domains haven't grown."""
+        for entry in memory:
+            if entry.get('type') not in ('bridge_gap', 'asymmetric', 'missing_triad'):
+                continue
+            src = entry.get('source_domain', '').lower()
+            tgt = entry.get('target_domain', '').lower()
+            dom_a_lower = dom_a.lower()
+            dom_b_lower = dom_b.lower()
+            if {src, tgt} == {dom_a_lower, dom_b_lower}:
+                # Check if concept count changed in either domain
+                old_count_a = entry.get('source_concept_count', 0) if src == dom_a_lower else entry.get('target_concept_count', 0)
+                old_count_b = entry.get('target_concept_count', 0) if src == dom_a_lower else entry.get('source_concept_count', 0)
+                new_count_a = len(self.graph.domains.get(dom_a, []))
+                new_count_b = len(self.graph.domains.get(dom_b, []))
+                # Skip if neither domain grew by >= 2 concepts since last write
+                if new_count_a <= old_count_a + 1 and new_count_b <= old_count_b + 1:
+                    return True
+        return False
+
     def _detect_bridge_gaps(self, start_id):
         """
         Strategy 4: Bridge gaps via domain neighbor analysis.
@@ -418,6 +464,9 @@ class AnomalyDetector:
         predict a bridge publication. Reuses logic from the bridge recommender.
         """
         pid = start_id
+        # Load persistent memory
+        ari_memory = self._load_ari_memory()
+
         # Compute domain neighbor sets
         domain_neighbors = defaultdict(set)
         for node in self.graph.nodes.values():
@@ -426,11 +475,12 @@ class AnomalyDetector:
                 if target and target.domain != node.domain:
                     domain_neighbors[node.domain].add(target.domain)
 
-        # Already bridged domains — check ALL output locations
+        # Already bridged domains — check ALL output locations + memory
         already_bridged_titles = set()
         already_bridged_domain_pairs = set()
         already_bridged_keywords = {}  # domain_keyword -> set of paired domains
 
+        # Collect already-bridged from files
         for dirpath in [PUBS_DIR, ARI_DIR, DISTILLED_DIR]:
             if not os.path.isdir(dirpath):
                 continue
@@ -448,11 +498,7 @@ class AnomalyDetector:
                 if t:
                     already_bridged_titles.add(t.group(1).strip().lower())
                 # Content-based: extract domain keywords from title
-                # Titles like "Causal Inference × Statistics" -> bridge between Causal and Stats
                 title_text = content[:500].lower()
-                # Find all substantive domain-like words in the first 500 chars
-                domain_keywords = re.findall(r'(?:bridge[^a-z]*)(\w+(?:\s+\w+)?)', title_text)
-                domain_keywords += re.findall(r'(\w+(?:\s+\w+)?)(?:\s*×\s*|\s*&\s*|\s*and\s*|\s*vs\s*)', title_text)
                 # Also check for × separator pattern (domain × domain)
                 x_pairs = re.findall(r'(\w[\w\s/]+?)\s*[×x&]\s*(\w[\w\s/]+?)', title_text[:300])
                 for a, b in x_pairs:
@@ -494,6 +540,10 @@ class AnomalyDetector:
                         bridged_via_keywords = True
                         break
                 if bridged_via_keywords:
+                    continue
+
+                # Check persistent ARI memory — skip if already written and domains haven't grown
+                if self._is_domain_pair_stale(d1, d2, ari_memory):
                     continue
 
                 jaccard = len(shared) / max(1, len(n1 | n2))
@@ -604,6 +654,99 @@ class AnomalyDetector:
             )
             self.predictions.append(pred)
             pid += 1
+
+        return pid
+
+    def _detect_multi_hop_chains(self, start_id):
+        """
+        Strategy 6: Multi-hop reasoning chains.
+        Chains predictions across detectors: dangling sender -> missing triad -> bridge gap.
+        One prediction's output becomes the next prediction's input context.
+
+        Algorithm:
+        1. Find the top dangling sender (high out-links, low in-links, >= 100L)
+        2. Trace its most-linked concept -> find a missing triad through it
+        3. If the triad spans two domains -> score as a bridge_gap with pre-filled evidence
+        4. The chain is a SINGLE prediction that carries the full reasoning path
+        """
+        pid = start_id
+
+        # Step 1: Find top dangling senders
+        dangling = []
+        for node in self.graph.nodes.values():
+            out = len(node.wikilinks_out)
+            if out >= 6 and node.wikilinks_in <= 3 and node.lines >= 100:
+                dangling.append(node)
+        dangling.sort(key=lambda n: -len(n.wikilinks_out))
+        if not dangling:
+            return pid
+
+        top_dangler = dangling[0]
+
+        # Step 2: Which of its outbound links is a hub (most inbound links)?
+        top_links = []
+        for link in top_dangler.wikilinks_out:
+            target = self.graph.nodes.get(link)
+            if target and target.title != top_dangler.title:
+                top_links.append((target.wikilinks_in, target))
+        top_links.sort(key=lambda x: -x[0])
+        if not top_links:
+            return pid
+
+        hub = top_links[0][1]
+
+        # Step 3: Find concepts linking TO hub but NOT to top_dangler (missing triad)
+        missing_candidates = []
+        for node in self.graph.nodes.values():
+            if node.title == top_dangler.title or node.title == hub.title:
+                continue
+            links_to_hub = hub.title in node.wikilinks_out
+            links_to_dangler = top_dangler.title in node.wikilinks_out
+            if links_to_hub and not links_to_dangler and node.domain != hub.domain:
+                missing_candidates.append(node)
+
+        if not missing_candidates:
+            return pid
+
+        best_c = sorted(missing_candidates,
+                        key=lambda n: len(n.wikilinks_out) + n.wikilinks_in * 2,
+                        reverse=True)[0]
+
+        evidence = (
+            f"Multi-hop chain: '{top_dangler.title}' ({top_dangler.domain}) is a dangling sender "
+            f"({len(top_dangler.wikilinks_out)} out, {top_dangler.wikilinks_in} in) -> "
+            f"its top destination '{hub.title}' ({hub.domain}) is a hub "
+            f"({hub.wikilinks_in} backlinks) -> "
+            f"'{best_c.title}' ({best_c.domain}) links to the hub but not to the dangler. "
+            f"The chain implies: A->B->C exists, A->C missing. "
+            f"Writing the A->C concept would close the loop and integrate '{top_dangler.title}' "
+            f"into the network."
+        )
+
+        chain_confidence = min(0.85,
+            0.3 + len(top_dangler.wikilinks_out) * 0.03 + hub.wikilinks_in * 0.01)
+
+        pred = Prediction(
+            id=pid, type='multi_hop_chain',
+            confidence=chain_confidence,
+            source_domain=top_dangler.domain,
+            target_domain=best_c.domain,
+            predicted_title=f"{top_dangler.title} and {best_c.title} -- Closing the Loop Through {hub.title}",
+            predicted_domain=f"{top_dangler.domain} / {best_c.domain}",
+            evidence=evidence,
+            suggested_structure=[
+                f"The Chain: {top_dangler.title} -> {hub.title} -> {best_c.title}",
+                f"Why {top_dangler.title} Needs a Link to {best_c.title}",
+                "What the Graph Reveals About the Missing Connection",
+                "Implications for Domain Integration",
+                "Related Concepts That Complete the Loop"
+            ],
+            suggested_sources=[top_dangler.title, hub.title, best_c.title],
+            phi_impact=min(0.06, chain_confidence * 0.07),
+            novelty_score=min(0.9, chain_confidence * 1.1)
+        )
+        self.predictions.append(pred)
+        pid += 1
 
         return pid
 

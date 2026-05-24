@@ -499,7 +499,29 @@ class ARICycle:
             print(f"[ARI] No predictions.")
             return result
 
-        # Layer 2: Score — combine epistemic + narrative
+        # Build bridge recommender domain pairs for scoring boost
+        recommender_pairs = set()
+        try:
+            import sys as _sys
+            _sys.path.insert(0, os.path.expanduser('~/cognoscope'))
+            from bridge_recommender import load_vault, load_existing_bridges, find_bridge_candidates
+            br_files, br_backlinks, br_outgoing, br_domains, br_domain_nodes, br_neighbor_sets = load_vault()
+            br_existing = load_existing_bridges()
+            br_candidates = find_bridge_candidates(
+                br_files, br_backlinks, br_outgoing, br_domains,
+                br_domain_nodes, br_neighbor_sets, br_existing
+            )
+            for cand in br_candidates[:20]:
+                da = cand.get('domain_a', '').lower().strip()
+                db = cand.get('domain_b', '').lower().strip()
+                if da and db:
+                    recommender_pairs.add(tuple(sorted([da, db])))
+            print(f"[ARI] Loaded {len(recommender_pairs)} bridge-recommender pairs for scoring boost")
+        except Exception as e:
+            print(f"[ARI] Recommender integration skipped: {e}")
+        result['recommender_pairs_loaded'] = len(recommender_pairs)
+
+        # Layer 2: Score -- combine epistemic + narrative + recommender boost
         scored = []
         for pred in valid:
             # Epistemic value
@@ -507,12 +529,20 @@ class ARICycle:
             epistemic_score = epi.compute_score(pred)
             # Narrative potential
             narrative_score = self.narrative_scorer.score(pred, graph)
-            # Combined (60% epistemic, 40% narrative for blog mode)
-            combined = epistemic_score * 0.5 + narrative_score * 0.5
-            scored.append((combined, pred, epistemic_score, narrative_score))
+            # Recommender overlap boost
+            recommender_boost = 1.0
+            pa = pred.source_domain.lower().strip()
+            pb = pred.target_domain.lower().strip()
+            if pa and pb:
+                pair = tuple(sorted([pa, pb]))
+                if pair in recommender_pairs:
+                    recommender_boost = 1.5  # 50% boost for recommender-overlapping predictions
+            # Combined
+            combined = (epistemic_score * 0.4 + narrative_score * 0.4) * recommender_boost
+            scored.append((combined, pred, epistemic_score, narrative_score, recommender_boost))
 
         scored.sort(key=lambda x: -x[0])
-        combined, selected, epi_score, nar_score = scored[0]
+        combined, selected, epi_score, nar_score, recommender_boost = scored[0]
 
         result['selected_prediction'] = {
             'id': selected.id,
@@ -526,6 +556,8 @@ class ARICycle:
 
         print(f"[ARI] Selected: [{selected.type}] {selected.predicted_title}")
         print(f"       Epistemic: {epi_score:.3f}  Narrative: {nar_score:.3f}  Combined: {combined:.3f}")
+        if recommender_boost > 1.0:
+            print(f"       Recommender boost: {recommender_boost:.1f}x (overlaps bridge-recommender top 20)")
 
         if dry_run:
             print(f"[ARI] Dry run — would write: {selected.predicted_title}")
@@ -553,6 +585,33 @@ class ARICycle:
         }
         self.log.append(entry)
         self._save_log()
+
+        # Save to persistent ARI memory with concept counts for dedup
+        try:
+            mem_entry = {
+                'type': selected.type,
+                'source_domain': selected.source_domain,
+                'target_domain': selected.target_domain,
+                'title': title,
+                'timestamp': datetime.now().isoformat(),
+                'source_concept_count': len(graph.domains.get(selected.source_domain, [])),
+                'target_concept_count': len(graph.domains.get(selected.target_domain, [])),
+            }
+            # Import and use ari_engine's ARI_MEMORY_PATH
+            from ari_engine import ARI_MEMORY_PATH
+            mem = []
+            if os.path.exists(ARI_MEMORY_PATH):
+                try:
+                    with open(ARI_MEMORY_PATH, 'r') as f:
+                        mem = json.load(f)
+                except:
+                    pass
+            mem.append(mem_entry)
+            with open(ARI_MEMORY_PATH, 'w') as f:
+                json.dump(mem, f, indent=2)
+            print(f"[ARI] Saved dedup memory: {selected.source_domain} × {selected.target_domain}")
+        except Exception as e:
+            print(f"[ARI] Warning: could not save dedup memory: {e}")
 
         print(f"[ARI] Written: {path}")
         print(f"[ARI] Delivery text: {len(delivery_text)} chars")

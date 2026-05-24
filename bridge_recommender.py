@@ -230,6 +230,8 @@ def load_existing_bridges():
             mentioned_domains.add('Psychology')
         if 'psychology' in combined_text and 'neuroscience' in combined_text and ('adolescent' in combined_text or 'anhedonia' in combined_text):
             mentioned_domains.add('Psychology / Neuroscience')
+        if 'philosophy' in combined_text or 'epistemology' in combined_text or 'ontology' in combined_text:
+            mentioned_domains.add('Philosophy')
         if 'stress' in combined_text or 'allostatic' in combined_text:
             mentioned_domains.add('Stress')
         if 'finance' in combined_text:
