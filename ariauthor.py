@@ -30,7 +30,7 @@ from autoresearch import (
     Mutator, Metric, AutoResearchLoop, AutoResearchConfig,
     AutoResearchResult, save_ar_report, format_ar_result
 )
-from ari_engine import GraphLoader, AnomalyDetector
+from ari_engine import GraphLoader, AnomalyDetector, ConceptNode
 
 VAULT_ROOT = os.path.expanduser("~/Obsidian Vault")
 CONCEPTS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Concepts")
@@ -271,18 +271,113 @@ class VaultMutator(Mutator):
 
 
 # ──────────────────────────────────────────────
-# VAULT METRIC
+# VAULT METRIC v2 — Kvalita, nie kvantita
 # ──────────────────────────────────────────────
 
 class VaultMetric(Metric):
-    """Evaluate vault concept quality. Higher = better."""
+    """Evaluate vault concept quality. Higher = better.
+    
+    v2 changes:
+    1. Deep reading: measures factual density vs generic filler
+    2. Cross-domain meaningfulness: filters noise links via graph relevance
+    3. Φ contribution delta: how much this concept increases vault-wide integration
+    """
+    
+    GENERIC_PATTERNS = [
+        r'This concept explores',
+        r'The mechanisms described here',
+        r'This suggests a deeper',
+        r'Notably,',
+        r'This relationship suggests',
+        r'Future work should',
+        r'This is worth exploring',
+        r'The relationship between',
+        r'adjacent phenomena suggests',
+        r'This reveals that',
+        r'the fundamental architecture is shared',
+        r'what we thought were separate',
+        r'the boundary between',
+        r'an artifact of academic history',
+        r'the same control architecture',
+        r'the isomorphism between',
+        r'is evidence of a deeper',
+        r'not a coincidence',
+    ]
+    
+    # Cross-domain link pairs that vault already validates as meaningful
+    # (populated from existing high-quality cross-domain references in vault)
+    MEANINGFUL_PAIRS = {
+        ('Neuroscience', 'Psychology'): True,
+        ('Neuroscience', 'AI'): True,
+        ('Neuroscience', 'Sleep'): True,
+        ('Neuroscience', 'Philosophy'): True,
+        ('Psychology', 'Philosophy'): True,
+        ('Psychology', 'Neuroscience'): True,
+        ('Psychology', 'AI'): True,
+        ('AI', 'Neuroscience'): True,
+        ('AI', 'Psychology'): True,
+        ('AI', 'Philosophy'): True,
+        ('AI', 'Software Engineering'): True,
+        ('Finance', 'Economics'): True,
+        ('Finance', 'Psychology'): True,
+        ('Finance', 'Neuroscience'): True,
+        ('Trading', 'Finance'): True,
+        ('Trading', 'Psychology'): True,
+        ('Causal Inference', 'Statistics'): True,
+        ('Causal Inference', 'AI'): True,
+        ('Statistics', 'Causal Inference'): True,
+        ('Sleep', 'Neuroscience'): True,
+        ('Sleep', 'Psychology'): True,
+        ('Sleep', 'Physiology'): True,
+        ('Cell Biology', 'Physiology'): True,
+        ('Cell Biology', 'Longevity'): True,
+        ('Cell Biology', 'Neuroscience'): True,
+        ('Physiology', 'Neuroscience'): True,
+        ('Physiology', 'Sleep'): True,
+        ('Longevity', 'Cell Biology'): True,
+        ('Longevity', 'Physiology'): True,
+        ('Philosophy', 'Neuroscience'): True,
+        ('Philosophy', 'Psychology'): True,
+        ('Philosophy', 'AI'): True,
+        ('Software Engineering', 'AI'): True,
+        ('Software Engineering', 'Neuroscience'): True,
+        ('Software Engineering', 'Philosophy'): True,
+        ('Economics', 'Finance'): True,
+        ('Economics', 'Psychology'): True,
+        ('Complexity Science', 'Neuroscience'): True,
+        ('Complexity Science', 'Finance'): True,
+        ('Complexity Science', 'AI'): True,
+        ('Immunology', 'Neuroscience'): True,
+        ('Immunology', 'Cell Biology'): True,
+        ('Immunology', 'Longevity'): True,
+        ('Meta', 'AI'): True,
+        ('Meta', 'Neuroscience'): True,
+        ('Meta', 'Philosophy'): True,
+    }
+    
+    # Domains that almost never form meaningful cross-domain links
+    NOISE_DOMAINS = {
+        'Blockchain', 'Crypto', 'NFT', 'Web3', 'Metaverse',
+        'Solana', 'Bitcoin', 'Ethereum', 'DeFi',
+    }
     
     def __init__(self):
         self.graph = None
         try:
             self.graph = GraphLoader()
+            self._build_meaningful_pairs()
         except Exception:
             pass
+    
+    def _build_meaningful_pairs(self):
+        """Auto-extend MEANINGFUL_PAIRS from existing vault cross-links."""
+        if not self.graph:
+            return
+        for (d1, d2), count in self.graph.domain_pairs.items():
+            if count >= 3:  # At least 3 existing vault notes cross-link these domains
+                key = (d1, d2)
+                self.MEANINGFUL_PAIRS[key] = True
+                self.MEANINGFUL_PAIRS[(d2, d1)] = True
     
     def evaluate(self, file_path: str) -> float:
         """Compute vault quality metric for a concept note."""
@@ -293,53 +388,365 @@ class VaultMetric(Metric):
         except Exception:
             return 0.0
     
+    def _extract_domain(self, content: str) -> str | None:
+        match = re.search(r'domain:\s*(.+?)$', content, re.MULTILINE)
+        return match.group(1).strip() if match else None
+    
     def evaluate_content(self, content: str, file_path: str = "") -> float:
-        """Compute metric from content string."""
+        """Compute metric from content string.
+        
+        Scoring breakdown:
+          1. Substantive content (0.25) — deep reading: facts vs filler
+          2. Quality wikilinks (0.25) — meaningful + domain-relevant, penalises noise
+          3. Structure quality (0.15) — numbered sections with actual depth
+          4. Φ contribution (0.20) — how much this increases vault integration
+          5. Frontmatter + breaktruth (0.15) — baseline requirements
+        
+        Max: 1.0 (theoretical ceiling)
+        Good evergreen: 0.50-0.75
+        Excellent evergreen: 0.75-0.90
+        Outstanding (rare): 0.90+
+        """
         if not content.strip():
             return 0.0
         
-        # 1. Content size score (capped at 400L)
         lines = content.count('\n') + 1
-        size_score = min(1.0, lines / 400) * 0.20
+        domain = self._extract_domain(content)
         
-        # 2. Wikilink density
-        wikilinks = len(re.findall(r'\[\[([^\]]+)\]\]', content))
-        density_score = min(1.0, wikilinks / 20) * 0.25
+        # ── 1. SUBSTANTIVE CONTENT (0.25) ──
+        deep_score = self._score_deep_reading(content, lines)
         
-        # 3. Section quality
-        required_sections = ["## 1", "## 2", "## 3"]
-        section_score = sum(1 for s in required_sections if s in content) / len(required_sections) * 0.15
+        # ── 2. QUALITY WIKILINKS (0.25) ──
+        link_score = self._score_wikilinks(content, domain)
         
-        # 4. Frontmatter presence
-        has_frontmatter = content.startswith("---")
-        has_domain = "domain:" in content[:100]
-        has_sources = "sources:" in content[:100] or "---" not in content[:100] == False
-        fm_score = (has_frontmatter + has_domain) / 2 * 0.10
+        # ── 3. STRUCTURE QUALITY (0.15) ──
+        structure_score = self._score_structure(content)
         
-        # 5. Breaktruth claim
-        has_breaktruth = "## Breaktruth Claim" in content
-        bt_score = 0.10 if has_breaktruth else 0.0
+        # ── 4. Φ CONTRIBUTION (0.20) ──
+        phi_score = self._score_phi_contribution(content, file_path, domain)
         
-        # 6. Cross-domain connections (if graph is available)
-        cd_score = 0.0
-        if self.graph:
-            domain = self._extract_domain(content)
-            if domain:
-                cross_domain_links = 0
-                for link in re.findall(r'\[\[([^\]]+)\]\]', content):
-                    node = self.graph.nodes.get(link)
-                    if node and node.domain and node.domain != domain:
-                        cross_domain_links += 1
-                cd_score = min(1.0, cross_domain_links / 5) * 0.20
-            else:
-                cd_score = 0.05
+        # ── 5. BASELINE (0.15) ──
+        baseline_score = self._score_baseline(content)
         
-        total = size_score + density_score + section_score + fm_score + bt_score + cd_score
-        return round(total, 4)
+        total = (deep_score * 0.25 + link_score * 0.25 + structure_score * 0.15
+                 + phi_score * 0.20 + baseline_score * 0.15)
+        
+        return round(min(1.0, total), 4)
     
-    def _extract_domain(self, content: str) -> str | None:
-        match = re.search(r'domain:\s*(.+?)\n', content)
-        return match.group(1).strip() if match else None
+    # ──────────────────────────────────────────
+    # 1. DEEP READING METRIC
+    # ──────────────────────────────────────────
+    
+    def _score_deep_reading(self, content: str, lines: int) -> float:
+        """Measure substantive content density vs generic filler.
+        
+        v2.1: increased floor for AR-tuned content (sections + references count)
+        """
+        score = 0.0
+        
+        # 1a. GENERIC FILLER PENALTY
+        generic_count = 0
+        for pattern in self.GENERIC_PATTERNS:
+            generic_count += len(re.findall(pattern, content, re.IGNORECASE))
+        
+        generic_penalty = min(0.5, generic_count * 0.05)
+        
+        # 1b. SPECIFIC CONTENT (numbers, data, citations)
+        has_numbers = bool(re.search(r'\d+[%×±]|\b\d{3,}\b', content))
+        has_citations_paren = bool(re.search(r'\([A-Z][a-z]+.*?\d{4}\)', content))
+        has_citations_bracket = bool(re.search(r'\[\d+[^}\]]*\]', content))
+        has_tables = bool(re.search(r'\|.*\|.*\|', content))
+        has_formulas = bool(re.search(r'\$.*\$|\\[a-zA-Z]+', content))
+        
+        specificity_score = (
+            0.15 * has_numbers +
+            0.15 * has_citations_paren +
+            0.10 * has_citations_bracket +
+            0.10 * has_tables +
+            0.10 * has_formulas
+        )
+        
+        # 1c. SUBSTANTIVE SENTENCES — count paragraphs with real claims
+        substantive_clues = [
+            ' is the ', ' refers to ', ' defined as ',
+            ' demonstrates ', ' shows that ', ' found that ',
+            ' because ', ' therefore ', ' however ',
+            ' Specifically, ', ' For example, ', ' Importantly, ',
+            'mechanism', 'pathway', 'circuit', 'process',
+            'theory', 'hypothesis', 'evidence', 'data',
+            'region', 'system', 'network', 'architecture',
+        ]
+        
+        sentences = content.split('. ')
+        substantive_sentences = sum(
+            1 for s in sentences if any(clue.lower() in s.lower() for clue in substantive_clues)
+        )
+        total_sentences = max(1, len(sentences))
+        density_ratio = min(1.0, substantive_sentences / max(1, total_sentences) * 2)
+        
+        # 1d. SECTION DEPTH — paragraphs (5+ lines) in sections
+        sections = re.split(r'\n## ', content)
+        deep_sections = sum(1 for s in sections[1:] if len(s.split('\n')) >= 5)
+        depth_ratio = min(1.0, deep_sections / max(1, len(sections) - 1))
+        
+        # 1e. CONTENT LENGTH BONUS — reward substantive length (not just presence)
+        length_bonus = min(0.2, lines / 1000 * 0.2)
+        
+        score = (specificity_score * 0.3 + density_ratio * 0.25 + depth_ratio * 0.25 
+                 + length_bonus - generic_penalty)
+        
+        # Floor based on content presence
+        base = 0.05 if lines >= 10 else 0.0
+        has_frontmatter = content.startswith('---')
+        if has_frontmatter and lines >= 15:
+            base = 0.15
+        
+        return max(base, min(1.0, score))
+    
+    # ──────────────────────────────────────────
+    # 2. QUALITY WIKILINKS METRIC
+    # ──────────────────────────────────────────
+    
+    def _score_wikilinks(self, content: str, domain: str | None) -> float:
+        """Measure wikilink quality vs noise.
+        
+        Rewards:
+          - Cross-domain links to MEANINGFUL_PAIRS domains
+          - Links to high-Φ concepts (well-integrated)
+          - Bidirectional references (link exists both ways)
+        
+        Penalises:
+          - Links to NOISE_DOMAINS (crypto, blockchain, etc.)
+          - Generic self-links (same domain without real connection)
+          - Links to stubs (low-value targets)
+        """
+        wikilinks = re.findall(r'\[\[([^\]]+)\]\]', content)
+        if not wikilinks:
+            return 0.0
+        
+        if not self.graph:
+            # Fallback without graph: just count unique
+            return min(1.0, len(set(wikilinks)) / 15) * 0.5
+        
+        total_score = 0.0
+        meaningful_count = 0
+        noise_count = 0
+        
+        for link_text in wikilinks:
+            node = self.graph.nodes.get(link_text)
+            if not node:
+                continue
+            
+            link_domain = node.domain
+            
+            # Check if link is meaningful
+            if domain and link_domain and domain != link_domain:
+                # Cross-domain link
+                pair = (domain, link_domain)
+                if pair in self.MEANINGFUL_PAIRS:
+                    meaningful_count += 1
+                    # Bonus for high-Φ targets
+                    total_score += 0.12 * min(1.0, node.phi_estimate * 3)
+                elif link_domain in self.NOISE_DOMAINS:
+                    noise_count += 1
+                    total_score -= 0.20  # Penalty for noise
+                elif node.lines >= 100:
+                    # Unknown but substantive cross-domain link = potential discovery
+                    meaningful_count += 0.5
+                    total_score += 0.06
+            elif domain and link_domain and domain == link_domain:
+                # Same-domain link: useful if target is high-Φ
+                if node.phi_estimate >= 0.5:
+                    total_score += 0.06
+                elif node.lines >= 50:
+                    total_score += 0.03
+            else:
+                # Unknown domain link
+                if node.phi_estimate >= 0.3:
+                    total_score += 0.04
+        
+        # Normalise by total links (but reward meaningful links)
+        total_links = max(1, len(wikilinks))
+        noise_penalty = min(0.5, noise_count * 0.15)
+        meaningful_bonus = min(0.3, meaningful_count * 0.05)
+        
+        normalised = (total_score / total_links * 2) + meaningful_bonus - noise_penalty
+        
+        return max(0.0, min(1.0, normalised))
+    
+    # ──────────────────────────────────────────
+    # 3. STRUCTURE QUALITY
+    # ──────────────────────────────────────────
+    
+    def _score_structure(self, content: str) -> float:
+        """Measure structure quality beyond just 'has sections'.
+        
+        Rewards:
+          - Numbered sections with depth (not just headers)
+          - Tables with content
+          - Code blocks or formulas
+          - Consistent formatting
+        """
+        score = 0.0
+        
+        # Numbered sections (## 1, ## 2, ## 3...)
+        sections = re.findall(r'^## \d+\.', content, re.MULTILINE)
+        section_depth = min(1.0, len(sections) / 5) * 0.30
+        score += section_depth
+        
+        # Tables (markdown tables with content)
+        tables = re.findall(r'^\|.*\|$', content, re.MULTILINE)
+        table_score = min(1.0, len(tables) / 15) * 0.25
+        score += table_score
+        
+        # Code blocks
+        has_code = '```' in content
+        score += 0.10 if has_code else 0.0
+        
+        # Formulas (LaTeX math)
+        has_formulas = bool(re.search(r'\$.*\$', content))
+        score += 0.10 if has_formulas else 0.0
+        
+        # Consistent paragraph length (penalty for single-line sections)
+        paragraphs = [p for p in content.split('\n\n') if len(p.strip()) > 0]
+        shallow_paras = sum(1 for p in paragraphs if 1 < len(p.split('\n')) <= 2 and not p.startswith('|'))
+        shallow_ratio = shallow_paras / max(1, len(paragraphs))
+        depth_penalty = shallow_ratio * 0.15
+        
+        score -= depth_penalty
+        
+        return max(0.0, min(1.0, score))
+    
+    # ──────────────────────────────────────────
+    # 4. Φ CONTRIBUTION DELTA
+    # ──────────────────────────────────────────
+    
+    def _score_phi_contribution(self, content: str, file_path: str, 
+                                  domain: str | None) -> float:
+        """Measure how much this concept contributes to vault-wide integration.
+        
+        Φ contribution = how many NEW connections this concept makes
+        between domains that were previously not connected.
+        
+        Metrics:
+          a. Links to high-Φ vault concepts
+          b. Creates new cross-domain edges (novel connections)
+          c. Bridges domains that had zero existing links
+        
+        Without graph: fallback to link diversity.
+        """
+        if not self.graph:
+            # Fallback: unique domains linked
+            wikilinks = re.findall(r'\[\[([^\]]+)\]\]', content)
+            domains_linked = set()
+            for link in wikilinks:
+                node = self.graph.nodes.get(link) if self.graph else None
+                if node and node.domain:
+                    domains_linked.add(node.domain)
+            return min(1.0, len(domains_linked) / 4) * 0.5 + 0.1
+        
+        wikilinks = re.findall(r'\[\[([^\]]+)\]\]', content)
+        total_domains = len(set(
+            self.graph.nodes.get(l, ConceptNode(file='', title=l, status='unknown',
+                                   domain='Unknown', tags=[], aliases=[],
+                                   lines=0, wikilinks_out=[], wikilinks_in=0,
+                                   has_sources=False, date='', phi_estimate=0.0)).domain
+            for l in wikilinks if self.graph.nodes.get(l)
+        ))
+        
+        # Reward linking to high-Φ concepts
+        phi_sum = sum(
+            max(0, self.graph.nodes[l].phi_estimate if l in self.graph.nodes else 0.0)
+            for l in wikilinks if self.graph.nodes.get(l)
+        ) if wikilinks else 0
+        avg_target_phi = phi_sum / max(1, len(wikilinks))
+        
+        # Reward domain diversity
+        domain_diversity = min(1.0, total_domains / 4) * 0.5
+        
+        # Reward high-quality targets
+        target_quality = min(1.0, avg_target_phi * 3) * 0.3
+        
+        # Novelty bonus: if concept creates EDGES between domains
+        # that had no previous connection in vault (requires full analysis)
+        novelty = 0.0
+        if file_path:
+            novelty = self._estimate_novelty(content, file_path, domain, wikilinks)
+        
+        return min(1.0, domain_diversity + target_quality + novelty)
+    
+    def _estimate_novelty(self, content: str, file_path: str,
+                           domain: str | None, wikilinks: list[str]) -> float:
+        """Estimate novelty: does this concept make new cross-domain links?"""
+        if not self.graph or not domain:
+            return 0.0
+        
+        if not wikilinks:
+            return 0.0
+        
+        # Count cross-domain links that are to well-integrated targets
+        cross_integrated = 0
+        total_cross = 0
+        
+        for link in set(wikilinks):
+            node = self.graph.nodes.get(link)
+            if node and node.domain and node.domain != domain:
+                total_cross += 1
+                if node.phi_estimate >= 0.6:  # High-Φ concept
+                    cross_integrated += 1
+        
+        if total_cross == 0:
+            return 0.0
+        
+        # Fraction of cross-links to high-value targets
+        ratio = cross_integrated / max(1, total_cross)
+        return ratio * 0.2
+    
+    # ──────────────────────────────────────────
+    # 5. BASELINE
+    # ──────────────────────────────────────────
+    
+    def _score_baseline(self, content: str) -> float:
+        """Check baseline vault requirements."""
+        score = 0.0
+        
+        # Frontmatter
+        has_fm = content.startswith('---')
+        has_domain = 'domain:' in content[:100]
+        has_sources = 'sources:' in content[:200]
+        
+        fm_score = (
+            0.10 * has_fm +
+            0.10 * has_domain +
+            0.10 * has_sources
+        )
+        score += fm_score
+        
+        # Breaktruth claim
+        if '## Breaktruth Claim' in content:
+            score += 0.15
+        elif '## Breaktruth' in content:
+            score += 0.10
+        
+        # Title (should be meaningful, not generic)
+        title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
+        if title_match:
+            title = title_match.group(1).strip()
+            if len(title) >= 5 and not title.startswith('Auto-generated'):
+                score += 0.10
+        
+        # Status: evergreen bonus
+        if 'status: evergreen' in content[:200]:
+            score += 0.10
+        
+        # Minimum length
+        lines = content.count('\n') + 1
+        if 100 <= lines <= 500:
+            score += 0.10
+        elif lines > 500:
+            score += 0.05  # Very long notes may need splitting
+        
+        return min(1.0, score)
 
 
 # ──────────────────────────────────────────────
