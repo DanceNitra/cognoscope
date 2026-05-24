@@ -1,0 +1,33 @@
+{
+  "mode": "nightly",
+  "timestamp": "2026-05-24T17:25:06.130425",
+  "duration_sec": 5.218341588973999,
+  "phase1": [
+    {
+      "subject": "Multiple Sclerosis",
+      "experiments": 32,
+      "kept": 20,
+      "improvement": 462.9139072847682,
+      "metric_from": 0.151,
+      "metric_to": 0.85
+    },
+    {
+      "subject": "Journaling & Review",
+      "experiments": 34,
+      "kept": 18,
+      "improvement": 377.5280898876404,
+      "metric_from": 0.178,
+      "metric_to": 0.85
+    },
+    {
+      "subject": "Solana",
+      "experiments": 28,
+      "kept": 17,
+      "improvement": 515.9420289855071,
+      "metric_from": 0.138,
+      "metric_to": 0.85
+    }
+  ],
+  "phase2": [],
+  "phase3": []
+}

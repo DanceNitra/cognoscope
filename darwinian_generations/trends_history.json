@@ -1,0 +1,122 @@
+[
+  {
+    "generation": 3,
+    "timestamp": "2026-05-24T18:05:46.506109",
+    "population_size": 955,
+    "total_phi": 328.1925000000002,
+    "mean_fitness": 0.5193997207678881,
+    "diversity": 0.7727008286714948,
+    "domain_count": 75,
+    "extinct_count": 19,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 4,
+    "timestamp": "2026-05-24T18:06:59.253916",
+    "population_size": 955,
+    "total_phi": 328.1925000000002,
+    "mean_fitness": 0.5193997207678881,
+    "diversity": 0.7727008286714948,
+    "domain_count": 75,
+    "extinct_count": 19,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 5,
+    "timestamp": "2026-05-24T18:08:32.640057",
+    "population_size": 955,
+    "total_phi": 328.1925000000002,
+    "mean_fitness": 0.5193997207678881,
+    "diversity": 0.7727008286714948,
+    "domain_count": 75,
+    "extinct_count": 19,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 6,
+    "timestamp": "2026-05-24T18:51:02.337475",
+    "population_size": 1010,
+    "total_phi": 339.008,
+    "mean_fitness": 0.5147330693069306,
+    "diversity": 0.7629373694632163,
+    "domain_count": 91,
+    "extinct_count": 19,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 7,
+    "timestamp": "2026-05-24T19:23:56.097121",
+    "population_size": 1011,
+    "total_phi": 341.9521999999999,
+    "mean_fitness": 0.5193700098911969,
+    "diversity": 0.7616310057028202,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 8,
+    "timestamp": "2026-05-24T19:25:44.275459",
+    "population_size": 1011,
+    "total_phi": 341.9521999999999,
+    "mean_fitness": 0.5193700098911969,
+    "diversity": 0.7616310057028202,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 9,
+    "timestamp": "2026-05-24T20:51:00.884334",
+    "population_size": 1020,
+    "total_phi": 346.50570000000033,
+    "mean_fitness": 0.5223056993464052,
+    "diversity": 0.7607200009586972,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 10,
+    "timestamp": "2026-05-24T20:54:52.311072",
+    "population_size": 1020,
+    "total_phi": 346.50570000000033,
+    "mean_fitness": 0.5223056993464052,
+    "diversity": 0.7607200009586972,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 11,
+    "timestamp": "2026-05-24T21:25:30.256907",
+    "population_size": 1031,
+    "total_phi": 351.3613999999995,
+    "mean_fitness": 0.5247750662786944,
+    "diversity": 0.7591880653347212,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 12,
+    "timestamp": "2026-05-24T21:26:06.097345",
+    "population_size": 1031,
+    "total_phi": 351.3613999999995,
+    "mean_fitness": 0.5247750662786944,
+    "diversity": 0.7591880653347212,
+    "domain_count": 92,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  }
+]

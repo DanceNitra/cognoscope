@@ -1,0 +1,219 @@
+{
+  "generation": 5,
+  "timestamp": "2026-05-24T18:08:32.640057",
+  "population_size": 955,
+  "total_phi": 328.1925000000002,
+  "mean_fitness": 0.5193997207678881,
+  "diversity": 0.7727008286714948,
+  "domains": {
+    "Statistics / Research Methods": 3,
+    "Meta": 72,
+    "AI": 118,
+    "AI Engineering": 8,
+    "AI Safety": 4,
+    "Statistics": 62,
+    "Software Engineering": 89,
+    "Neuroscience": 59,
+    "Physiology": 35,
+    "AI / Neuroscience": 4,
+    "Immunology": 10,
+    "Psychology": 54,
+    "Sleep / Neuroscience": 13,
+    "Formal Foundations": 5,
+    "Psychology / Neuroscience": 2,
+    "Finance": 78,
+    "AI / Systems Engineering": 20,
+    "Statistics / Epidemiology": 3,
+    "Statistics / Data Analysis": 1,
+    "Longevity": 12,
+    "Cell Biology": 26,
+    "Causal Inference": 59,
+    "Neuroscience / Physiology": 3,
+    "AI / Machine Learning": 9,
+    "Causal Inference / Statistics": 2,
+    "Research Methods": 30,
+    "Systems Biology": 3,
+    "Health": 9,
+    "Chronobiology": 9,
+    "Neuroscience / Longevity": 1,
+    "Neuroscience / Chronobiology": 2,
+    "Economics": 12,
+    "Statistics / Causal Inference": 6,
+    "Genomics": 13,
+    "Biology": 8,
+    "unknown": 3,
+    "Mathematics": 4,
+    "Sleep Medicine / Chronobiology": 3,
+    "Medicine": 6,
+    "Philosophy": 11,
+    "Complexity Science": 9,
+    "Computer Science": 5,
+    "ML/AI": 5,
+    "Neuroscience / Psychology": 1,
+    "Philosophy / Neuroscience / AI": 1,
+    "Control Theory": 3,
+    "Systems": 1,
+    "Productivity": 3,
+    "Nutrition": 4,
+    "Machine Learning": 4,
+    "Pharmacology": 5,
+    "Sleep Science": 4,
+    "Physics": 5,
+    "AI / Systems": 1,
+    "AI Interpretability": 2,
+    "Software Engineering / AI": 3,
+    "Neuroscience / Cognitive Psychology": 2,
+    "Physiology / Metabolism": 1,
+    "AI / Machine Learning / Control Theory": 1,
+    "Cybersecurity": 3,
+    "AI / Agents": 4,
+    "AI / Systems Thinking": 1,
+    "Neuroscience / Sleep Medicine": 1,
+    "Neuroscience / Finance": 1,
+    "Chronobiology / Genetics": 1,
+    "AI / Finance": 1,
+    "Biomedical Science": 1,
+    "Biochemistry / AI": 1,
+    "Psychology / Statistics": 1,
+    "Neuroscience / Sleep Science": 2,
+    "Finance / Engineering": 1,
+    "AI / Software Engineering": 1,
+    "Sleep": 3,
+    "Statistics / Finance": 1,
+    "AI Agents": 1
+  },
+  "extinct_candidates": [
+    "An Apple II for Teacher",
+    "Apple unveils new accessibility features",
+    "CD",
+    "CISA Admin Leaked AWS GovCloud Keys on GitHub",
+    "Click 2016",
+    "Gaussian Splat of a Strawberry",
+    "Gentoo News: Copy Fail, Dirty Frag, and Fragnesia Kernel Vulnerabilities",
+    "Google IO",
+    "Google IO 26 Keynote",
+    "Graduates are booing pep talks on AI at college commencements",
+    "Kv4p HT  A homebrew 1W radio VHF or UHF that plugs into an Android phone",
+    "Mini Shai-Hulud Strikes Again: 314 npm Packages Compromised",
+    "Multi-Stream LLMs: new paper on parallelizingseparating prompts, thinking, IO",
+    "OpenBSD 7.9",
+    "Photo GIMP  A Patch for GIMP 3 for Photoshop Users",
+    "Polypad",
+    "Research Note",
+    "Show HN: I made a 3D pose maker for artists",
+    "The last six months in LLMs in five minutes"
+  ],
+  "adaptive_peaks": [
+    {
+      "name": "Sleep Architecture",
+      "domain": "Sleep / Neuroscience",
+      "fitness": 0.7412,
+      "why": "19 inbound links (hub) + breaktruth claim present + 15 sections (deep)"
+    },
+    {
+      "name": "Synaptic Plasticity",
+      "domain": "Neuroscience",
+      "fitness": 0.7302,
+      "why": "19 inbound links (hub) + breaktruth claim present + 6 sections (deep)"
+    },
+    {
+      "name": "Cognitive Psychology",
+      "domain": "Psychology",
+      "fitness": 0.719,
+      "why": "16 inbound links (hub) + 10 sections (deep)"
+    },
+    {
+      "name": "Technical Analysis & Regime Detection",
+      "domain": "Finance",
+      "fitness": 0.715,
+      "why": "20 inbound links (hub) + 8 sections (deep)"
+    },
+    {
+      "name": "Epistemology",
+      "domain": "Philosophy",
+      "fitness": 0.711,
+      "why": "13 inbound links (hub) + 11 sections (deep)"
+    }
+  ],
+  "crossover_pairs": [
+    {
+      "a": "Aggregation",
+      "b": "Bridge #93 \u2014 Neuroscience \u00d7 Longevity",
+      "da": "Statistics / Data Analysis",
+      "db": "Neuroscience / Longevity",
+      "score": -4.9457
+    },
+    {
+      "a": "Aggregation",
+      "b": "Pattern Recognition",
+      "da": "Statistics / Data Analysis",
+      "db": "AI / Finance",
+      "score": -5.1262
+    },
+    {
+      "a": "Bridge #93 \u2014 Neuroscience \u00d7 Longevity",
+      "b": "Self-Rewriting Programs \u2014 Runtime Code Modification for RSI",
+      "da": "Neuroscience / Longevity",
+      "db": "AI / Software Engineering",
+      "score": -7.8554
+    },
+    {
+      "a": "Photoreception",
+      "b": "Risk Management",
+      "da": "Neuroscience / Chronobiology",
+      "db": "Finance / Engineering",
+      "score": -8.0684
+    },
+    {
+      "a": "Dynamical Systems",
+      "b": "Macronutrients and Energy Balance",
+      "da": "Mathematics",
+      "db": "Nutrition",
+      "score": -9.1649
+    }
+  ],
+  "speciation_signals": {
+    "Finance": {
+      "count": 78,
+      "subdomains": [
+        "Regime",
+        "Portfolio",
+        "Risk",
+        "Sharpe",
+        "Volatility"
+      ]
+    },
+    "Neuroscience": {
+      "count": 59,
+      "subdomains": [
+        "Cortex",
+        "Serotonin",
+        "Hippocampus",
+        "Hpa",
+        "Acetylcholine"
+      ]
+    },
+    "Psychology": {
+      "count": 54,
+      "subdomains": [
+        "Motivation",
+        "Cognitive",
+        "Memory",
+        "Heuristic",
+        "Attention"
+      ]
+    }
+  },
+  "niche_gaps": {
+    "underpopulated": [
+      "Statistics / Data Analysis",
+      "Neuroscience / Longevity",
+      "Neuroscience / Psychology",
+      "Philosophy / Neuroscience / AI",
+      "Systems"
+    ],
+    "overcrowded": [
+      "AI"
+    ]
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "subject_name": "Light Exposure",
+  "total_experiments": 26,
+  "kept_experiments": 18,
+  "metric_start": 0.591,
+  "metric_end": 0.8475,
+  "metric_improvement_pct": 43.40101522842641,
+  "duration_sec": 2.096256971359253,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.6935,
+      "metric_after": 0.6935,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0011162757873535156
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.6975,
+      "metric_after": 0.6975,
+      "mutation_log": "add wikilinks: Production AI Engineering Playbook, Graph Databases, AI Deployment & CI/CD (+3)",
+      "duration_sec": 0.0036118030548095703
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.701,
+      "metric_after": 0.701,
+      "mutation_log": "add wikilinks: \"Attention Residue\", REM Sleep (+2)",
+      "duration_sec": 0.0015671253204345703
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.708,
+      "metric_after": 0.708,
+      "mutation_log": "add Complexity Science connection",
+      "duration_sec": 0.0006229877471923828
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.713,
+      "metric_after": 0.713,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0016276836395263672
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.72,
+      "metric_after": 0.72,
+      "mutation_log": "add Nutrition connection",
+      "duration_sec": 0.0008416175842285156
+    },
+    {
+      "id": 11,
+      "kept": true,
+      "metric_before": 0.7235,
+      "metric_after": 0.7235,
+      "mutation_log": "add wikilinks: Deep Reinforcement Learning, Caching Architecture (+2)",
+      "duration_sec": 0.001337289810180664
+    },
+    {
+      "id": 12,
+      "kept": true,
+      "metric_before": 0.727,
+      "metric_after": 0.727,
+      "mutation_log": "add wikilinks: Crypto Trading & On-Chain Data, Backdoor Criterion (+2)",
+      "duration_sec": 0.0013942718505859375
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.727,
+      "metric_after": 0.7225,
+      "mutation_log": "deepen Light Detection Mechanisms",
+      "duration_sec": 0.0006918907165527344
+    },
+    {
+      "id": 16,
+      "kept": true,
+      "metric_before": 0.741,
+      "metric_after": 0.741,
+      "mutation_log": "add AI Safety connection",
+      "duration_sec": 0.0012943744659423828
+    },
+    {
+      "id": 17,
+      "kept": true,
+      "metric_before": 0.755,
+      "metric_after": 0.755,
+      "mutation_log": "add AI connection",
+      "duration_sec": 0.0008168220520019531
+    },
+    {
+      "id": 19,
+      "kept": true,
+      "metric_before": 0.769,
+      "metric_after": 0.769,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.0012874603271484375
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.769,
+      "metric_after": 0.7645,
+      "mutation_log": "deepen Key Effects",
+      "duration_sec": 0.0006899833679199219
+    },
+    {
+      "id": 23,
+      "kept": false,
+      "metric_before": 0.769,
+      "metric_after": 0.7645,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.031122684478759766
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.783,
+      "metric_after": 0.783,
+      "mutation_log": "add Statistics connection",
+      "duration_sec": 0.0071713924407958984
+    },
+    {
+      "id": 26,
+      "kept": true,
+      "metric_before": 0.797,
+      "metric_after": 0.797,
+      "mutation_log": "add Software Engineering / AI connection",
+      "duration_sec": 0.005889177322387695
+    },
+    {
+      "id": 27,
+      "kept": false,
+      "metric_before": 0.797,
+      "metric_after": 0.7925,
+      "mutation_log": "deepen Health Impacts",
+      "duration_sec": 0.006249666213989258
+    },
+    {
+      "id": 28,
+      "kept": false,
+      "metric_before": 0.797,
+      "metric_after": 0.7925,
+      "mutation_log": "deepen Light Detection Mechanisms",
+      "duration_sec": 0.002616405487060547
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.797,
+      "metric_after": 0.7925,
+      "mutation_log": "deepen Circadian Entrainment",
+      "duration_sec": 0.016275882720947266
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.8005,
+      "metric_after": 0.8005,
+      "mutation_log": "add wikilinks: \"Game Theory\", \"Pharmacogenomics\" (+2)",
+      "duration_sec": 0.001697540283203125
+    },
+    {
+      "id": 35,
+      "kept": true,
+      "metric_before": 0.818,
+      "metric_after": 0.818,
+      "mutation_log": "add Health connection",
+      "duration_sec": 0.0012619495391845703
+    },
+    {
+      "id": 36,
+      "kept": true,
+      "metric_before": 0.823,
+      "metric_after": 0.823,
+      "mutation_log": "add wikilinks: \"Mitochondrial Biology\", Cloud Computing, \"Epigenetic Clocks and Biological Age\" (+5)",
+      "duration_sec": 0.0019600391387939453
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.823,
+      "metric_after": 0.8175,
+      "mutation_log": "deepen Practical Applications",
+      "duration_sec": 0.0006418228149414062
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.823,
+      "metric_after": 0.8175,
+      "mutation_log": "deepen Key Effects",
+      "duration_sec": 0.002184152603149414
+    },
+    {
+      "id": 42,
+      "kept": true,
+      "metric_before": 0.844,
+      "metric_after": 0.844,
+      "mutation_log": "add Control Theory connection",
+      "duration_sec": 0.0010933876037597656
+    },
+    {
+      "id": 47,
+      "kept": true,
+      "metric_before": 0.8475,
+      "metric_after": 0.8475,
+      "mutation_log": "add wikilinks: Active Inference, Self-Modification (+2)",
+      "duration_sec": 0.0023941993713378906
+    }
+  ]
+}

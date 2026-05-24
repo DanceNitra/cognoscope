@@ -1,0 +1,293 @@
+{
+  "subject_name": "Bridge 46 \u2014 Causal Attribution in Climate Science",
+  "total_experiments": 35,
+  "kept_experiments": 21,
+  "metric_start": 0.108,
+  "metric_end": 0.816,
+  "metric_improvement_pct": 655.5555555555555,
+  "duration_sec": 2.121955156326294,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.375,
+      "metric_after": 0.375,
+      "mutation_log": "add wikilinks: \"Senolytics\", Bayesian Inference, API Design & REST (+5)",
+      "duration_sec": 0.0011267662048339844
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.416,
+      "metric_after": 0.416,
+      "mutation_log": "add wikilinks: Data Augmentation, \"Hallmarks of Agent Degradation\", \"Financial AI Systems Engineering\" (+3)",
+      "duration_sec": 0.0014243125915527344
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.417,
+      "metric_after": 0.417,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0004448890686035156
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.499,
+      "metric_after": 0.499,
+      "mutation_log": "add ML/AI connection",
+      "duration_sec": 0.0004668235778808594
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.581,
+      "metric_after": 0.581,
+      "mutation_log": "add Software Engineering connection",
+      "duration_sec": 0.0005576610565185547
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.586,
+      "metric_after": 0.586,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0004413127899169922
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.59,
+      "metric_after": 0.59,
+      "mutation_log": "add wikilinks: AI Augmented Thinking, Fear Conditioning, Human-AI Interaction (+4)",
+      "duration_sec": 0.0010657310485839844
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.59,
+      "metric_after": 0.5895,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0004069805145263672
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.6925,
+      "metric_after": 0.6925,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.000946044921875
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.6925,
+      "metric_after": 0.6915,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0010135173797607422
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.6925,
+      "metric_after": 0.6915,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0007269382476806641
+    },
+    {
+      "id": 13,
+      "kept": true,
+      "metric_before": 0.697,
+      "metric_after": 0.697,
+      "mutation_log": "add wikilinks: CATE (Conditional Average Treatment Effect), Debugging, \"Superalignment\" (+4)",
+      "duration_sec": 0.001730203628540039
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.697,
+      "metric_after": 0.6955,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0020902156829833984
+    },
+    {
+      "id": 17,
+      "kept": false,
+      "metric_before": 0.697,
+      "metric_after": 0.6955,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.006672859191894531
+    },
+    {
+      "id": 19,
+      "kept": true,
+      "metric_before": 0.7015,
+      "metric_after": 0.7015,
+      "mutation_log": "add wikilinks: Climate Justice, \"Attention Residue\", \"Autonomous Learning\" (+4)",
+      "duration_sec": 0.002966642379760742
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.7015,
+      "metric_after": 0.6995,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.000751495361328125
+    },
+    {
+      "id": 23,
+      "kept": true,
+      "metric_before": 0.719,
+      "metric_after": 0.719,
+      "mutation_log": "add Philosophy connection",
+      "duration_sec": 0.001535654067993164
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.719,
+      "metric_after": 0.717,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0006356239318847656
+    },
+    {
+      "id": 28,
+      "kept": true,
+      "metric_before": 0.723,
+      "metric_after": 0.723,
+      "mutation_log": "add wikilinks: \"Neuropharmacology\", Fundamental Analysis & Valuation, Flow State (+3)",
+      "duration_sec": 0.0023109912872314453
+    },
+    {
+      "id": 30,
+      "kept": true,
+      "metric_before": 0.7265,
+      "metric_after": 0.7265,
+      "mutation_log": "add wikilinks: Chronotherapy and Light Exposure, Carbon Capture (+2)",
+      "duration_sec": 0.0011568069458007812
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.73,
+      "metric_after": 0.73,
+      "mutation_log": "add wikilinks: \"Cardiovascular Disease\", Biomedical Science (+2)",
+      "duration_sec": 0.004912614822387695
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.73,
+      "metric_after": 0.7265,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0008494853973388672
+    },
+    {
+      "id": 37,
+      "kept": true,
+      "metric_before": 0.758,
+      "metric_after": 0.758,
+      "mutation_log": "add Finance connection",
+      "duration_sec": 0.0030982494354248047
+    },
+    {
+      "id": 38,
+      "kept": true,
+      "metric_before": 0.7625,
+      "metric_after": 0.7625,
+      "mutation_log": "add wikilinks: Regression Reversal, \"Risk Parity\", Regression Reversal (+4)",
+      "duration_sec": 0.0013155937194824219
+    },
+    {
+      "id": 39,
+      "kept": false,
+      "metric_before": 0.7625,
+      "metric_after": 0.7585,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0007021427154541016
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.7625,
+      "metric_after": 0.7585,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0062236785888671875
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.7625,
+      "metric_after": 0.7585,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.009669780731201172
+    },
+    {
+      "id": 42,
+      "kept": false,
+      "metric_before": 0.7625,
+      "metric_after": 0.7585,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0034677982330322266
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.7625,
+      "metric_after": 0.7585,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.008398771286010742
+    },
+    {
+      "id": 44,
+      "kept": true,
+      "metric_before": 0.766,
+      "metric_after": 0.766,
+      "mutation_log": "add wikilinks: Causality, SHAP (+2)",
+      "duration_sec": 0.0038712024688720703
+    },
+    {
+      "id": 45,
+      "kept": false,
+      "metric_before": 0.766,
+      "metric_after": 0.7615,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001795053482055664
+    },
+    {
+      "id": 46,
+      "kept": true,
+      "metric_before": 0.7695,
+      "metric_after": 0.7695,
+      "mutation_log": "add wikilinks: \"Cron Scheduling\", Neural Networks (+2)",
+      "duration_sec": 0.021463632583618164
+    },
+    {
+      "id": 48,
+      "kept": true,
+      "metric_before": 0.808,
+      "metric_after": 0.808,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.005754709243774414
+    },
+    {
+      "id": 49,
+      "kept": true,
+      "metric_before": 0.812,
+      "metric_after": 0.812,
+      "mutation_log": "add wikilinks: \"Cell Biology\", Distributed Systems, Test-Time Compute Scaling (+3)",
+      "duration_sec": 0.008274316787719727
+    },
+    {
+      "id": 50,
+      "kept": true,
+      "metric_before": 0.816,
+      "metric_after": 0.816,
+      "mutation_log": "add wikilinks: The Hermes Architecture, Blockchain, Thermoregulation (+3)",
+      "duration_sec": 0.009439229965209961
+    }
+  ]
+}

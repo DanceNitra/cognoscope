@@ -1,0 +1,237 @@
+{
+  "subject_name": "Solana",
+  "total_experiments": 28,
+  "kept_experiments": 17,
+  "metric_start": 0.138,
+  "metric_end": 0.85,
+  "metric_improvement_pct": 515.9420289855071,
+  "duration_sec": 1.0141637325286865,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.145,
+      "metric_after": 0.145,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0006744861602783203
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.2475,
+      "metric_after": 0.2475,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0003981590270996094
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.4085,
+      "metric_after": 0.4085,
+      "mutation_log": "add AI / Neuroscience connection",
+      "duration_sec": 0.0004265308380126953
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.517,
+      "metric_after": 0.517,
+      "mutation_log": "add wikilinks: Market Microstructure & Order Flow, P-Hacking (+2)",
+      "duration_sec": 0.002263784408569336
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.5845,
+      "metric_after": 0.5845,
+      "mutation_log": "add wikilinks: Evergreen Notes, LLM Scaling Laws, \"Latent Variables\" (+5)",
+      "duration_sec": 0.0011944770812988281
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.5845,
+      "metric_after": 0.583,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0004191398620605469
+    },
+    {
+      "id": 11,
+      "kept": true,
+      "metric_before": 0.695,
+      "metric_after": 0.695,
+      "mutation_log": "add Philosophy connection",
+      "duration_sec": 0.0006768703460693359
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.695,
+      "metric_after": 0.6935,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.00044655799865722656
+    },
+    {
+      "id": 13,
+      "kept": false,
+      "metric_before": 0.695,
+      "metric_after": 0.6935,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0008382797241210938
+    },
+    {
+      "id": 14,
+      "kept": true,
+      "metric_before": 0.699,
+      "metric_after": 0.699,
+      "mutation_log": "add wikilinks: Pattern Archive, \"RL for Trading\", Data Augmentation (+3)",
+      "duration_sec": 0.0028645992279052734
+    },
+    {
+      "id": 16,
+      "kept": true,
+      "metric_before": 0.7025,
+      "metric_after": 0.7025,
+      "mutation_log": "add wikilinks: Procedural Memory, \"PID Controller\" (+2)",
+      "duration_sec": 0.001483917236328125
+    },
+    {
+      "id": 21,
+      "kept": true,
+      "metric_before": 0.7075,
+      "metric_after": 0.7075,
+      "mutation_log": "add wikilinks: SQL & Relational Databases, AI Cost Governance, Production AI Engineering Playbook (+5)",
+      "duration_sec": 0.0019669532775878906
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.7125,
+      "metric_after": 0.7125,
+      "mutation_log": "add wikilinks: Adjunction and the Agent-Environment Boundary, Serotonin, Trading Strategy \u2014 Triple-Barrier ML Signal (+5)",
+      "duration_sec": 0.0018868446350097656
+    },
+    {
+      "id": 25,
+      "kept": true,
+      "metric_before": 0.737,
+      "metric_after": 0.737,
+      "mutation_log": "add ML/AI connection",
+      "duration_sec": 0.0008673667907714844
+    },
+    {
+      "id": 29,
+      "kept": false,
+      "metric_before": 0.737,
+      "metric_after": 0.7335,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0014142990112304688
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.737,
+      "metric_after": 0.7335,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0009856224060058594
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.7615,
+      "metric_after": 0.7615,
+      "mutation_log": "add AI / Systems Engineering connection",
+      "duration_sec": 0.017153024673461914
+    },
+    {
+      "id": 32,
+      "kept": true,
+      "metric_before": 0.766,
+      "metric_after": 0.766,
+      "mutation_log": "add wikilinks: Scalability, Seasonal Affective Disorder, Norepinephrine (+4)",
+      "duration_sec": 0.001848459243774414
+    },
+    {
+      "id": 35,
+      "kept": true,
+      "metric_before": 0.794,
+      "metric_after": 0.794,
+      "mutation_log": "add Biology connection",
+      "duration_sec": 0.0005340576171875
+    },
+    {
+      "id": 36,
+      "kept": true,
+      "metric_before": 0.799,
+      "metric_after": 0.799,
+      "mutation_log": "add wikilinks: ToolForge, \"Effect Size\", Lymphatic System (+5)",
+      "duration_sec": 0.004174232482910156
+    },
+    {
+      "id": 37,
+      "kept": true,
+      "metric_before": 0.8305,
+      "metric_after": 0.8305,
+      "mutation_log": "add Sleep connection",
+      "duration_sec": 0.0022602081298828125
+    },
+    {
+      "id": 38,
+      "kept": true,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Statistics / Research Methods connection",
+      "duration_sec": 0.0005981922149658203
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.001066446304321289
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0024504661560058594
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: \"Knowledge Graphs\", \"CRISPR-Cas9 Gene Editing\", \"Object-Oriented Programming\" (+5)",
+      "duration_sec": 0.0045244693756103516
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Genomics connection",
+      "duration_sec": 0.0028753280639648438
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0006761550903320312
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0009572505950927734
+    }
+  ]
+}

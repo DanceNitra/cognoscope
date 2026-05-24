@@ -1,0 +1,33 @@
+{
+  "mode": "demo",
+  "timestamp": "2026-05-24T15:37:10.440930",
+  "duration_sec": 6.901872873306274,
+  "phase1": [
+    {
+      "subject": "Cybersecurity",
+      "experiments": 30,
+      "kept": 18,
+      "improvement": 511.231884057971,
+      "metric_from": 0.138,
+      "metric_to": 0.8435
+    },
+    {
+      "subject": "Bridge 46 \u2014 Causal Attribution in Climate Science",
+      "experiments": 35,
+      "kept": 21,
+      "improvement": 655.5555555555555,
+      "metric_from": 0.108,
+      "metric_to": 0.816
+    },
+    {
+      "subject": "Sleep Architecture",
+      "experiments": 35,
+      "kept": 18,
+      "improvement": 128.89842632331906,
+      "metric_from": 0.3495,
+      "metric_to": 0.8
+    }
+  ],
+  "phase2": [],
+  "phase3": []
+}

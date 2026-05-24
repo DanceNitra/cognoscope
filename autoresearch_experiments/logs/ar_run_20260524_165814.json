@@ -1,0 +1,33 @@
+{
+  "mode": "demo",
+  "timestamp": "2026-05-24T16:58:14.263676",
+  "duration_sec": 8.125159978866577,
+  "phase1": [
+    {
+      "subject": "Peter Neumann has died",
+      "experiments": 32,
+      "kept": 20,
+      "improvement": 626.4957264957264,
+      "metric_from": 0.117,
+      "metric_to": 0.85
+    },
+    {
+      "subject": "Evolutionary Dynamics \u2014 Red Queen and Increasing Autonomy",
+      "experiments": 30,
+      "kept": 17,
+      "improvement": 183.18584070796464,
+      "metric_from": 0.2825,
+      "metric_to": 0.8
+    },
+    {
+      "subject": "Light Exposure",
+      "experiments": 26,
+      "kept": 18,
+      "improvement": 43.40101522842641,
+      "metric_from": 0.591,
+      "metric_to": 0.8475
+    }
+  ],
+  "phase2": [],
+  "phase3": []
+}

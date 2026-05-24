@@ -1,0 +1,253 @@
+{
+  "subject_name": "Cybersecurity",
+  "total_experiments": 30,
+  "kept_experiments": 18,
+  "metric_start": 0.138,
+  "metric_end": 0.8435,
+  "metric_improvement_pct": 511.231884057971,
+  "duration_sec": 1.6533997058868408,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.145,
+      "metric_after": 0.145,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0006840229034423828
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.412,
+      "metric_after": 0.412,
+      "mutation_log": "add wikilinks: Credit Markets & Derivatives Deep, Statistical Mechanics, Cloud Computing (+5)",
+      "duration_sec": 0.001186370849609375
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.412,
+      "metric_after": 0.4115,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0004799365997314453
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.494,
+      "metric_after": 0.494,
+      "mutation_log": "add Software Engineering / AI connection",
+      "duration_sec": 0.0005319118499755859
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.5965,
+      "metric_after": 0.5965,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0006525516510009766
+    },
+    {
+      "id": 9,
+      "kept": true,
+      "metric_before": 0.625,
+      "metric_after": 0.625,
+      "mutation_log": "add wikilinks: Linear Regression, Flow State (+2)",
+      "duration_sec": 0.00234222412109375
+    },
+    {
+      "id": 11,
+      "kept": true,
+      "metric_before": 0.6535,
+      "metric_after": 0.6535,
+      "mutation_log": "add wikilinks: \"Cell Biology\", \"Dietary Patterns and Health Outcomes\" (+2)",
+      "duration_sec": 0.0019822120666503906
+    },
+    {
+      "id": 13,
+      "kept": true,
+      "metric_before": 0.705,
+      "metric_after": 0.705,
+      "mutation_log": "add AI / Machine Learning connection",
+      "duration_sec": 0.0007157325744628906
+    },
+    {
+      "id": 18,
+      "kept": true,
+      "metric_before": 0.719,
+      "metric_after": 0.719,
+      "mutation_log": "add Biology connection",
+      "duration_sec": 0.0017352104187011719
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.719,
+      "metric_after": 0.717,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001489400863647461
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.719,
+      "metric_after": 0.717,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0008106231689453125
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.719,
+      "metric_after": 0.717,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.00043654441833496094
+    },
+    {
+      "id": 23,
+      "kept": true,
+      "metric_before": 0.733,
+      "metric_after": 0.733,
+      "mutation_log": "add Physics connection",
+      "duration_sec": 0.0008127689361572266
+    },
+    {
+      "id": 24,
+      "kept": false,
+      "metric_before": 0.733,
+      "metric_after": 0.731,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0043795108795166016
+    },
+    {
+      "id": 25,
+      "kept": false,
+      "metric_before": 0.733,
+      "metric_after": 0.731,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0008351802825927734
+    },
+    {
+      "id": 29,
+      "kept": true,
+      "metric_before": 0.737,
+      "metric_after": 0.737,
+      "mutation_log": "add wikilinks: Robustness and Distribution Shift, Precision Medicine, \"Recovery Architecture\" (+3)",
+      "duration_sec": 0.0014522075653076172
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.737,
+      "metric_after": 0.7345,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0011594295501708984
+    },
+    {
+      "id": 32,
+      "kept": true,
+      "metric_before": 0.7545,
+      "metric_after": 0.7545,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.0008683204650878906
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.772,
+      "metric_after": 0.772,
+      "mutation_log": "add AI Safety connection",
+      "duration_sec": 0.005404233932495117
+    },
+    {
+      "id": 35,
+      "kept": true,
+      "metric_before": 0.7895,
+      "metric_after": 0.7895,
+      "mutation_log": "add Sleep Science connection",
+      "duration_sec": 0.0005846023559570312
+    },
+    {
+      "id": 37,
+      "kept": true,
+      "metric_before": 0.807,
+      "metric_after": 0.807,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.001001596450805664
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.807,
+      "metric_after": 0.8045,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0047910213470458984
+    },
+    {
+      "id": 39,
+      "kept": true,
+      "metric_before": 0.811,
+      "metric_after": 0.811,
+      "mutation_log": "add wikilinks: Concept Drift & Model Monitoring for Finance, Sleep as a Control System, Epigenetics (+3)",
+      "duration_sec": 0.0021407604217529297
+    },
+    {
+      "id": 41,
+      "kept": true,
+      "metric_before": 0.8155,
+      "metric_after": 0.8155,
+      "mutation_log": "add wikilinks: Test-Time Compute Scaling, Immune Function, Sleep Spindles (+4)",
+      "duration_sec": 0.001617431640625
+    },
+    {
+      "id": 42,
+      "kept": true,
+      "metric_before": 0.84,
+      "metric_after": 0.84,
+      "mutation_log": "add Sleep / Neuroscience connection",
+      "duration_sec": 0.0006306171417236328
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.84,
+      "metric_after": 0.8365,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.006540775299072266
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.84,
+      "metric_after": 0.8365,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.010381221771240234
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.84,
+      "metric_after": 0.8365,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0038604736328125
+    },
+    {
+      "id": 48,
+      "kept": true,
+      "metric_before": 0.8435,
+      "metric_after": 0.8435,
+      "mutation_log": "add wikilinks: Bayesian Inference, Distributed Systems (+2)",
+      "duration_sec": 0.011674880981445312
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.8435,
+      "metric_after": 0.8395,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0025980472564697266
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "subject_name": "Journaling & Review",
+  "total_experiments": 34,
+  "kept_experiments": 18,
+  "metric_start": 0.178,
+  "metric_end": 0.85,
+  "metric_improvement_pct": 377.5280898876404,
+  "duration_sec": 1.3842008113861084,
+  "aborted": true,
+  "abort_reason": "10 consecutive non-improving experiments",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.185,
+      "metric_after": 0.185,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0004439353942871094
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.2875,
+      "metric_after": 0.2875,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0004296302795410156
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.2875,
+      "metric_after": 0.287,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0005545616149902344
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.4485,
+      "metric_after": 0.4485,
+      "mutation_log": "add AI Engineering connection",
+      "duration_sec": 0.0006496906280517578
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.5295,
+      "metric_after": 0.5295,
+      "mutation_log": "add Cybersecurity connection",
+      "duration_sec": 0.0015404224395751953
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.571,
+      "metric_after": 0.571,
+      "mutation_log": "add wikilinks: PTSD \u2014 Post-Traumatic Stress Disorder, Interaction, Adjunction and the Agent-Environment Boundary (+3)",
+      "duration_sec": 0.0012116432189941406
+    },
+    {
+      "id": 9,
+      "kept": true,
+      "metric_before": 0.5995,
+      "metric_after": 0.5995,
+      "mutation_log": "add wikilinks: Kalman Filter, gRPC (+2)",
+      "duration_sec": 0.0013921260833740234
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.6975,
+      "metric_after": 0.6975,
+      "mutation_log": "add Genomics connection",
+      "duration_sec": 0.0004496574401855469
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.6975,
+      "metric_after": 0.696,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.00034165382385253906
+    },
+    {
+      "id": 13,
+      "kept": true,
+      "metric_before": 0.7025,
+      "metric_after": 0.7025,
+      "mutation_log": "add wikilinks: Trading Strategy \u2014 Mean Reversion on Cointegrated Pairs, Heterogeneity of Treatment Effects, Self-Modification (+5)",
+      "duration_sec": 0.0015437602996826172
+    },
+    {
+      "id": 15,
+      "kept": true,
+      "metric_before": 0.7165,
+      "metric_after": 0.7165,
+      "mutation_log": "add Neuroscience / Physiology connection",
+      "duration_sec": 0.00040650367736816406
+    },
+    {
+      "id": 17,
+      "kept": true,
+      "metric_before": 0.7215,
+      "metric_after": 0.7215,
+      "mutation_log": "add wikilinks: Object-Oriented Design & Patterns, Event-Driven Architecture, \"Propensity Score\" (+5)",
+      "duration_sec": 0.0011615753173828125
+    },
+    {
+      "id": 18,
+      "kept": true,
+      "metric_before": 0.739,
+      "metric_after": 0.739,
+      "mutation_log": "add Meta connection",
+      "duration_sec": 0.0014598369598388672
+    },
+    {
+      "id": 19,
+      "kept": false,
+      "metric_before": 0.739,
+      "metric_after": 0.7365,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0025506019592285156
+    },
+    {
+      "id": 21,
+      "kept": true,
+      "metric_before": 0.7565,
+      "metric_after": 0.7565,
+      "mutation_log": "add Physiology connection",
+      "duration_sec": 0.00453495979309082
+    },
+    {
+      "id": 23,
+      "kept": true,
+      "metric_before": 0.774,
+      "metric_after": 0.774,
+      "mutation_log": "add Health connection",
+      "duration_sec": 0.002003908157348633
+    },
+    {
+      "id": 24,
+      "kept": false,
+      "metric_before": 0.774,
+      "metric_after": 0.7715,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0018270015716552734
+    },
+    {
+      "id": 25,
+      "kept": false,
+      "metric_before": 0.774,
+      "metric_after": 0.7715,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001811981201171875
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.774,
+      "metric_after": 0.7715,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0009191036224365234
+    },
+    {
+      "id": 27,
+      "kept": true,
+      "metric_before": 0.7785,
+      "metric_after": 0.7785,
+      "mutation_log": "add wikilinks: Trading Strategy \u2014 Dispersion + Correlation Hedge, Diplomacy, Creativity (+4)",
+      "duration_sec": 0.005632877349853516
+    },
+    {
+      "id": 28,
+      "kept": true,
+      "metric_before": 0.7995,
+      "metric_after": 0.7995,
+      "mutation_log": "add Productivity connection",
+      "duration_sec": 0.0008654594421386719
+    },
+    {
+      "id": 30,
+      "kept": true,
+      "metric_before": 0.8045,
+      "metric_after": 0.8045,
+      "mutation_log": "add wikilinks: Fixed Income & Yield Curve, X (formerly Twitter), \"Bayesian Brain Hypothesis\" (+5)",
+      "duration_sec": 0.0022192001342773438
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.829,
+      "metric_after": 0.829,
+      "mutation_log": "add Statistics / Epidemiology connection",
+      "duration_sec": 0.0008881092071533203
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Formal Foundations connection",
+      "duration_sec": 0.0007665157318115234
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add AI / Systems Engineering connection",
+      "duration_sec": 0.0011096000671386719
+    },
+    {
+      "id": 35,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Complexity Science connection",
+      "duration_sec": 0.0012483596801757812
+    },
+    {
+      "id": 36,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0034170150756835938
+    },
+    {
+      "id": 37,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Medicine connection",
+      "duration_sec": 0.0018453598022460938
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: Emergence, \"Attention Economy\", Autonomous Systems (+5)",
+      "duration_sec": 0.003406047821044922
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001096963882446289
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: Object Detection, Seasonal Affective Disorder, \"Data Structures and Algorithms\" (+3)",
+      "duration_sec": 0.0012826919555664062
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0011856555938720703
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.001146554946899414
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: P-Hacking, Chronotype, \"Tipping Points\" (+5)",
+      "duration_sec": 0.0018665790557861328
+    }
+  ]
+}

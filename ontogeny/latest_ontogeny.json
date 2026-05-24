@@ -1,0 +1,152 @@
+{
+  "timestamp": "2026-05-24T18:49:24.245317",
+  "total_concepts": 1502,
+  "stage_distribution": {
+    "stub": 492,
+    "evergreen": 467,
+    "seedling": 91,
+    "#status/evergreen": 157,
+    "#status/growing": 62,
+    "growing": 170,
+    "gateway": 5,
+    "#status: evergreen": 50,
+    "unknown": 285,
+    "#evergreen": 1,
+    "#status/meta": 3,
+    "complete": 1
+  },
+  "domain_maturity": {
+    "Meta": 0.0974874371859294,
+    "Finance": 0.6887755102040815,
+    "": 0.06666666666666667,
+    "Statistics / Research Methods": 0.8666666666666667,
+    "AI": 0.2817857142857143,
+    "Psychology / Neuroscience": 0.45625,
+    "AI Engineering": 0.8,
+    "AI Safety": 0.6100000000000001,
+    "Statistics": 0.5494623655913978,
+    "Software Engineering": 0.41651376146788976,
+    "Neuroscience": 0.6662650602409639,
+    "Physiology": 0.5611111111111113,
+    "AI / Neuroscience": 1.0,
+    "Immunology": 0.7090909090909091,
+    "Psychology": 0.5983870967741934,
+    "Sleep / Neuroscience": 0.74,
+    "Formal Foundations": 1.0,
+    "AI / Systems Engineering": 0.6283333333333333,
+    "Statistics / Epidemiology": 0.9666666666666667,
+    "Longevity": 0.5821428571428572,
+    "Finance / Software Engineering": 0.25,
+    "Cell Biology": 0.6867647058823529,
+    "Systems": 0.5,
+    "Causal Inference": 0.6691666666666666,
+    "Medicine": 0.8214285714285714,
+    "Neuroscience / Physiology": 1.0,
+    "AI / Machine Learning": 0.9555555555555555,
+    "Causal Inference / Statistics": 1.0,
+    "Research Methods": 0.6354838709677421,
+    "Systems Biology": 0.7333333333333334,
+    "Health": 0.4222222222222222,
+    "Chronobiology": 0.9500000000000001,
+    "Economics": 0.4294117647058822,
+    "Neuroscience / Chronobiology": 0.5166666666666667,
+    "Statistics / Causal Inference": 0.6875,
+    "Genomics": 0.7142857142857143,
+    "Biology": 0.66,
+    "unknown": 0.3333333333333333,
+    "Mathematics": 0.8,
+    "Sleep Medicine / Chronobiology": 1.0,
+    "Philosophy": 0.41363636363636364,
+    "Complexity Science": 0.44999999999999996,
+    "Computer Science": 0.4571428571428572,
+    "ML/AI": 1.0,
+    "Neuroscience / Psychology": 0.5,
+    "Control Theory": 0.8666666666666667,
+    "Productivity": 0.25,
+    "Nutrition": 0.5375000000000001,
+    "Machine Learning": 0.9,
+    "Pharmacology": 0.7300000000000001,
+    "Medicine / Physiology": 0.25,
+    "Sleep Science": 0.9,
+    "Physics": 0.9199999999999999,
+    "AI Interpretability": 0.8,
+    "Software Engineering / AI": 0.8125,
+    "Neuroscience / Cognitive Psychology": 1.0,
+    "Cybersecurity": 1.0,
+    "AI / Agents": 0.6000000000000001,
+    "Biology / Medicine": 0.25,
+    "Neuroscience / Sleep Science": 1.0,
+    "Sleep": 0.6000000000000001
+  },
+  "velocity": {
+    "stub_to_seedling": 54,
+    "seedling_to_growing": 123,
+    "growing_to_evergreen": 125,
+    "evergreen_mature": 211
+  },
+  "maturity_gaps": [
+    {
+      "domain": "AI",
+      "expected_maturity": 0.6,
+      "actual_maturity": 0.282,
+      "gap": 0.318,
+      "concepts": 140
+    },
+    {
+      "domain": "Sleep",
+      "expected_maturity": 0.7,
+      "actual_maturity": 0.6,
+      "gap": 0.1,
+      "concepts": 3
+    },
+    {
+      "domain": "Philosophy",
+      "expected_maturity": 0.5,
+      "actual_maturity": 0.414,
+      "gap": 0.086,
+      "concepts": 11
+    },
+    {
+      "domain": "Software Engineering",
+      "expected_maturity": 0.5,
+      "actual_maturity": 0.417,
+      "gap": 0.083,
+      "concepts": 109
+    },
+    {
+      "domain": "Statistics",
+      "expected_maturity": 0.6,
+      "actual_maturity": 0.549,
+      "gap": 0.051,
+      "concepts": 93
+    },
+    {
+      "domain": "Neuroscience",
+      "expected_maturity": 0.7,
+      "actual_maturity": 0.666,
+      "gap": 0.034,
+      "concepts": 83
+    },
+    {
+      "domain": "Causal Inference",
+      "expected_maturity": 0.7,
+      "actual_maturity": 0.669,
+      "gap": 0.031,
+      "concepts": 60
+    },
+    {
+      "domain": "Finance",
+      "expected_maturity": 0.7,
+      "actual_maturity": 0.689,
+      "gap": 0.011,
+      "concepts": 98
+    },
+    {
+      "domain": "Psychology",
+      "expected_maturity": 0.6,
+      "actual_maturity": 0.598,
+      "gap": 0.002,
+      "concepts": 62
+    }
+  ]
+}

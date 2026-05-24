@@ -1,0 +1,199 @@
+{
+  "generation": 2,
+  "timestamp": "2026-05-24T17:53:57.438453",
+  "population_size": 955,
+  "total_phi": 286.5000000000051,
+  "mean_fitness": 0.5019368935427572,
+  "diversity": 0.7727008286714948,
+  "domains": {
+    "Statistics / Research Methods": 3,
+    "Meta": 72,
+    "AI": 118,
+    "AI Engineering": 8,
+    "AI Safety": 4,
+    "Statistics": 62,
+    "Software Engineering": 89,
+    "Neuroscience": 59,
+    "Physiology": 35,
+    "AI / Neuroscience": 4,
+    "Immunology": 10,
+    "Psychology": 54,
+    "Sleep / Neuroscience": 13,
+    "Formal Foundations": 5,
+    "Psychology / Neuroscience": 2,
+    "Finance": 78,
+    "AI / Systems Engineering": 20,
+    "Statistics / Epidemiology": 3,
+    "Statistics / Data Analysis": 1,
+    "Longevity": 12,
+    "Cell Biology": 26,
+    "Causal Inference": 59,
+    "Neuroscience / Physiology": 3,
+    "AI / Machine Learning": 9,
+    "Causal Inference / Statistics": 2,
+    "Research Methods": 30,
+    "Systems Biology": 3,
+    "Health": 9,
+    "Chronobiology": 9,
+    "Neuroscience / Longevity": 1,
+    "Neuroscience / Chronobiology": 2,
+    "Economics": 12,
+    "Statistics / Causal Inference": 6,
+    "Genomics": 13,
+    "Biology": 8,
+    "unknown": 3,
+    "Mathematics": 4,
+    "Sleep Medicine / Chronobiology": 3,
+    "Medicine": 6,
+    "Philosophy": 11,
+    "Complexity Science": 9,
+    "Computer Science": 5,
+    "ML/AI": 5,
+    "Neuroscience / Psychology": 1,
+    "Philosophy / Neuroscience / AI": 1,
+    "Control Theory": 3,
+    "Systems": 1,
+    "Productivity": 3,
+    "Nutrition": 4,
+    "Machine Learning": 4,
+    "Pharmacology": 5,
+    "Sleep Science": 4,
+    "Physics": 5,
+    "AI / Systems": 1,
+    "AI Interpretability": 2,
+    "Software Engineering / AI": 3,
+    "Neuroscience / Cognitive Psychology": 2,
+    "Physiology / Metabolism": 1,
+    "AI / Machine Learning / Control Theory": 1,
+    "Cybersecurity": 3,
+    "AI / Agents": 4,
+    "AI / Systems Thinking": 1,
+    "Neuroscience / Sleep Medicine": 1,
+    "Neuroscience / Finance": 1,
+    "Chronobiology / Genetics": 1,
+    "AI / Finance": 1,
+    "Biomedical Science": 1,
+    "Biochemistry / AI": 1,
+    "Psychology / Statistics": 1,
+    "Neuroscience / Sleep Science": 2,
+    "Finance / Engineering": 1,
+    "AI / Software Engineering": 1,
+    "Sleep": 3,
+    "Statistics / Finance": 1,
+    "AI Agents": 1
+  },
+  "extinct_candidates": [],
+  "adaptive_peaks": [
+    {
+      "name": "Sleep Architecture",
+      "domain": "Sleep / Neuroscience",
+      "fitness": 0.72,
+      "why": "19 inbound links (hub) + breaktruth claim present + 15 sections (deep)"
+    },
+    {
+      "name": "Synaptic Plasticity",
+      "domain": "Neuroscience",
+      "fitness": 0.72,
+      "why": "19 inbound links (hub) + breaktruth claim present + 6 sections (deep)"
+    },
+    {
+      "name": "AI Alignment",
+      "domain": "AI",
+      "fitness": 0.62,
+      "why": "46 inbound links (hub) + 8 sections (deep)"
+    },
+    {
+      "name": "Acetylcholine",
+      "domain": "Neuroscience",
+      "fitness": 0.62,
+      "why": "26 inbound links (hub) + 10 sections (deep)"
+    },
+    {
+      "name": "Adjunction and the Agent-Environment Boundary",
+      "domain": "Formal Foundations",
+      "fitness": 0.62,
+      "why": "18 inbound links (hub) + 9 sections (deep)"
+    }
+  ],
+  "crossover_pairs": [
+    {
+      "a": "Geopolitics",
+      "b": "Pattern Recognition",
+      "da": "Meta",
+      "db": "AI / Finance",
+      "score": 0.0808
+    },
+    {
+      "a": "AI Engineering MOC",
+      "b": "Dietary Patterns and Health Outcomes",
+      "da": "AI Engineering",
+      "db": "Nutrition",
+      "score": -0.5096
+    },
+    {
+      "a": "AI Engineering MOC",
+      "b": "Protein Folding",
+      "da": "AI Engineering",
+      "db": "Biochemistry / AI",
+      "score": -0.6046
+    },
+    {
+      "a": "AI Safety",
+      "b": "Pattern Recognition",
+      "da": "AI Safety",
+      "db": "AI / Finance",
+      "score": -0.94
+    },
+    {
+      "a": "Adolescent Development",
+      "b": "Neuropharmacology",
+      "da": "Psychology / Neuroscience",
+      "db": "Pharmacology",
+      "score": -3.9312
+    }
+  ],
+  "speciation_signals": {
+    "Finance": {
+      "count": 78,
+      "subdomains": [
+        "Momentum",
+        "Position",
+        "Risk",
+        "Backtest",
+        "Mean reversion"
+      ]
+    },
+    "Neuroscience": {
+      "count": 59,
+      "subdomains": [
+        "Acetylcholine",
+        "Hippocampus",
+        "Serotonin",
+        "Amygdala",
+        "Cortex"
+      ]
+    },
+    "Psychology": {
+      "count": 54,
+      "subdomains": [
+        "Bias",
+        "Memory",
+        "Attention",
+        "Cognitive",
+        "Heuristic"
+      ]
+    }
+  },
+  "niche_gaps": {
+    "underpopulated": [
+      "Statistics / Data Analysis",
+      "Neuroscience / Longevity",
+      "Neuroscience / Psychology",
+      "Philosophy / Neuroscience / AI",
+      "Systems"
+    ],
+    "overcrowded": [
+      "AI"
+    ]
+  }
+}

@@ -1,0 +1,293 @@
+{
+  "subject_name": "Sleep Architecture",
+  "total_experiments": 35,
+  "kept_experiments": 18,
+  "metric_start": 0.3495,
+  "metric_end": 0.8,
+  "metric_improvement_pct": 128.89842632331906,
+  "duration_sec": 1.4870378971099854,
+  "aborted": true,
+  "abort_reason": "10 consecutive non-improving experiments",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.469,
+      "metric_after": 0.469,
+      "mutation_log": "add Health connection",
+      "duration_sec": 0.0005333423614501953
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.497,
+      "metric_after": 0.497,
+      "mutation_log": "add wikilinks: \"Power Analysis\", Gradient Descent and Backpropagation (+2)",
+      "duration_sec": 0.001173257827758789
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.497,
+      "metric_after": 0.4965,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0004782676696777344
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.5995,
+      "metric_after": 0.5995,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0008084774017333984
+    },
+    {
+      "id": 5,
+      "kept": false,
+      "metric_before": 0.5995,
+      "metric_after": 0.5985,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0007073879241943359
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.654,
+      "metric_after": 0.654,
+      "mutation_log": "add wikilinks: AI Safety Alignment and Trust, \"Mechanistic Interpretability\", ML for Finance \u2014 The L\u00f3pez de Prado Production Toolkit (+4)",
+      "duration_sec": 0.001157999038696289
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.654,
+      "metric_after": 0.6525,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0005033016204833984
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.659,
+      "metric_after": 0.659,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.001024484634399414
+    },
+    {
+      "id": 10,
+      "kept": false,
+      "metric_before": 0.659,
+      "metric_after": 0.6565,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0004315376281738281
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.659,
+      "metric_after": 0.6565,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0020685195922851562
+    },
+    {
+      "id": 14,
+      "kept": true,
+      "metric_before": 0.666,
+      "metric_after": 0.666,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.002195119857788086
+    },
+    {
+      "id": 15,
+      "kept": true,
+      "metric_before": 0.6695,
+      "metric_after": 0.6695,
+      "mutation_log": "add wikilinks: Inverse Probability Weighting, \"Cell Biology\" (+2)",
+      "duration_sec": 0.001443624496459961
+    },
+    {
+      "id": 16,
+      "kept": true,
+      "metric_before": 0.6735,
+      "metric_after": 0.6735,
+      "mutation_log": "add wikilinks: Instrumental Variables, Acetylcholine, Inference Optimization for LLMs (+3)",
+      "duration_sec": 0.003987312316894531
+    },
+    {
+      "id": 17,
+      "kept": true,
+      "metric_before": 0.6875,
+      "metric_after": 0.6875,
+      "mutation_log": "add Medicine connection",
+      "duration_sec": 0.0013113021850585938
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.6875,
+      "metric_after": 0.684,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0008182525634765625
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.6875,
+      "metric_after": 0.684,
+      "mutation_log": "deepen The Stages",
+      "duration_sec": 0.0008988380432128906
+    },
+    {
+      "id": 21,
+      "kept": true,
+      "metric_before": 0.7015,
+      "metric_after": 0.7015,
+      "mutation_log": "add Machine Learning connection",
+      "duration_sec": 0.0013880729675292969
+    },
+    {
+      "id": 22,
+      "kept": true,
+      "metric_before": 0.7065,
+      "metric_after": 0.7065,
+      "mutation_log": "add wikilinks: Agent Testing Strategies, \"The RSI Meta-Kernel \u2014 Criticality, Incommensurability, and Paradigm-Shifting Architecture\", \"Bootstrap\" (+5)",
+      "duration_sec": 0.0016908645629882812
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.724,
+      "metric_after": 0.724,
+      "mutation_log": "add Formal Foundations connection",
+      "duration_sec": 0.0011150836944580078
+    },
+    {
+      "id": 26,
+      "kept": true,
+      "metric_before": 0.728,
+      "metric_after": 0.728,
+      "mutation_log": "add wikilinks: \"AI Safety (expanded)\", Trading Strategy \u2014 FX Carry Basket, \"Cytokine Signaling\" (+3)",
+      "duration_sec": 0.002703428268432617
+    },
+    {
+      "id": 27,
+      "kept": true,
+      "metric_before": 0.7315,
+      "metric_after": 0.7315,
+      "mutation_log": "add wikilinks: Walk-Forward Analysis, Deep Work (+2)",
+      "duration_sec": 0.0013346672058105469
+    },
+    {
+      "id": 29,
+      "kept": true,
+      "metric_before": 0.7355,
+      "metric_after": 0.7355,
+      "mutation_log": "add wikilinks: Data Mining, LLM Serving & Inference Architecture, Potential Outcomes Framework (+3)",
+      "duration_sec": 0.0018079280853271484
+    },
+    {
+      "id": 30,
+      "kept": true,
+      "metric_before": 0.7635,
+      "metric_after": 0.7635,
+      "mutation_log": "add Economics connection",
+      "duration_sec": 0.0009329319000244141
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.7915,
+      "metric_after": 0.7915,
+      "mutation_log": "add Immunology connection",
+      "duration_sec": 0.0006682872772216797
+    },
+    {
+      "id": 32,
+      "kept": true,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add Mathematics connection",
+      "duration_sec": 0.0008618831634521484
+    },
+    {
+      "id": 33,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen The Hypnogram (Typical Night)",
+      "duration_sec": 0.0009992122650146484
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add wikilinks: \"Treatment Effects\", P.A.R.A Method (+2)",
+      "duration_sec": 0.001432657241821289
+    },
+    {
+      "id": 35,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen The Hypnogram (Typical Night)",
+      "duration_sec": 0.0010352134704589844
+    },
+    {
+      "id": 37,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add wikilinks: Embodied AI, PTSD \u2014 Post-Traumatic Stress Disorder, Forgetting (+4)",
+      "duration_sec": 0.0019576549530029297
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.0012094974517822266
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.003193378448486328
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add wikilinks: Strategy Development Lifecycle, Counterfactuals, Data Augmentation (+5)",
+      "duration_sec": 0.003513813018798828
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.008571624755859375
+    },
+    {
+      "id": 48,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add Psychology connection",
+      "duration_sec": 0.007955551147460938
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.006365299224853516
+    }
+  ]
+}

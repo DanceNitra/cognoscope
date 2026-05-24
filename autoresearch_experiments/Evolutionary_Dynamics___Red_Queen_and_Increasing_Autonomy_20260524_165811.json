@@ -1,0 +1,253 @@
+{
+  "subject_name": "Evolutionary Dynamics \u2014 Red Queen and Increasing Autonomy",
+  "total_experiments": 30,
+  "kept_experiments": 17,
+  "metric_start": 0.2825,
+  "metric_end": 0.8,
+  "metric_improvement_pct": 183.18584070796464,
+  "duration_sec": 2.1691057682037354,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.2895,
+      "metric_after": 0.2895,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0005488395690917969
+    },
+    {
+      "id": 2,
+      "kept": false,
+      "metric_before": 0.2895,
+      "metric_after": 0.289,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0012352466583251953
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.2895,
+      "metric_after": 0.289,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0006513595581054688
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.4105,
+      "metric_after": 0.4105,
+      "mutation_log": "add Mathematics connection",
+      "duration_sec": 0.0005965232849121094
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.4775,
+      "metric_after": 0.4775,
+      "mutation_log": "add wikilinks: Correlation Matrix, Vector Databases, Cloud Computing (+5)",
+      "duration_sec": 0.0032761096954345703
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.5055,
+      "metric_after": 0.5055,
+      "mutation_log": "add wikilinks: Probability Theory, Circadian Clock Mechanism (+2)",
+      "duration_sec": 0.002056598663330078
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.608,
+      "metric_after": 0.608,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0006392002105712891
+    },
+    {
+      "id": 9,
+      "kept": true,
+      "metric_before": 0.6505,
+      "metric_after": 0.6505,
+      "mutation_log": "add wikilinks: Embodied AI, \"GWAS\", Object Detection (+5)",
+      "duration_sec": 0.0016584396362304688
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.6645,
+      "metric_after": 0.6645,
+      "mutation_log": "add Genomics connection",
+      "duration_sec": 0.0012857913970947266
+    },
+    {
+      "id": 11,
+      "kept": true,
+      "metric_before": 0.6785,
+      "metric_after": 0.6785,
+      "mutation_log": "add Nutrition connection",
+      "duration_sec": 0.0009768009185791016
+    },
+    {
+      "id": 15,
+      "kept": false,
+      "metric_before": 0.6785,
+      "metric_after": 0.676,
+      "mutation_log": "deepen Regimes",
+      "duration_sec": 0.0006725788116455078
+    },
+    {
+      "id": 16,
+      "kept": true,
+      "metric_before": 0.6825,
+      "metric_after": 0.6825,
+      "mutation_log": "add wikilinks: Multimodal AI, Blood-Brain Barrier, Human-AI Interaction (+3)",
+      "duration_sec": 0.0018646717071533203
+    },
+    {
+      "id": 19,
+      "kept": false,
+      "metric_before": 0.6825,
+      "metric_after": 0.6795,
+      "mutation_log": "deepen Regimes",
+      "duration_sec": 0.0007877349853515625
+    },
+    {
+      "id": 20,
+      "kept": true,
+      "metric_before": 0.686,
+      "metric_after": 0.686,
+      "mutation_log": "add wikilinks: Insomnia, The Hermes Architecture (+2)",
+      "duration_sec": 0.0048406124114990234
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.686,
+      "metric_after": 0.6825,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0033102035522460938
+    },
+    {
+      "id": 23,
+      "kept": true,
+      "metric_before": 0.707,
+      "metric_after": 0.707,
+      "mutation_log": "add Productivity connection",
+      "duration_sec": 0.0038862228393554688
+    },
+    {
+      "id": 26,
+      "kept": true,
+      "metric_before": 0.728,
+      "metric_after": 0.728,
+      "mutation_log": "add Machine Learning connection",
+      "duration_sec": 0.0008130073547363281
+    },
+    {
+      "id": 28,
+      "kept": false,
+      "metric_before": 0.728,
+      "metric_after": 0.7245,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0007398128509521484
+    },
+    {
+      "id": 29,
+      "kept": true,
+      "metric_before": 0.733,
+      "metric_after": 0.733,
+      "mutation_log": "add wikilinks: \"Senolytics\", Fundamental Analysis & Valuation, Autonomous Agents as Second Brain Extensions (+5)",
+      "duration_sec": 0.00461125373840332
+    },
+    {
+      "id": 30,
+      "kept": true,
+      "metric_before": 0.7575,
+      "metric_after": 0.7575,
+      "mutation_log": "add Genomics connection",
+      "duration_sec": 0.0023314952850341797
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.782,
+      "metric_after": 0.782,
+      "mutation_log": "add Neuroscience connection",
+      "duration_sec": 0.0007898807525634766
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.782,
+      "metric_after": 0.778,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0008332729339599609
+    },
+    {
+      "id": 40,
+      "kept": true,
+      "metric_before": 0.786,
+      "metric_after": 0.786,
+      "mutation_log": "add wikilinks: Neural Networks, \"Specification Gaming\", Memory Consolidation (+3)",
+      "duration_sec": 0.015687942504882812
+    },
+    {
+      "id": 41,
+      "kept": true,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add Research Methods connection",
+      "duration_sec": 0.008058786392211914
+    },
+    {
+      "id": 42,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.008322715759277344
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0012390613555908203
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0008931159973144531
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add wikilinks: World Models, AI Augmented Thinking (+2)",
+      "duration_sec": 0.012509584426879883
+    },
+    {
+      "id": 48,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add wikilinks: Respiration, Regulatory Landscape \u2014 MiFID II, Dodd-Frank, Basel, EMIR, The Vol Surface \u2014 Local, Stochastic & Rough Vol (+4)",
+      "duration_sec": 0.0215451717376709
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.8,
+      "metric_after": 0.8,
+      "mutation_log": "add Meta connection",
+      "duration_sec": 0.003017902374267578
+    }
+  ]
+}

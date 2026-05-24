@@ -1,0 +1,269 @@
+{
+  "subject_name": "Multiple Sclerosis",
+  "total_experiments": 32,
+  "kept_experiments": 20,
+  "metric_start": 0.151,
+  "metric_end": 0.85,
+  "metric_improvement_pct": 462.9139072847682,
+  "duration_sec": 1.2456748485565186,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.3105,
+      "metric_after": 0.3105,
+      "mutation_log": "add Medicine connection",
+      "duration_sec": 0.0006756782531738281
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.4185,
+      "metric_after": 0.4185,
+      "mutation_log": "add wikilinks: Blockchain, VanderWeele (+2)",
+      "duration_sec": 0.0011444091796875
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.4195,
+      "metric_after": 0.4195,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.00049591064453125
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.4605,
+      "metric_after": 0.4605,
+      "mutation_log": "add wikilinks: Conditioning, Respiration, Rubin Causal Model (+3)",
+      "duration_sec": 0.001903533935546875
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.5425,
+      "metric_after": 0.5425,
+      "mutation_log": "add Mathematics connection",
+      "duration_sec": 0.0016956329345703125
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.645,
+      "metric_after": 0.645,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0005655288696289062
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.6735,
+      "metric_after": 0.6735,
+      "mutation_log": "add wikilinks: \"PID Controller\", Human-AI Collaboration (+2)",
+      "duration_sec": 0.001453399658203125
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.691,
+      "metric_after": 0.691,
+      "mutation_log": "add wikilinks: d-Separation, \"Autonomous Learning\", Mechanism Design: The Engineering of Incentives (+5)",
+      "duration_sec": 0.004211902618408203
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.691,
+      "metric_after": 0.69,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0013077259063720703
+    },
+    {
+      "id": 12,
+      "kept": true,
+      "metric_before": 0.696,
+      "metric_after": 0.696,
+      "mutation_log": "add wikilinks: Neuroscience of Trading Decisions \u2014 The Neural Basis of Edge and Tilt, Production AI Engineering Playbook, Slow-Wave Sleep (+5)",
+      "duration_sec": 0.004561901092529297
+    },
+    {
+      "id": 14,
+      "kept": true,
+      "metric_before": 0.6995,
+      "metric_after": 0.6995,
+      "mutation_log": "add wikilinks: Lymphatic System, World Models (+2)",
+      "duration_sec": 0.004187345504760742
+    },
+    {
+      "id": 16,
+      "kept": true,
+      "metric_before": 0.7045,
+      "metric_after": 0.7045,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0004832744598388672
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.7045,
+      "metric_after": 0.7015,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0005998611450195312
+    },
+    {
+      "id": 20,
+      "kept": true,
+      "metric_before": 0.709,
+      "metric_after": 0.709,
+      "mutation_log": "add wikilinks: AlphaFold, Economics, \"Mitochondrial Biology\" (+4)",
+      "duration_sec": 0.002227783203125
+    },
+    {
+      "id": 21,
+      "kept": true,
+      "metric_before": 0.714,
+      "metric_after": 0.714,
+      "mutation_log": "add wikilinks: \"Tipping Points\", Comprehensive Strategy Development Methodology, SHAP (+5)",
+      "duration_sec": 0.001180887222290039
+    },
+    {
+      "id": 22,
+      "kept": true,
+      "metric_before": 0.742,
+      "metric_after": 0.742,
+      "mutation_log": "add Software Engineering / AI connection",
+      "duration_sec": 0.0012428760528564453
+    },
+    {
+      "id": 24,
+      "kept": false,
+      "metric_before": 0.742,
+      "metric_after": 0.738,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0012202262878417969
+    },
+    {
+      "id": 26,
+      "kept": true,
+      "metric_before": 0.77,
+      "metric_after": 0.77,
+      "mutation_log": "add AI Engineering connection",
+      "duration_sec": 0.0008802413940429688
+    },
+    {
+      "id": 28,
+      "kept": false,
+      "metric_before": 0.77,
+      "metric_after": 0.766,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0005750656127929688
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.7735,
+      "metric_after": 0.7735,
+      "mutation_log": "add wikilinks: Institutional Fund Management, Aggregation (+2)",
+      "duration_sec": 0.0013060569763183594
+    },
+    {
+      "id": 33,
+      "kept": false,
+      "metric_before": 0.7735,
+      "metric_after": 0.769,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.000993967056274414
+    },
+    {
+      "id": 34,
+      "kept": true,
+      "metric_before": 0.7785,
+      "metric_after": 0.7785,
+      "mutation_log": "add wikilinks: \"Stem Cell Biology\", Vector Databases, Data Structures & Algorithms (+5)",
+      "duration_sec": 0.0029382705688476562
+    },
+    {
+      "id": 38,
+      "kept": true,
+      "metric_before": 0.783,
+      "metric_after": 0.783,
+      "mutation_log": "add wikilinks: Climate Change, Cognitive Load Theory, Climate Modeling (+4)",
+      "duration_sec": 0.0012633800506591797
+    },
+    {
+      "id": 39,
+      "kept": true,
+      "metric_before": 0.8215,
+      "metric_after": 0.8215,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.0010914802551269531
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.8215,
+      "metric_after": 0.816,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0007302761077880859
+    },
+    {
+      "id": 41,
+      "kept": true,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add AI / Neuroscience connection",
+      "duration_sec": 0.0016145706176757812
+    },
+    {
+      "id": 42,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: Regularization, Onion Architecture, Carbon Capture (+5)",
+      "duration_sec": 0.002536773681640625
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add AI connection",
+      "duration_sec": 0.0010724067687988281
+    },
+    {
+      "id": 45,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0008459091186523438
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: Moderation, Flashbulb Memory, Security Dilemma (+4)",
+      "duration_sec": 0.0013232231140136719
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0033707618713378906
+    },
+    {
+      "id": 50,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0010669231414794922
+    }
+  ]
+}

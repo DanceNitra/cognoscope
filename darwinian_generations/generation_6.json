@@ -1,0 +1,233 @@
+{
+  "generation": 6,
+  "timestamp": "2026-05-24T18:51:02.337475",
+  "population_size": 1010,
+  "total_phi": 339.008,
+  "mean_fitness": 0.5147330693069306,
+  "diversity": 0.7629373694632163,
+  "domains": {
+    "Statistics / Research Methods": 3,
+    "Psychology / Neuroscience": 8,
+    "Meta": 73,
+    "AI": 118,
+    "AI Engineering": 8,
+    "AI Safety": 5,
+    "Statistics": 71,
+    "Software Engineering": 91,
+    "Neuroscience": 64,
+    "Physiology": 35,
+    "Neuroscience / AI": 1,
+    "AI / Neuroscience": 4,
+    "Immunology": 10,
+    "Psychology": 54,
+    "Sleep / Neuroscience": 14,
+    "Formal Foundations": 5,
+    "Finance": 79,
+    "Psychology / AI": 1,
+    "AI / Systems Engineering": 20,
+    "Statistics / Epidemiology": 3,
+    "Statistics / Data Analysis": 1,
+    "Longevity": 12,
+    "Finance / Software Engineering": 2,
+    "Cell Biology": 26,
+    "Causal Inference": 59,
+    "Medicine": 7,
+    "Neuroscience / Physiology": 3,
+    "AI / Machine Learning": 9,
+    "Causal Inference / Statistics": 2,
+    "Mathematics / Physics": 1,
+    "Research Methods": 30,
+    "Systems Biology": 3,
+    "Health": 9,
+    "Chronobiology": 9,
+    "Neuroscience / Longevity": 1,
+    "Neuroscience / Chronobiology": 3,
+    "Economics": 12,
+    "Statistics / Causal Inference": 8,
+    "Genomics": 13,
+    "Biology": 10,
+    "unknown": 3,
+    "Mathematics": 4,
+    "Sleep Medicine / Chronobiology": 3,
+    "Philosophy": 11,
+    "Complexity Science": 9,
+    "Computer Science": 5,
+    "ML/AI": 5,
+    "Neuroscience / Psychology": 3,
+    "Philosophy / Neuroscience / AI": 1,
+    "Control Theory": 3,
+    "Physics / Neuroscience": 1,
+    "Systems": 1,
+    "Psychology / Finance": 1,
+    "Productivity": 3,
+    "Nutrition": 4,
+    "Machine Learning": 4,
+    "Pharmacology": 5,
+    "Medicine / Physiology": 3,
+    "Sleep Science": 4,
+    "Physics": 5,
+    "AI / Systems": 1,
+    "AI Interpretability": 2,
+    "Software Engineering / AI": 4,
+    "Evolution / Mathematics": 1,
+    "Neuroscience / Cognitive Psychology": 2,
+    "Physiology / Metabolism": 1,
+    "Physiology / Longevity": 1,
+    "AI / Machine Learning / Control Theory": 1,
+    "Cybersecurity": 3,
+    "AI / Agents": 4,
+    "AI / Systems Thinking": 1,
+    "Biology / Medicine": 2,
+    "Neuroscience / Sleep Medicine": 1,
+    "Neuroscience / Finance": 1,
+    "Chronobiology / Genetics": 1,
+    "AI / Finance": 1,
+    "Biomedical Science": 1,
+    "Biochemistry / AI": 1,
+    "Psychology / Statistics": 1,
+    "Neuroscience / Sleep Science": 2,
+    "Longevity / Pharmacology": 1,
+    "Statistics / Medicine": 1,
+    "Finance / Engineering": 1,
+    "Psychology / Chronobiology": 1,
+    "AI / Software Engineering": 1,
+    "Sleep": 3,
+    "Medicine / Neuroscience": 1,
+    "Finance / Psychology": 1,
+    "Longevity / Genetics": 1,
+    "Statistics / Finance": 1,
+    "AI Agents": 1
+  },
+  "extinct_candidates": [
+    "An Apple II for Teacher",
+    "Apple unveils new accessibility features",
+    "CISA Admin Leaked AWS GovCloud Keys on GitHub",
+    "Click 2016",
+    "Gaussian Splat of a Strawberry",
+    "Gentoo News: Copy Fail, Dirty Frag, and Fragnesia Kernel Vulnerabilities",
+    "Google IO",
+    "Google IO 26 Keynote",
+    "Graduates are booing pep talks on AI at college commencements",
+    "Kv4p HT  A homebrew 1W radio VHF or UHF that plugs into an Android phone",
+    "Mini Shai-Hulud Strikes Again: 314 npm Packages Compromised",
+    "Multi-Stream LLMs: new paper on parallelizingseparating prompts, thinking, IO",
+    "NF-kB",
+    "OpenBSD 7.9",
+    "Photo GIMP  A Patch for GIMP 3 for Photoshop Users",
+    "Polypad",
+    "Research Note",
+    "Show HN: I made a 3D pose maker for artists",
+    "The last six months in LLMs in five minutes"
+  ],
+  "adaptive_peaks": [
+    {
+      "name": "Sleep Architecture",
+      "domain": "Sleep / Neuroscience",
+      "fitness": 0.7405,
+      "why": "19 inbound links (hub) + breaktruth claim present + 15 sections (deep)"
+    },
+    {
+      "name": "Synaptic Plasticity",
+      "domain": "Neuroscience",
+      "fitness": 0.7337,
+      "why": "23 inbound links (hub) + breaktruth claim present + 6 sections (deep)"
+    },
+    {
+      "name": "The AI Architect's Playbook",
+      "domain": "Software Engineering / AI",
+      "fitness": 0.7232,
+      "why": "12 inbound links (hub) + 12 sections (deep)"
+    },
+    {
+      "name": "Production AI System Architecture",
+      "domain": "Software Engineering / AI",
+      "fitness": 0.7191,
+      "why": "17 inbound links (hub) + 11 sections (deep)"
+    },
+    {
+      "name": "Cognitive Psychology",
+      "domain": "Psychology",
+      "fitness": 0.7191,
+      "why": "16 inbound links (hub) + 10 sections (deep)"
+    }
+  ],
+  "crossover_pairs": [
+    {
+      "a": "A-B Testing",
+      "b": "Criticality",
+      "da": "Statistics / Research Methods",
+      "db": "Physics / Neuroscience",
+      "score": 0.5162
+    },
+    {
+      "a": "Learning",
+      "b": "Action Selection",
+      "da": "Meta",
+      "db": "Neuroscience / AI",
+      "score": -0.1558
+    },
+    {
+      "a": "Learning",
+      "b": "Bifurcation",
+      "da": "Meta",
+      "db": "Mathematics / Physics",
+      "score": -0.2458
+    },
+    {
+      "a": "Learning",
+      "b": "Leaky Gut",
+      "da": "Meta",
+      "db": "Medicine / Physiology",
+      "score": -0.3851
+    },
+    {
+      "a": "Learning",
+      "b": "Insulin Resistance",
+      "da": "Meta",
+      "db": "Physiology / Longevity",
+      "score": -0.4301
+    }
+  ],
+  "speciation_signals": {
+    "Finance": {
+      "count": 79,
+      "subdomains": [
+        "Risk",
+        "Drawdown",
+        "Volatility",
+        "Portfolio",
+        "Momentum"
+      ]
+    },
+    "Neuroscience": {
+      "count": 64,
+      "subdomains": [
+        "Neurotransmitter",
+        "Prefrontal",
+        "Amygdala",
+        "Norepinephrine",
+        "Synaptic"
+      ]
+    },
+    "Psychology": {
+      "count": 54,
+      "subdomains": [
+        "Heuristic",
+        "Bias",
+        "Motivation",
+        "Memory",
+        "Attention"
+      ]
+    }
+  },
+  "niche_gaps": {
+    "underpopulated": [
+      "Neuroscience / AI",
+      "Psychology / AI",
+      "Statistics / Data Analysis",
+      "Mathematics / Physics",
+      "Neuroscience / Longevity"
+    ],
+    "overcrowded": []
+  }
+}

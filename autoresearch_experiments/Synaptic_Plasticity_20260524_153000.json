@@ -1,0 +1,61 @@
+{
+  "subject_name": "Synaptic Plasticity",
+  "total_experiments": 6,
+  "kept_experiments": 6,
+  "metric_start": 0.179,
+  "metric_end": 0.5975,
+  "metric_improvement_pct": 233.7988826815643,
+  "duration_sec": 0.7341628074645996,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.1795,
+      "metric_after": 0.1795,
+      "mutation_log": "deepen The Core Mechanisms",
+      "duration_sec": 0.0006031990051269531
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.282,
+      "metric_after": 0.282,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0030221939086914062
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.3905,
+      "metric_after": 0.3905,
+      "mutation_log": "add wikilinks: LLM Serving & Inference Architecture, \"Polygenic Risk Scores\" (+2)",
+      "duration_sec": 0.0024118423461914062
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.5515,
+      "metric_after": 0.5515,
+      "mutation_log": "add Physics connection",
+      "duration_sec": 0.0006806850433349609
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.5565,
+      "metric_after": 0.5565,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0004630088806152344
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.5975,
+      "metric_after": 0.5975,
+      "mutation_log": "add Statistics / Research Methods connection",
+      "duration_sec": 0.0023365020751953125
+    }
+  ]
+}

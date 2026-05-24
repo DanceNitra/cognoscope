@@ -1,0 +1,269 @@
+{
+  "subject_name": "Peter Neumann has died",
+  "total_experiments": 32,
+  "kept_experiments": 20,
+  "metric_start": 0.117,
+  "metric_end": 0.85,
+  "metric_improvement_pct": 626.4957264957264,
+  "duration_sec": 2.1564812660217285,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.2195,
+      "metric_after": 0.2195,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0007336139678955078
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.379,
+      "metric_after": 0.379,
+      "mutation_log": "add AI / Agents connection",
+      "duration_sec": 0.0020241737365722656
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.4875,
+      "metric_after": 0.4875,
+      "mutation_log": "add wikilinks: Sleep Architecture, Working Memory (+2)",
+      "duration_sec": 0.0021178722381591797
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.542,
+      "metric_after": 0.542,
+      "mutation_log": "add wikilinks: Contingency Tables, \"Information Diet\", Walk-Forward Analysis (+4)",
+      "duration_sec": 0.0019752979278564453
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.624,
+      "metric_after": 0.624,
+      "mutation_log": "add Formal Foundations connection",
+      "duration_sec": 0.0018284320831298828
+    },
+    {
+      "id": 7,
+      "kept": true,
+      "metric_before": 0.6785,
+      "metric_after": 0.6785,
+      "mutation_log": "add wikilinks: Mechanism Design: The Engineering of Incentives, \"Long-Term Potentiation\", \"Metabolic Regulation\" (+4)",
+      "duration_sec": 0.0019006729125976562
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.6835,
+      "metric_after": 0.6835,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0017347335815429688
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.701,
+      "metric_after": 0.701,
+      "mutation_log": "add wikilinks: Bayesian Inference, Blood-Brain Barrier, \"Meta-Analysis\" (+5)",
+      "duration_sec": 0.0018994808197021484
+    },
+    {
+      "id": 11,
+      "kept": true,
+      "metric_before": 0.7045,
+      "metric_after": 0.7045,
+      "mutation_log": "add wikilinks: \"Neuropharmacology\", \"Auction Theory and Market Microstructure\" (+2)",
+      "duration_sec": 0.0025391578674316406
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.7045,
+      "metric_after": 0.7005,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.0005993843078613281
+    },
+    {
+      "id": 15,
+      "kept": true,
+      "metric_before": 0.722,
+      "metric_after": 0.722,
+      "mutation_log": "add Complexity Science connection",
+      "duration_sec": 0.0009989738464355469
+    },
+    {
+      "id": 16,
+      "kept": false,
+      "metric_before": 0.722,
+      "metric_after": 0.718,
+      "mutation_log": "deepen Raw Signal",
+      "duration_sec": 0.003401041030883789
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.722,
+      "metric_after": 0.718,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.0008738040924072266
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.722,
+      "metric_after": 0.718,
+      "mutation_log": "deepen Raw Signal",
+      "duration_sec": 0.0009739398956298828
+    },
+    {
+      "id": 23,
+      "kept": true,
+      "metric_before": 0.7395,
+      "metric_after": 0.7395,
+      "mutation_log": "add Meta connection",
+      "duration_sec": 0.0012028217315673828
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.757,
+      "metric_after": 0.757,
+      "mutation_log": "add Longevity connection",
+      "duration_sec": 0.0008068084716796875
+    },
+    {
+      "id": 27,
+      "kept": true,
+      "metric_before": 0.7745,
+      "metric_after": 0.7745,
+      "mutation_log": "add Cybersecurity connection",
+      "duration_sec": 0.00046133995056152344
+    },
+    {
+      "id": 28,
+      "kept": true,
+      "metric_before": 0.779,
+      "metric_after": 0.779,
+      "mutation_log": "add wikilinks: Odds Ratio, Nutrition, Ecological Fallacy (+4)",
+      "duration_sec": 0.003350496292114258
+    },
+    {
+      "id": 29,
+      "kept": true,
+      "metric_before": 0.783,
+      "metric_after": 0.783,
+      "mutation_log": "add wikilinks: AI Testing & Evaluation, \"Treatment Effects\", Homeostasis (+3)",
+      "duration_sec": 0.0026493072509765625
+    },
+    {
+      "id": 31,
+      "kept": true,
+      "metric_before": 0.788,
+      "metric_after": 0.788,
+      "mutation_log": "add wikilinks: Neurogenesis, Internet Architecture, Credit Derivatives \u2014 CDS, CDO, XVA (+5)",
+      "duration_sec": 0.0013532638549804688
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.793,
+      "metric_after": 0.793,
+      "mutation_log": "add wikilinks: \"Machine Learning \u2014 Supervised Learning\", Circadian Rhythm, Simpson's Paradox (+5)",
+      "duration_sec": 0.0012564659118652344
+    },
+    {
+      "id": 36,
+      "kept": true,
+      "metric_before": 0.7975,
+      "metric_after": 0.7975,
+      "mutation_log": "add wikilinks: Spaced Repetition, \"Operating Systems\", Learning (+4)",
+      "duration_sec": 0.0016312599182128906
+    },
+    {
+      "id": 37,
+      "kept": true,
+      "metric_before": 0.8325,
+      "metric_after": 0.8325,
+      "mutation_log": "add Biology connection",
+      "duration_sec": 0.003258943557739258
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.8325,
+      "metric_after": 0.826,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.004369497299194336
+    },
+    {
+      "id": 39,
+      "kept": false,
+      "metric_before": 0.8325,
+      "metric_after": 0.826,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.0035686492919921875
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.8325,
+      "metric_after": 0.826,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.007192373275756836
+    },
+    {
+      "id": 41,
+      "kept": true,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Finance connection",
+      "duration_sec": 0.014674901962280273
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add wikilinks: Mental Models, Anhedonia, WEIRD (+5)",
+      "duration_sec": 0.0016207695007324219
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add AI / Agents connection",
+      "duration_sec": 0.010282516479492188
+    },
+    {
+      "id": 48,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "add Computer Science connection",
+      "duration_sec": 0.0012004375457763672
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.003968715667724609
+    },
+    {
+      "id": 50,
+      "kept": false,
+      "metric_before": 0.85,
+      "metric_after": 0.85,
+      "mutation_log": "deepen Overview",
+      "duration_sec": 0.011957883834838867
+    }
+  ]
+}
