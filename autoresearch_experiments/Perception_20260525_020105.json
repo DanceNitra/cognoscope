@@ -1,0 +1,381 @@
+{
+  "subject_name": "Perception",
+  "total_experiments": 46,
+  "kept_experiments": 13,
+  "metric_start": 0.1824,
+  "metric_end": 0.332,
+  "metric_improvement_pct": 82.01754385964912,
+  "duration_sec": 0.9200131893157959,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.1915,
+      "metric_after": 0.1915,
+      "mutation_log": "add Immunology connection",
+      "duration_sec": 0.0013003349304199219
+    },
+    {
+      "id": 2,
+      "kept": true,
+      "metric_before": 0.2782,
+      "metric_after": 0.2782,
+      "mutation_log": "add wikilinks: Biotechnology, Correlation, Green Industrial Policy (+3)",
+      "duration_sec": 0.0012862682342529297
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.2676,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0018930435180664062
+    },
+    {
+      "id": 4,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.2408,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.002286672592163086
+    },
+    {
+      "id": 5,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.213,
+      "mutation_log": "add Statistics / Causal Inference connection",
+      "duration_sec": 0.0018427371978759766
+    },
+    {
+      "id": 6,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.2551,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0014176368713378906
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.2408,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.008902549743652344
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.2782,
+      "metric_after": 0.2408,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0024559497833251953
+    },
+    {
+      "id": 9,
+      "kept": true,
+      "metric_before": 0.2936,
+      "metric_after": 0.2936,
+      "mutation_log": "add Neuroscience connection",
+      "duration_sec": 0.004852294921875
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.2939,
+      "metric_after": 0.2939,
+      "mutation_log": "add wikilinks: \"Stochastic Processes\", Memory Hierarchy for Agents, Evolutionary Dynamics \u2014 Red Queen and Increasing Autonomy (+3)",
+      "duration_sec": 0.001989603042602539
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.2939,
+      "metric_after": 0.2939,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0011725425720214844
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.2939,
+      "metric_after": 0.2939,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0014634132385253906
+    },
+    {
+      "id": 13,
+      "kept": true,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0016188621520996094
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3158,
+      "mutation_log": "add wikilinks: Light Therapy, Graph Databases (+2)",
+      "duration_sec": 0.0016543865203857422
+    },
+    {
+      "id": 15,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0016798973083496094
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0010917186737060547
+    },
+    {
+      "id": 19,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.010075807571411133
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001558065414428711
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3108,
+      "mutation_log": "add Physiology connection",
+      "duration_sec": 0.0074367523193359375
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0020422935485839844
+    },
+    {
+      "id": 23,
+      "kept": false,
+      "metric_before": 0.3164,
+      "metric_after": 0.3164,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.003431081771850586
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.3219,
+      "metric_after": 0.3219,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.0018115043640136719
+    },
+    {
+      "id": 25,
+      "kept": true,
+      "metric_before": 0.3274,
+      "metric_after": 0.3274,
+      "mutation_log": "add Research Methods connection",
+      "duration_sec": 0.004061698913574219
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.3274,
+      "metric_after": 0.3274,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.007086038589477539
+    },
+    {
+      "id": 28,
+      "kept": true,
+      "metric_before": 0.3284,
+      "metric_after": 0.3284,
+      "mutation_log": "add wikilinks: \"Mechanistic Interpretability\", \"Formal Foundations of Computation\" (+2)",
+      "duration_sec": 0.004064083099365234
+    },
+    {
+      "id": 29,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3284,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0022568702697753906
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3284,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.005163431167602539
+    },
+    {
+      "id": 31,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3213,
+      "mutation_log": "add Computer Science connection",
+      "duration_sec": 0.004353761672973633
+    },
+    {
+      "id": 32,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3284,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.005816936492919922
+    },
+    {
+      "id": 33,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3233,
+      "mutation_log": "add AI / Agents connection",
+      "duration_sec": 0.0027763843536376953
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.3284,
+      "metric_after": 0.3284,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.003136873245239258
+    },
+    {
+      "id": 35,
+      "kept": true,
+      "metric_before": 0.3292,
+      "metric_after": 0.3292,
+      "mutation_log": "add wikilinks: The RSI Expansion Protocol \u2014 Self-Directed Research Evolution, Flashbulb Memory, Causal Graph (+5)",
+      "duration_sec": 0.004688262939453125
+    },
+    {
+      "id": 36,
+      "kept": false,
+      "metric_before": 0.3292,
+      "metric_after": 0.3292,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.001971721649169922
+    },
+    {
+      "id": 37,
+      "kept": false,
+      "metric_before": 0.3292,
+      "metric_after": 0.3292,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0029256343841552734
+    },
+    {
+      "id": 39,
+      "kept": false,
+      "metric_before": 0.3292,
+      "metric_after": 0.3292,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.008631229400634766
+    },
+    {
+      "id": 40,
+      "kept": true,
+      "metric_before": 0.3299,
+      "metric_after": 0.3299,
+      "mutation_log": "add wikilinks: \"Multiple Regression\", \"Economic Theory of AI\", Backtesting Methodology (+5)",
+      "duration_sec": 0.00500035285949707
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.3299,
+      "metric_after": 0.3215,
+      "mutation_log": "add Computer Science connection",
+      "duration_sec": 0.0030508041381835938
+    },
+    {
+      "id": 42,
+      "kept": true,
+      "metric_before": 0.3301,
+      "metric_after": 0.3301,
+      "mutation_log": "add Finance connection",
+      "duration_sec": 0.00574946403503418
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.3301,
+      "metric_after": 0.3301,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.005064964294433594
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.3301,
+      "metric_after": 0.3301,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0048503875732421875
+    },
+    {
+      "id": 45,
+      "kept": false,
+      "metric_before": 0.3301,
+      "metric_after": 0.3294,
+      "mutation_log": "add wikilinks: Overlap, \"GWAS \u2014 Genome-Wide Association Studies\", \"Digital Garden\" (+4)",
+      "duration_sec": 0.011160850524902344
+    },
+    {
+      "id": 46,
+      "kept": true,
+      "metric_before": 0.3304,
+      "metric_after": 0.3304,
+      "mutation_log": "add wikilinks: \"BDNF\", \"Logistic Regression\" (+2)",
+      "duration_sec": 0.005774021148681641
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.3304,
+      "metric_after": 0.3304,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0037114620208740234
+    },
+    {
+      "id": 48,
+      "kept": false,
+      "metric_before": 0.3304,
+      "metric_after": 0.3304,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.01316523551940918
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.3304,
+      "metric_after": 0.3304,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.00928354263305664
+    },
+    {
+      "id": 50,
+      "kept": true,
+      "metric_before": 0.332,
+      "metric_after": 0.332,
+      "mutation_log": "add Physics connection",
+      "duration_sec": 0.0063321590423583984
+    }
+  ]
+}

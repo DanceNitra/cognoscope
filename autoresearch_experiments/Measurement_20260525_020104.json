@@ -1,0 +1,341 @@
+{
+  "subject_name": "Measurement",
+  "total_experiments": 41,
+  "kept_experiments": 9,
+  "metric_start": 0.3482,
+  "metric_end": 0.4523,
+  "metric_improvement_pct": 29.896611143021246,
+  "duration_sec": 0.827176570892334,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": false,
+      "metric_before": 0.3482,
+      "metric_after": 0.3261,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0023505687713623047
+    },
+    {
+      "id": 2,
+      "kept": false,
+      "metric_before": 0.3482,
+      "metric_after": 0.3439,
+      "mutation_log": "add Health connection",
+      "duration_sec": 0.0034952163696289062
+    },
+    {
+      "id": 3,
+      "kept": false,
+      "metric_before": 0.3482,
+      "metric_after": 0.3106,
+      "mutation_log": "deepen Validity",
+      "duration_sec": 0.009266138076782227
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.3941,
+      "metric_after": 0.3941,
+      "mutation_log": "add wikilinks: LLM Agents for Finance, Immunology (+2)",
+      "duration_sec": 0.004186153411865234
+    },
+    {
+      "id": 5,
+      "kept": false,
+      "metric_before": 0.3941,
+      "metric_after": 0.3596,
+      "mutation_log": "deepen Attenuation Correction",
+      "duration_sec": 0.012978076934814453
+    },
+    {
+      "id": 6,
+      "kept": false,
+      "metric_before": 0.3941,
+      "metric_after": 0.3925,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.015990495681762695
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.3941,
+      "metric_after": 0.38,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.004958391189575195
+    },
+    {
+      "id": 8,
+      "kept": true,
+      "metric_before": 0.4055,
+      "metric_after": 0.4055,
+      "mutation_log": "add wikilinks: Concurrency, API Design, Chronotype (+5)",
+      "duration_sec": 0.0031976699829101562
+    },
+    {
+      "id": 9,
+      "kept": false,
+      "metric_before": 0.4055,
+      "metric_after": 0.3765,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.0025300979614257812
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.4393,
+      "metric_after": 0.4393,
+      "mutation_log": "add wikilinks: Forgetting, Agent Tool Design, \"Pharmacogenomics\" (+4)",
+      "duration_sec": 0.00676274299621582
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.4393,
+      "metric_after": 0.343,
+      "mutation_log": "add Sleep Medicine / Chronobiology connection",
+      "duration_sec": 0.003968238830566406
+    },
+    {
+      "id": 12,
+      "kept": true,
+      "metric_before": 0.4413,
+      "metric_after": 0.4413,
+      "mutation_log": "add wikilinks: \"Circadian Disruption and Disease\", Military Strategy, The Microbiome (+4)",
+      "duration_sec": 0.005685329437255859
+    },
+    {
+      "id": 13,
+      "kept": false,
+      "metric_before": 0.4413,
+      "metric_after": 0.4316,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.002528667449951172
+    },
+    {
+      "id": 14,
+      "kept": true,
+      "metric_before": 0.4421,
+      "metric_after": 0.4421,
+      "mutation_log": "add wikilinks: Tick Data & Market Microstructure Deep, Credit Derivatives \u2014 CDS, CDO, XVA, Advanced Statistical Methods for Finance (+5)",
+      "duration_sec": 0.00357818603515625
+    },
+    {
+      "id": 15,
+      "kept": true,
+      "metric_before": 0.4455,
+      "metric_after": 0.4455,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.002749919891357422
+    },
+    {
+      "id": 17,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.434,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0019216537475585938
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.3641,
+      "mutation_log": "add AI Engineering connection",
+      "duration_sec": 0.016762733459472656
+    },
+    {
+      "id": 19,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.3497,
+      "mutation_log": "add Computer Science connection",
+      "duration_sec": 0.0069582462310791016
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.4143,
+      "mutation_log": "deepen Attenuation Correction",
+      "duration_sec": 0.0028836727142333984
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.4021,
+      "mutation_log": "deepen Scales of Measurement (Stevens)",
+      "duration_sec": 0.015978574752807617
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.3662,
+      "mutation_log": "add Chronobiology connection",
+      "duration_sec": 0.004300594329833984
+    },
+    {
+      "id": 23,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.3598,
+      "mutation_log": "add Software Engineering connection",
+      "duration_sec": 0.003300905227661133
+    },
+    {
+      "id": 24,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.434,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.005445718765258789
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.4455,
+      "metric_after": 0.434,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.002268075942993164
+    },
+    {
+      "id": 27,
+      "kept": true,
+      "metric_before": 0.4514,
+      "metric_after": 0.4514,
+      "mutation_log": "add wikilinks: \"Propensity Score\", \"Journaling & Review\", Multi-Agent Systems (+5)",
+      "duration_sec": 0.0035545825958251953
+    },
+    {
+      "id": 29,
+      "kept": false,
+      "metric_before": 0.4514,
+      "metric_after": 0.4397,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0032782554626464844
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.4514,
+      "metric_after": 0.4397,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.00274658203125
+    },
+    {
+      "id": 31,
+      "kept": false,
+      "metric_before": 0.4514,
+      "metric_after": 0.4397,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0028853416442871094
+    },
+    {
+      "id": 33,
+      "kept": false,
+      "metric_before": 0.4514,
+      "metric_after": 0.4514,
+      "mutation_log": "add wikilinks: \"Mitochondrial Biology\", \"Chain-of-Thought\" (+2)",
+      "duration_sec": 0.00566411018371582
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.4514,
+      "metric_after": 0.4397,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0026514530181884766
+    },
+    {
+      "id": 35,
+      "kept": true,
+      "metric_before": 0.4517,
+      "metric_after": 0.4517,
+      "mutation_log": "add wikilinks: STDP, Longevity MOC, \"Power Analysis\" (+4)",
+      "duration_sec": 0.003047466278076172
+    },
+    {
+      "id": 36,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.4191,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0026731491088867188
+    },
+    {
+      "id": 37,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.4071,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0050983428955078125
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.4398,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0029675960540771484
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.3633,
+      "mutation_log": "add Productivity connection",
+      "duration_sec": 0.0026445388793945312
+    },
+    {
+      "id": 42,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.4517,
+      "mutation_log": "add wikilinks: Identification, Cybernetics, Self-Rewriting Programs \u2014 Runtime Code Modification for RSI (+4)",
+      "duration_sec": 0.00554966926574707
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.4517,
+      "metric_after": 0.4398,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.005692720413208008
+    },
+    {
+      "id": 44,
+      "kept": true,
+      "metric_before": 0.4523,
+      "metric_after": 0.4523,
+      "mutation_log": "add wikilinks: Heterogeneity of Treatment Effects, Autonomic Nervous System (+2)",
+      "duration_sec": 0.0029289722442626953
+    },
+    {
+      "id": 45,
+      "kept": false,
+      "metric_before": 0.4523,
+      "metric_after": 0.4028,
+      "mutation_log": "deepen Reliability",
+      "duration_sec": 0.003927469253540039
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.4523,
+      "metric_after": 0.4028,
+      "mutation_log": "deepen Reliability",
+      "duration_sec": 0.002764463424682617
+    },
+    {
+      "id": 50,
+      "kept": false,
+      "metric_before": 0.4523,
+      "metric_after": 0.3546,
+      "mutation_log": "add Medicine connection",
+      "duration_sec": 0.0052013397216796875
+    }
+  ]
+}

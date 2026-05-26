@@ -1,0 +1,365 @@
+{
+  "subject_name": "Cursor Introduces Composer 2.5",
+  "total_experiments": 44,
+  "kept_experiments": 10,
+  "metric_start": 0.0892,
+  "metric_end": 0.3824,
+  "metric_improvement_pct": 328.6995515695067,
+  "duration_sec": 0.7159643173217773,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": false,
+      "metric_before": 0.0892,
+      "metric_after": 0.0876,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0007810592651367188
+    },
+    {
+      "id": 2,
+      "kept": false,
+      "metric_before": 0.0892,
+      "metric_after": 0.0876,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.00098419189453125
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.2683,
+      "metric_after": 0.2683,
+      "mutation_log": "add wikilinks: Metabolic Health, Agentic Trading Systems (+2)",
+      "duration_sec": 0.0015959739685058594
+    },
+    {
+      "id": 4,
+      "kept": false,
+      "metric_before": 0.2683,
+      "metric_after": 0.251,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0010335445404052734
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.3232,
+      "metric_after": 0.3232,
+      "mutation_log": "add wikilinks: \"Macronutrients and Energy Balance\", Prefrontal Synthesis, Inversion of Control (+3)",
+      "duration_sec": 0.001798391342163086
+    },
+    {
+      "id": 6,
+      "kept": true,
+      "metric_before": 0.3536,
+      "metric_after": 0.3536,
+      "mutation_log": "add wikilinks: Collider Bias, Social Jetlag and Shift Work, Backtesting Methodology (+5)",
+      "duration_sec": 0.0019142627716064453
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.3536,
+      "metric_after": 0.2922,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0012350082397460938
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.3536,
+      "metric_after": 0.3366,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0010676383972167969
+    },
+    {
+      "id": 9,
+      "kept": true,
+      "metric_before": 0.3552,
+      "metric_after": 0.3552,
+      "mutation_log": "add wikilinks: Free Energy Principle & Active Inference, Digital Minimalism (+2)",
+      "duration_sec": 0.009329795837402344
+    },
+    {
+      "id": 10,
+      "kept": false,
+      "metric_before": 0.3552,
+      "metric_after": 0.3385,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.000965118408203125
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.3552,
+      "metric_after": 0.3544,
+      "mutation_log": "add wikilinks: Autonomous Systems, Climate Modeling, Software Architecture for Agentic Systems (+4)",
+      "duration_sec": 0.0016994476318359375
+    },
+    {
+      "id": 12,
+      "kept": true,
+      "metric_before": 0.3594,
+      "metric_after": 0.3594,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0037622451782226562
+    },
+    {
+      "id": 13,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3578,
+      "mutation_log": "add wikilinks: Phase Transitions, Causal Forests, Security Dilemma (+5)",
+      "duration_sec": 0.004637718200683594
+    },
+    {
+      "id": 15,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3149,
+      "mutation_log": "deepen Raw Signal",
+      "duration_sec": 0.002886533737182617
+    },
+    {
+      "id": 16,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3042,
+      "mutation_log": "add Psychology / Neuroscience connection",
+      "duration_sec": 0.0019698143005371094
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3149,
+      "mutation_log": "deepen Key Points",
+      "duration_sec": 0.0017061233520507812
+    },
+    {
+      "id": 19,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3149,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.0013034343719482422
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3499,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.004613637924194336
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.3594,
+      "metric_after": 0.3149,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.0013992786407470703
+    },
+    {
+      "id": 22,
+      "kept": true,
+      "metric_before": 0.36,
+      "metric_after": 0.36,
+      "mutation_log": "add wikilinks: Sleep as a Control System, \"Randomized Controlled Trials\" (+2)",
+      "duration_sec": 0.0023322105407714844
+    },
+    {
+      "id": 23,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.3598,
+      "mutation_log": "add wikilinks: Autonomous Agents as Second Brain Extensions, \"Propensity Score\", STDP (+3)",
+      "duration_sec": 0.0019636154174804688
+    },
+    {
+      "id": 24,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.3259,
+      "mutation_log": "add AI Engineering connection",
+      "duration_sec": 0.0036492347717285156
+    },
+    {
+      "id": 25,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.3501,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0033109188079833984
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.3501,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0016722679138183594
+    },
+    {
+      "id": 28,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.3138,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0015087127685546875
+    },
+    {
+      "id": 29,
+      "kept": false,
+      "metric_before": 0.36,
+      "metric_after": 0.32,
+      "mutation_log": "add Pharmacology connection",
+      "duration_sec": 0.00197601318359375
+    },
+    {
+      "id": 30,
+      "kept": true,
+      "metric_before": 0.362,
+      "metric_after": 0.362,
+      "mutation_log": "add wikilinks: \"Bridge 86 \u2014 Market as Bayesian Brain\", Executive Function, \"Do-Calculus & Causal Identification\" (+3)",
+      "duration_sec": 0.0018236637115478516
+    },
+    {
+      "id": 31,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3287,
+      "mutation_log": "add Finance connection",
+      "duration_sec": 0.007462263107299805
+    },
+    {
+      "id": 32,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3142,
+      "mutation_log": "deepen Raw Signal",
+      "duration_sec": 0.0016438961029052734
+    },
+    {
+      "id": 34,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3142,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0014719963073730469
+    },
+    {
+      "id": 35,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3138,
+      "mutation_log": "add Research Methods connection",
+      "duration_sec": 0.002979755401611328
+    },
+    {
+      "id": 36,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3609,
+      "mutation_log": "add wikilinks: Trading Strategy \u2014 Volatility Risk Premium Harvesting, \"AI Safety & Alignment\", \"Agent Safety & Guardrails \u00a7Circuit Breakers\" (+5)",
+      "duration_sec": 0.004087209701538086
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.362,
+      "metric_after": 0.3261,
+      "mutation_log": "add AI Engineering connection",
+      "duration_sec": 0.0021789073944091797
+    },
+    {
+      "id": 39,
+      "kept": true,
+      "metric_before": 0.3653,
+      "metric_after": 0.3653,
+      "mutation_log": "add wikilinks: Neurodegeneration, Circadian Rhythm, \"Health & Longevity MOC\" (+5)",
+      "duration_sec": 0.002725362777709961
+    },
+    {
+      "id": 40,
+      "kept": true,
+      "metric_before": 0.3817,
+      "metric_after": 0.3817,
+      "mutation_log": "add wikilinks: \"Emotional Regulation\", Foundation Models, Glymphatic System (+3)",
+      "duration_sec": 0.002111673355102539
+    },
+    {
+      "id": 42,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0019474029541015625
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3163,
+      "mutation_log": "deepen Status",
+      "duration_sec": 0.0019207000732421875
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3163,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0016274452209472656
+    },
+    {
+      "id": 45,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3369,
+      "mutation_log": "add Neuroscience / Physiology connection",
+      "duration_sec": 0.0026237964630126953
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3803,
+      "mutation_log": "add wikilinks: Monte Carlo Tree Search, Coefficient of Determination, Wikilinks (+3)",
+      "duration_sec": 0.004944801330566406
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.3817,
+      "metric_after": 0.3163,
+      "mutation_log": "deepen Raw Signal",
+      "duration_sec": 0.0015518665313720703
+    },
+    {
+      "id": 48,
+      "kept": true,
+      "metric_before": 0.3824,
+      "metric_after": 0.3824,
+      "mutation_log": "add wikilinks: \"Regulatory Compliance\", Cybernetics (+2)",
+      "duration_sec": 0.005320072174072266
+    },
+    {
+      "id": 49,
+      "kept": false,
+      "metric_before": 0.3824,
+      "metric_after": 0.316,
+      "mutation_log": "deepen Key Points",
+      "duration_sec": 0.0015244483947753906
+    },
+    {
+      "id": 50,
+      "kept": false,
+      "metric_before": 0.3824,
+      "metric_after": 0.3716,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.002928495407104492
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "mode": "nightly",
+  "timestamp": "2026-05-25T02:01:06.803764",
+  "duration_sec": 4.084646224975586,
+  "phase1": [
+    {
+      "subject": "Measurement",
+      "experiments": 41,
+      "kept": 9,
+      "improvement": 29.896611143021246,
+      "metric_from": 0.3482,
+      "metric_to": 0.4523
+    },
+    {
+      "subject": "Perception",
+      "experiments": 46,
+      "kept": 13,
+      "improvement": 82.01754385964912,
+      "metric_from": 0.1824,
+      "metric_to": 0.332
+    },
+    {
+      "subject": "Terminal",
+      "experiments": 46,
+      "kept": 11,
+      "improvement": 70.12702584318879,
+      "metric_from": 0.2283,
+      "metric_to": 0.3884
+    }
+  ],
+  "phase2": [],
+  "phase3": []
+}

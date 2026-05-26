@@ -1,0 +1,381 @@
+{
+  "subject_name": "Terminal",
+  "total_experiments": 46,
+  "kept_experiments": 11,
+  "metric_start": 0.2283,
+  "metric_end": 0.3884,
+  "metric_improvement_pct": 70.12702584318879,
+  "duration_sec": 0.7546625137329102,
+  "aborted": false,
+  "abort_reason": "",
+  "experiments": [
+    {
+      "id": 2,
+      "kept": false,
+      "metric_before": 0.2283,
+      "metric_after": 0.2008,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0008835792541503906
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.2448,
+      "metric_after": 0.2448,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0007863044738769531
+    },
+    {
+      "id": 4,
+      "kept": true,
+      "metric_before": 0.2767,
+      "metric_after": 0.2767,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.000728607177734375
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.3619,
+      "metric_after": 0.3619,
+      "mutation_log": "add wikilinks: Flow State, Prefrontal Synthesis, Synthetic Control (+4)",
+      "duration_sec": 0.00270843505859375
+    },
+    {
+      "id": 6,
+      "kept": false,
+      "metric_before": 0.3619,
+      "metric_after": 0.3224,
+      "mutation_log": "add Biology connection",
+      "duration_sec": 0.001172780990600586
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.3619,
+      "metric_after": 0.3327,
+      "mutation_log": "add AI / Systems Engineering connection",
+      "duration_sec": 0.0013575553894042969
+    },
+    {
+      "id": 9,
+      "kept": false,
+      "metric_before": 0.3619,
+      "metric_after": 0.3284,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001215219497680664
+    },
+    {
+      "id": 10,
+      "kept": true,
+      "metric_before": 0.3628,
+      "metric_after": 0.3628,
+      "mutation_log": "add wikilinks: Chronotherapy and Light Exposure, \"Domain Adaptation\", Swarm Intelligence (+4)",
+      "duration_sec": 0.0017428398132324219
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.3628,
+      "metric_after": 0.3289,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.00113677978515625
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.3628,
+      "metric_after": 0.3289,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.001108407974243164
+    },
+    {
+      "id": 13,
+      "kept": true,
+      "metric_before": 0.3632,
+      "metric_after": 0.3632,
+      "mutation_log": "add wikilinks: Selection Bias, Note Taking (+2)",
+      "duration_sec": 0.0026967525482177734
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.3632,
+      "metric_after": 0.3422,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0009279251098632812
+    },
+    {
+      "id": 15,
+      "kept": false,
+      "metric_before": 0.3632,
+      "metric_after": 0.3422,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.004631757736206055
+    },
+    {
+      "id": 16,
+      "kept": false,
+      "metric_before": 0.3632,
+      "metric_after": 0.3422,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0016183853149414062
+    },
+    {
+      "id": 17,
+      "kept": false,
+      "metric_before": 0.3632,
+      "metric_after": 0.3422,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.002240896224975586
+    },
+    {
+      "id": 18,
+      "kept": false,
+      "metric_before": 0.3632,
+      "metric_after": 0.3289,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.006319522857666016
+    },
+    {
+      "id": 19,
+      "kept": true,
+      "metric_before": 0.3643,
+      "metric_after": 0.3643,
+      "mutation_log": "add wikilinks: Attention, \"Propensity Score\", Adolescent Development (+4)",
+      "duration_sec": 0.006525993347167969
+    },
+    {
+      "id": 20,
+      "kept": false,
+      "metric_before": 0.3643,
+      "metric_after": 0.3296,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0010929107666015625
+    },
+    {
+      "id": 21,
+      "kept": false,
+      "metric_before": 0.3643,
+      "metric_after": 0.3265,
+      "mutation_log": "add Software Engineering connection",
+      "duration_sec": 0.002581357955932617
+    },
+    {
+      "id": 22,
+      "kept": false,
+      "metric_before": 0.3643,
+      "metric_after": 0.3445,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0012431144714355469
+    },
+    {
+      "id": 23,
+      "kept": false,
+      "metric_before": 0.3643,
+      "metric_after": 0.3445,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.002538442611694336
+    },
+    {
+      "id": 24,
+      "kept": true,
+      "metric_before": 0.3683,
+      "metric_after": 0.3683,
+      "mutation_log": "add wikilinks: Data Modeling & Schema Design, \"Grit\", Light Exposure (+5)",
+      "duration_sec": 0.0019161701202392578
+    },
+    {
+      "id": 25,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3331,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.002076864242553711
+    },
+    {
+      "id": 26,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3331,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0012471675872802734
+    },
+    {
+      "id": 27,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3331,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0016641616821289062
+    },
+    {
+      "id": 28,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3331,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0016162395477294922
+    },
+    {
+      "id": 29,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3664,
+      "mutation_log": "add wikilinks: Fixed Income & Yield Curve, Obsidian, Active Inference (+4)",
+      "duration_sec": 0.002024412155151367
+    },
+    {
+      "id": 30,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3331,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0077588558197021484
+    },
+    {
+      "id": 31,
+      "kept": false,
+      "metric_before": 0.3683,
+      "metric_after": 0.3494,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0013475418090820312
+    },
+    {
+      "id": 32,
+      "kept": true,
+      "metric_before": 0.3714,
+      "metric_after": 0.3714,
+      "mutation_log": "add wikilinks: Technical Analysis & Regime Detection, Self-Supervised Learning, \"Attention Residue\" (+5)",
+      "duration_sec": 0.007730245590209961
+    },
+    {
+      "id": 33,
+      "kept": true,
+      "metric_before": 0.373,
+      "metric_after": 0.373,
+      "mutation_log": "add wikilinks: LTP, Statistical Significance, Cognitive Psychology (+3)",
+      "duration_sec": 0.0020956993103027344
+    },
+    {
+      "id": 34,
+      "kept": true,
+      "metric_before": 0.3881,
+      "metric_after": 0.3881,
+      "mutation_log": "add wikilinks: Genetics, Climate Justice, \"Fairness\" (+3)",
+      "duration_sec": 0.0026314258575439453
+    },
+    {
+      "id": 35,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.002008676528930664
+    },
+    {
+      "id": 36,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0013885498046875
+    },
+    {
+      "id": 37,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.387,
+      "mutation_log": "add wikilinks: Monte Carlo Tree Search, Recovery Engine, \"Database Systems\" (+5)",
+      "duration_sec": 0.007233381271362305
+    },
+    {
+      "id": 38,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.005657672882080078
+    },
+    {
+      "id": 39,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0019173622131347656
+    },
+    {
+      "id": 40,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3366,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0015249252319335938
+    },
+    {
+      "id": 41,
+      "kept": false,
+      "metric_before": 0.3881,
+      "metric_after": 0.3709,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0031197071075439453
+    },
+    {
+      "id": 42,
+      "kept": true,
+      "metric_before": 0.3884,
+      "metric_after": 0.3884,
+      "mutation_log": "add wikilinks: Aggregation, Biomedical Science (+2)",
+      "duration_sec": 0.0023450851440429688
+    },
+    {
+      "id": 43,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3496,
+      "mutation_log": "add Statistics / Research Methods connection",
+      "duration_sec": 0.006363630294799805
+    },
+    {
+      "id": 44,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3396,
+      "mutation_log": "add AI / Agents connection",
+      "duration_sec": 0.005673646926879883
+    },
+    {
+      "id": 46,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3515,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.004372835159301758
+    },
+    {
+      "id": 47,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3715,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.016695261001586914
+    },
+    {
+      "id": 48,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3515,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.008389949798583984
+    },
+    {
+      "id": 50,
+      "kept": false,
+      "metric_before": 0.3884,
+      "metric_after": 0.3423,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.0068056583404541016
+    }
+  ]
+}

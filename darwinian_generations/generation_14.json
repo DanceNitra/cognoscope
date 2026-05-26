@@ -1,37 +1,36 @@
 {
-  "generation": 15,
-  "timestamp": "2026-05-25T22:00:42.363490",
-  "population_size": 1100,
-  "total_phi": 375.9556999999991,
-  "mean_fitness": 0.5310415272727269,
-  "diversity": 0.7521598123794647,
+  "generation": 14,
+  "timestamp": "2026-05-24T22:00:39.981191",
+  "population_size": 1046,
+  "total_phi": 356.9175000000003,
+  "mean_fitness": 0.5262271510516248,
+  "diversity": 0.7574506062451121,
   "domains": {
-    "Finance": 87,
     "Statistics / Research Methods": 3,
     "Psychology / Neuroscience": 8,
-    "Meta": 74,
-    "AI": 120,
-    "AI Engineering": 9,
+    "Meta": 73,
+    "AI": 119,
+    "AI Engineering": 8,
     "AI Safety": 5,
-    "Statistics": 87,
-    "Software Engineering": 91,
-    "Neuroscience": 80,
+    "Statistics": 79,
+    "Software Engineering": 92,
+    "Neuroscience": 75,
     "Statistics / Finance": 2,
-    "Physiology": 53,
+    "Physiology": 39,
     "Neuroscience / AI": 1,
     "AI / Neuroscience": 4,
-    "Immunology": 9,
+    "Immunology": 10,
     "Psychology": 56,
-    "Sleep / Neuroscience": 12,
+    "Sleep / Neuroscience": 14,
     "Formal Foundations": 5,
+    "Finance": 83,
     "Psychology / AI": 1,
-    "AI / Systems Engineering": 27,
+    "AI / Systems Engineering": 20,
     "Statistics / Epidemiology": 3,
     "Statistics / Data Analysis": 1,
     "Longevity": 12,
     "Finance / Software Engineering": 2,
-    "Cognitive Science": 3,
-    "Cell Biology": 28,
+    "Cell Biology": 26,
     "Causal Inference": 59,
     "Medicine": 7,
     "Neuroscience / Physiology": 3,
@@ -41,10 +40,10 @@
     "Research Methods": 30,
     "Systems Biology": 3,
     "Health": 9,
-    "Chronobiology": 10,
-    "Economics": 16,
+    "Chronobiology": 9,
     "Neuroscience / Longevity": 1,
     "Neuroscience / Chronobiology": 3,
+    "Economics": 15,
     "Statistics / Causal Inference": 8,
     "Genomics": 13,
     "Biology": 9,
@@ -59,30 +58,26 @@
     "Philosophy / Neuroscience / AI": 1,
     "Control Theory": 3,
     "Physics / Neuroscience": 1,
-    "Systems": 3,
+    "Systems": 1,
     "Psychology / Finance": 1,
     "Productivity": 3,
     "Nutrition": 4,
-    "Systems / AI": 2,
     "Machine Learning": 4,
     "Pharmacology": 5,
     "Medicine / Physiology": 3,
     "Sleep Science": 4,
     "Physics": 5,
-    "Epistemology / Information Theory": 1,
     "AI / Systems": 1,
     "AI Interpretability": 2,
     "Software Engineering / AI": 4,
     "Evolution / Mathematics": 1,
     "Neuroscience / Cognitive Psychology": 2,
-    "AI / Self-Evolution": 2,
+    "Physiology / Metabolism": 1,
     "Biology / Physiology": 1,
     "Physiology / Longevity": 1,
     "AI / Machine Learning / Control Theory": 1,
     "Cybersecurity": 3,
     "AI / Agents": 4,
-    "Meta / Cognitive Science": 1,
-    "AI / Cognitive Science": 1,
     "AI / Systems Thinking": 1,
     "Biology / Medicine": 2,
     "Neuroscience / Sleep Medicine": 1,
@@ -98,9 +93,7 @@
     "Finance / Statistics": 1,
     "Finance / Engineering": 1,
     "Psychology / Chronobiology": 1,
-    "AI / Philosophy / Self-Evolution": 1,
     "AI / Software Engineering": 1,
-    "Neuroscience / Sleep": 1,
     "Sleep": 3,
     "Medicine / Neuroscience": 1,
     "Finance / Psychology": 1,
@@ -131,100 +124,100 @@
     {
       "name": "Cognitive Control",
       "domain": "Psychology / Neuroscience",
-      "fitness": 0.7682,
+      "fitness": 0.7705,
       "why": "12 inbound links (hub) + breaktruth claim present + 11 sections (deep)"
     },
     {
       "name": "Cross-Validation",
       "domain": "Statistics",
-      "fitness": 0.7626,
+      "fitness": 0.7631,
       "why": "18 inbound links (hub) + breaktruth claim present + 8 sections (deep)"
     },
     {
-      "name": "Memory Reconsolidation",
-      "domain": "Neuroscience",
-      "fitness": 0.74,
-      "why": "breaktruth claim present + 8 sections (deep)"
+      "name": "Sleep Architecture",
+      "domain": "Sleep / Neuroscience",
+      "fitness": 0.7406,
+      "why": "23 inbound links (hub) + breaktruth claim present + 15 sections (deep)"
     },
     {
       "name": "Algorithmic Trading",
       "domain": "Finance / Software Engineering",
-      "fitness": 0.739,
-      "why": "17 inbound links (hub) + breaktruth claim present + 8 sections (deep)"
+      "fitness": 0.7398,
+      "why": "13 inbound links (hub) + breaktruth claim present + 8 sections (deep)"
     },
     {
       "name": "Synaptic Plasticity",
       "domain": "Neuroscience",
-      "fitness": 0.7311,
-      "why": "42 inbound links (hub) + breaktruth claim present + 6 sections (deep)"
+      "fitness": 0.7338,
+      "why": "40 inbound links (hub) + breaktruth claim present + 6 sections (deep)"
     }
   ],
   "crossover_pairs": [
     {
       "a": "A-B Testing",
-      "b": "Action Selection",
-      "da": "Statistics / Research Methods",
-      "db": "Neuroscience / AI",
-      "score": 0.2417
-    },
-    {
-      "a": "A-B Testing",
-      "b": "Bifurcation",
-      "da": "Statistics / Research Methods",
-      "db": "Mathematics / Physics",
-      "score": 0.1467
-    },
-    {
-      "a": "A-B Testing",
       "b": "Criticality",
       "da": "Statistics / Research Methods",
       "db": "Physics / Neuroscience",
-      "score": 0.0455
+      "score": 0.5113
     },
     {
-      "a": "A-B Testing",
+      "a": "Learning",
+      "b": "Action Selection",
+      "da": "Meta",
+      "db": "Neuroscience / AI",
+      "score": -0.1807
+    },
+    {
+      "a": "Learning",
+      "b": "Bifurcation",
+      "da": "Meta",
+      "db": "Mathematics / Physics",
+      "score": -0.2707
+    },
+    {
+      "a": "Learning",
       "b": "Real-World Evidence",
-      "da": "Statistics / Research Methods",
+      "da": "Meta",
       "db": "Statistics / Medicine",
-      "score": -0.1333
+      "score": -0.5357
     },
     {
       "a": "Action Selection",
       "b": "Berkson's Paradox",
       "da": "Neuroscience / AI",
       "db": "Causal Inference / Statistics",
-      "score": -4.7299
+      "score": -3.9343
     }
   ],
   "speciation_signals": {
     "Finance": {
-      "count": 87,
+      "count": 83,
       "subdomains": [
+        "Sharpe",
+        "Mean reversion",
+        "Position",
         "Volatility",
-        "Trading",
-        "Momentum",
-        "Signal",
-        "Backtest"
+        "Option"
       ]
     },
     "Neuroscience": {
-      "count": 80,
+      "count": 75,
       "subdomains": [
         "Prefrontal",
-        "Hpa",
-        "Synaptic",
         "Hippocampus",
+        "Serotonin",
+        "Amygdala",
         "Brain"
       ]
     },
     "Psychology": {
       "count": 56,
       "subdomains": [
-        "Cognitive",
         "Bias",
+        "Motivation",
         "Memory",
-        "Attention",
-        "Heuristic"
+        "Cognitive",
+        "Attention"
       ]
     }
   },

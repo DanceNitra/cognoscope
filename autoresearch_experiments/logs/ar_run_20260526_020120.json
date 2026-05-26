@@ -1,0 +1,33 @@
+{
+  "mode": "nightly",
+  "timestamp": "2026-05-26T02:01:20.112248",
+  "duration_sec": 2.6604933738708496,
+  "phase1": [
+    {
+      "subject": "Cursor Introduces Composer 2.5",
+      "experiments": 44,
+      "kept": 10,
+      "improvement": 328.6995515695067,
+      "metric_from": 0.0892,
+      "metric_to": 0.3824
+    },
+    {
+      "subject": "Agent Safety & Guardrails \u00a73\u20134",
+      "experiments": 14,
+      "kept": 2,
+      "improvement": 37.11805555555556,
+      "metric_from": 0.288,
+      "metric_to": 0.3949
+    },
+    {
+      "subject": "Heatwave Response",
+      "experiments": 12,
+      "kept": 2,
+      "improvement": 63.94736842105263,
+      "metric_from": 0.228,
+      "metric_to": 0.3738
+    }
+  ],
+  "phase2": [],
+  "phase3": []
+}

@@ -118,5 +118,41 @@
     "extinct_count": 18,
     "crossover_count": 5,
     "speciation_count": 3
+  },
+  {
+    "generation": 13,
+    "timestamp": "2026-05-24T21:39:05.405608",
+    "population_size": 1037,
+    "total_phi": 353.72189999999983,
+    "mean_fitness": 0.525696522018643,
+    "diversity": 0.7583587837303587,
+    "domain_count": 93,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 14,
+    "timestamp": "2026-05-24T22:00:39.981191",
+    "population_size": 1046,
+    "total_phi": 356.9175000000003,
+    "mean_fitness": 0.5262271510516248,
+    "diversity": 0.7574506062451121,
+    "domain_count": 93,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
+  },
+  {
+    "generation": 15,
+    "timestamp": "2026-05-25T22:00:42.363490",
+    "population_size": 1100,
+    "total_phi": 375.9556999999991,
+    "mean_fitness": 0.5310415272727269,
+    "diversity": 0.7521598123794647,
+    "domain_count": 100,
+    "extinct_count": 18,
+    "crossover_count": 5,
+    "speciation_count": 3
   }
 ]

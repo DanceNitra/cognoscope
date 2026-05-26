@@ -1,0 +1,125 @@
+{
+  "subject_name": "Agent Safety & Guardrails \u00a73\u20134",
+  "total_experiments": 14,
+  "kept_experiments": 2,
+  "metric_start": 0.288,
+  "metric_end": 0.3949,
+  "metric_improvement_pct": 37.11805555555556,
+  "duration_sec": 0.11815309524536133,
+  "aborted": true,
+  "abort_reason": "10 consecutive non-improving experiments",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": false,
+      "metric_before": 0.288,
+      "metric_after": 0.2606,
+      "mutation_log": "add sections: Definition, Overview, Related",
+      "duration_sec": 0.0010073184967041016
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.3527,
+      "metric_after": 0.3527,
+      "mutation_log": "add wikilinks: \"Stochastic Processes\", Circadian Clock Mechanism, \"Drug Discovery\" (+4)",
+      "duration_sec": 0.0024640560150146484
+    },
+    {
+      "id": 4,
+      "kept": false,
+      "metric_before": 0.3527,
+      "metric_after": 0.3153,
+      "mutation_log": "deepen ---",
+      "duration_sec": 0.0010268688201904297
+    },
+    {
+      "id": 5,
+      "kept": true,
+      "metric_before": 0.3949,
+      "metric_after": 0.3949,
+      "mutation_log": "add wikilinks: Portfolio Construction \u2014 Black-Litterman, Risk Parity, Robust Optimization, Risk Ratio, Hydration and Electrolytes (+4)",
+      "duration_sec": 0.0016736984252929688
+    },
+    {
+      "id": 6,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3704,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0008449554443359375
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3771,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0009315013885498047
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3054,
+      "mutation_log": "add Computer Science connection",
+      "duration_sec": 0.0021779537200927734
+    },
+    {
+      "id": 9,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3646,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.00899648666381836
+    },
+    {
+      "id": 10,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3704,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0012054443359375
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3575,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.001897573471069336
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3901,
+      "mutation_log": "add wikilinks: Statistical Mechanics, Agent Development Workflow, External Validity (+4)",
+      "duration_sec": 0.0017364025115966797
+    },
+    {
+      "id": 13,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3891,
+      "mutation_log": "add wikilinks: Synthetic Control, Hormesis, Shift Work (+3)",
+      "duration_sec": 0.0012705326080322266
+    },
+    {
+      "id": 14,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3896,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0009083747863769531
+    },
+    {
+      "id": 15,
+      "kept": false,
+      "metric_before": 0.3949,
+      "metric_after": 0.3892,
+      "mutation_log": "add wikilinks: \"Feature Steering\", Covariance (+2)",
+      "duration_sec": 0.0011255741119384766
+    }
+  ]
+}

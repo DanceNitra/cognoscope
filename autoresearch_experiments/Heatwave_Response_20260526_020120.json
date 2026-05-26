@@ -1,0 +1,109 @@
+{
+  "subject_name": "Heatwave Response",
+  "total_experiments": 12,
+  "kept_experiments": 2,
+  "metric_start": 0.228,
+  "metric_end": 0.3738,
+  "metric_improvement_pct": 63.94736842105263,
+  "duration_sec": 0.1043403148651123,
+  "aborted": true,
+  "abort_reason": "10 consecutive non-improving experiments",
+  "experiments": [
+    {
+      "id": 1,
+      "kept": true,
+      "metric_before": 0.2974,
+      "metric_after": 0.2974,
+      "mutation_log": "add AI / Machine Learning connection",
+      "duration_sec": 0.0008721351623535156
+    },
+    {
+      "id": 3,
+      "kept": true,
+      "metric_before": 0.3738,
+      "metric_after": 0.3738,
+      "mutation_log": "add wikilinks: Bayesian A/B Testing, Climate Justice, Sensor Fusion (+4)",
+      "duration_sec": 0.0014433860778808594
+    },
+    {
+      "id": 4,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3632,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0013861656188964844
+    },
+    {
+      "id": 5,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3155,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.001360177993774414
+    },
+    {
+      "id": 6,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3323,
+      "mutation_log": "add Psychology / Neuroscience connection",
+      "duration_sec": 0.0017642974853515625
+    },
+    {
+      "id": 7,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.333,
+      "mutation_log": "add Systems Biology connection",
+      "duration_sec": 0.0009570121765136719
+    },
+    {
+      "id": 8,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3155,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0013747215270996094
+    },
+    {
+      "id": 9,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3462,
+      "mutation_log": "add sections: Definition, Overview",
+      "duration_sec": 0.0022678375244140625
+    },
+    {
+      "id": 10,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3155,
+      "mutation_log": "deepen See Also",
+      "duration_sec": 0.0011706352233886719
+    },
+    {
+      "id": 11,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3315,
+      "mutation_log": "add Statistics connection",
+      "duration_sec": 0.001207590103149414
+    },
+    {
+      "id": 12,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3329,
+      "mutation_log": "add Cell Biology connection",
+      "duration_sec": 0.004797458648681641
+    },
+    {
+      "id": 13,
+      "kept": false,
+      "metric_before": 0.3738,
+      "metric_after": 0.3632,
+      "mutation_log": "add breaktruth claim",
+      "duration_sec": 0.0014190673828125
+    }
+  ]
+}
