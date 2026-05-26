@@ -19,17 +19,23 @@ Algorithm:
   3. Rank by bridge potential
   4. Output top 15 recommendations with rationale
 
+Cache: if no concept files changed since last run, reuses cached result.
+~1,449 domain pairs every scan → cache eliminates ~95% recomputation.
+
 Usage:
   python3 bridge_recommender.py
   python3 bridge_recommender.py --json
   python3 bridge_recommender.py --write   # output as vault note
+  python3 bridge_recommender.py --clear-cache  # force refresh
+  python3 bridge_recommender.py --cache-stats   # show cache efficiency
 """
 
-import json, os, re, glob, sys
+import json, os, re, glob, sys, time
 from collections import defaultdict
 
 VAULT_CONCEPTS = os.path.expanduser("~/Obsidian Vault/04 Resources/Concepts")
 VAULT_PUBS = os.path.expanduser("~/Obsidian Vault/04 Resources/Publications")
+CACHE_PATH = os.path.expanduser("~/cognoscope/.bridge_cache.json")
 
 
 def load_vault():
@@ -108,6 +114,72 @@ def load_vault():
                     neighbor_sets[d].add(ld)
 
     return all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets
+
+
+# ── Cache Layer ──
+
+def _get_concept_mtime() -> float:
+    """Return latest modification time of any concept file."""
+    latest = 0.0
+    for f in glob.glob(os.path.join(VAULT_CONCEPTS, "*.md")):
+        try:
+            mtime = os.path.getmtime(f)
+            if mtime > latest:
+                latest = mtime
+        except OSError:
+            pass
+    return latest
+
+
+def _load_cache() -> dict | None:
+    """Load cached results if the cache is fresh (concepts unchanged)."""
+    if not os.path.exists(CACHE_PATH):
+        return None
+    cached_mtime = _get_concept_mtime()
+    try:
+        with open(CACHE_PATH, 'r') as f:
+            cache = json.load(f)
+        # Validity check: concept files haven't changed since cache was written
+        if cache.get("concept_mtime", 0) >= cached_mtime and cache.get("version") == 2:
+            return cache
+    except (json.JSONDecodeError, KeyError, TypeError):
+        pass
+    return None
+
+
+def _save_cache(data: dict):
+    """Persist results with current concept mtime."""
+    cache = {
+        "version": 2,
+        "timestamp": time.time(),
+        "concept_mtime": _get_concept_mtime(),
+        "data": data,
+    }
+    os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+    with open(CACHE_PATH, 'w') as f:
+        json.dump(cache, f, indent=2)
+
+
+def _get_cached_or_compute(compute_fn, *args, **kwargs):
+    """Return cached result or compute and cache it."""
+    if "--clear-cache" in sys.argv:
+        if os.path.exists(CACHE_PATH):
+            os.remove(CACHE_PATH)
+            print("  Cache cleared.\n")
+        return compute_fn(*args, **kwargs)
+
+    cache = _load_cache()
+    if cache is not None:
+        if "--cache-stats" in sys.argv:
+            age = (time.time() - cache["timestamp"]) / 3600
+            mt = cache.get("concept_mtime", 0)
+            print(f"  Cache hit. Age: {age:.1f}h. Concept mtime: {mt:.0f}. Version: {cache['version']}.\n")
+        return cache["data"]
+
+    result = compute_fn(*args, **kwargs)
+    _save_cache(result)
+    print("  Cache updated.\n")
+    return result
 
 
 def load_existing_bridges():
@@ -304,9 +376,9 @@ def compute_domain_phi(domain_nodes, backlinks, outgoing):
 
 
 def find_bridge_candidates(all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets, existing_bridges):
-    """Find domain pairs that are structurally close but have no bridge."""
-
-    domain_list = [d for d in domain_nodes if d and len(domain_nodes[d]) >= 2]
+    """Find domain pairs that are structurally close but have no bridge.
+    Minimum domain size: 5 concepts (tuned from 2 to reduce noise)."""
+    domain_list = [d for d in domain_nodes if d and len(domain_nodes[d]) >= 5]
     d_phi = compute_domain_phi(domain_nodes, backlinks, outgoing)
 
     candidates = []
@@ -376,18 +448,40 @@ def main():
     print()
 
     print("  Loading vault connectome...")
-    all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets = load_vault()
-    print(f"  Loaded {len(all_files)} concepts, {len(domain_nodes)} domains.\n")
-
-    print("  Scanning for existing bridges...")
-    existing = load_existing_bridges()
-    print(f"  Found {len(existing)} existing bridge references.\n")
-
-    print("  Computing bridge candidates...")
-    candidates = find_bridge_candidates(all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets, existing)
-
-    # Filter to non-bridged pairs for recommendation
-    new_candidates = [c for c in candidates if not c["already_bridged"]]
+    
+    # Check cache first — the connectome load + scan of 1,449 domain pairs is expensive
+    def compute_vault():
+        all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets = load_vault()
+        print(f"  Loaded {len(all_files)} concepts, {len(domain_nodes)} domains.\n")
+        print("  Scanning for existing bridges...")
+        existing = load_existing_bridges()
+        print(f"  Found {len(existing)} existing bridge references.\n")
+        print("  Computing bridge candidates...")
+        candidates = find_bridge_candidates(all_files, backlinks, outgoing, domains, domain_nodes, neighbor_sets, existing)
+        new_candidates = [c for c in candidates if not c["already_bridged"]]
+        print(f"  Found {len(new_candidates)} candidate domain pairs for new bridges.\n")
+        return {
+            "all_files": all_files,
+            "backlinks": backlinks,
+            "outgoing": outgoing,
+            "domains": domains,
+            "domain_nodes": {k: list(v) for k, v in domain_nodes.items()},
+            "neighbor_sets": {k: list(v) for k, v in neighbor_sets.items()},
+            "existing_bridges": [list(p) for p in existing],
+            "candidates": candidates,
+            "new_candidates": new_candidates,
+        }
+    
+    cached = _get_cached_or_compute(compute_vault)
+    all_files = cached["all_files"]
+    backlinks = cached["backlinks"]
+    outgoing = cached["outgoing"]
+    domains = cached["domains"]
+    domain_nodes = {k: set(v) for k, v in cached["domain_nodes"].items()}
+    neighbor_sets = {k: set(v) for k, v in cached["neighbor_sets"].items()}
+    existing_bridges = {frozenset(p) for p in cached["existing_bridges"]}
+    candidates = cached["candidates"]
+    new_candidates = cached["new_candidates"]
 
     print(f"  Found {len(new_candidates)} candidate domain pairs for new bridges.\n")
 

@@ -154,5 +154,17 @@
     "extinct_count": 18,
     "crossover_count": 5,
     "speciation_count": 3
+  },
+  {
+    "generation": 16,
+    "timestamp": "2026-05-26T06:27:13.773364",
+    "population_size": 1102,
+    "total_phi": 377.51949999999977,
+    "mean_fitness": 0.5315875983061104,
+    "diversity": 0.7524042916717081,
+    "domain_count": 100,
+    "extinct_count": 17,
+    "crossover_count": 5,
+    "speciation_count": 3
   }
 ]

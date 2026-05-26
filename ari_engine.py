@@ -259,7 +259,7 @@ class AnomalyDetector:
                 domain_size_a = len(self.graph.domains.get(dom_a, []))
                 domain_size_b = len(self.graph.domains.get(dom_b, []))
 
-                if domain_size_a >= 2 and domain_size_b >= 2:
+                if domain_size_a >= 5 and domain_size_b >= 5:
                     from_concepts = data.get('from', [])[:5]
                     evidence = (
                         f"Domain {dom_a} has {forward} concepts linking to domain {dom_b}, "
@@ -305,6 +305,7 @@ class AnomalyDetector:
         contribute to the graph but aren't structurally integrated.
         """
         pid = start_id
+        ari_memory = self._load_ari_memory()
         candidates = []
         for node in self.graph.nodes.values():
             out = len(node.wikilinks_out)
@@ -313,6 +314,9 @@ class AnomalyDetector:
 
         candidates.sort(key=lambda n: -len(n.wikilinks_out))
         for node in candidates[:5]:
+            # Skip if this domain pair was already processed and hasn't grown
+            if self._is_domain_pair_stale(node.domain, node.domain, ari_memory):
+                continue
             evidence = (
                 f"'{node.title}' ({node.domain}) sends {len(node.wikilinks_out)} wikilinks "
                 f"but receives only {node.wikilinks_in} backlinks. "
@@ -352,6 +356,7 @@ class AnomalyDetector:
         domains produce the strongest predictions.
         """
         pid = start_id
+        ari_memory = self._load_ari_memory()
         # Build link matrix
         link_matrix = {}
         for node in self.graph.nodes.values():
@@ -388,6 +393,9 @@ class AnomalyDetector:
         scored.sort(key=lambda x: -x[0])
 
         for score, a, hub, c in scored[:5]:
+            # Skip stale domain pairs
+            if self._is_domain_pair_stale(a.domain, c.domain, ari_memory):
+                continue
             evidence = (
                 f"Triad gap: '{a.title}' ({a.domain}) → '{hub.title}' → "
                 f"'{c.title}' ({c.domain}). "
@@ -437,23 +445,45 @@ class AnomalyDetector:
         with open(ARI_MEMORY_PATH, 'w') as f:
             json.dump(mem, f, indent=2)
 
+    def _save_rejected_prediction(self, pred_title: str, pred_type: str, source_domain: str, target_domain: str):
+        """Log a prediction as rejected (false-positive tracking)."""
+        mem = self._load_ari_memory()
+        mem.append({
+            "timestamp": datetime.now().isoformat(),
+            "type": "rejected",
+            "predicted_title": pred_title,
+            "detector_type": pred_type,
+            "source_domain": source_domain,
+            "target_domain": target_domain,
+            "source_concept_count": len(self.graph.domains.get(source_domain, [])),
+            "target_concept_count": len(self.graph.domains.get(target_domain, [])),
+            "rejected": True,
+        })
+        with open(ARI_MEMORY_PATH, 'w') as f:
+            json.dump(mem[-500:], f, indent=2)  # keep last 500 entries
+        print(f"[ARI] Logged rejection: {pred_title}")
+
     def _is_domain_pair_stale(self, dom_a: str, dom_b: str, memory: list[dict]) -> bool:
-        """Check if a domain pair was already bridged and the domains haven't grown."""
+        """Check if a domain pair was already processed and the domains haven't grown.
+        Covers ALL 6 detector types — not just bridge_gap/asymmetric/missing_triad."""
         for entry in memory:
-            if entry.get('type') not in ('bridge_gap', 'asymmetric', 'missing_triad'):
-                continue
             src = entry.get('source_domain', '').lower()
             tgt = entry.get('target_domain', '').lower()
             dom_a_lower = dom_a.lower()
             dom_b_lower = dom_b.lower()
-            if {src, tgt} == {dom_a_lower, dom_b_lower}:
-                # Check if concept count changed in either domain
+            # Also check single-domain stale (dangling senders, stub isolation)
+            if dom_a_lower == dom_b_lower:
+                if src == dom_a_lower or tgt == dom_a_lower:
+                    old_count = entry.get('source_concept_count', 0) if src == dom_a_lower else entry.get('target_concept_count', 0)
+                    new_count = len(self.graph.domains.get(dom_a, []))
+                    if new_count <= old_count + 3:
+                        return True
+            elif {src, tgt} == {dom_a_lower, dom_b_lower}:
                 old_count_a = entry.get('source_concept_count', 0) if src == dom_a_lower else entry.get('target_concept_count', 0)
                 old_count_b = entry.get('target_concept_count', 0) if src == dom_a_lower else entry.get('source_concept_count', 0)
                 new_count_a = len(self.graph.domains.get(dom_a, []))
                 new_count_b = len(self.graph.domains.get(dom_b, []))
-                # Skip if neither domain grew by >= 2 concepts since last write
-                if new_count_a <= old_count_a + 1 and new_count_b <= old_count_b + 1:
+                if new_count_a <= old_count_a + 3 and new_count_b <= old_count_b + 3:
                     return True
         return False
 
@@ -518,6 +548,9 @@ class AnomalyDetector:
                 n2 = domain_neighbors.get(d2, set())
                 shared = n1 & n2
                 if len(shared) < 3:
+                    continue
+                # Minimum domain size: 5 concepts (tuned from 2)
+                if len(self.graph.domains.get(d1, [])) < 5 or len(self.graph.domains.get(d2, [])) < 5:
                     continue
                 # Check if already bridged
                 d1_lower = d1.lower()
@@ -616,6 +649,7 @@ class AnomalyDetector:
         but aren't structurally integrated. These need expansion and reconnection.
         """
         pid = start_id
+        ari_memory = self._load_ari_memory()
         candidates = []
         for node in self.graph.nodes.values():
             if node.wikilinks_in <= 3 and len(node.wikilinks_out) <= 4 and node.lines >= 100:
@@ -627,6 +661,9 @@ class AnomalyDetector:
         candidates.sort(key=lambda x: x[1])  # Sort by domain size
 
         for node, dom_size in candidates[:5]:
+            # Skip stale domain
+            if self._is_domain_pair_stale(node.domain, node.domain, ari_memory):
+                continue
             evidence = (
                 f"'{node.title}' ({node.domain}) has only {node.wikilinks_in} backlinks "
                 f"and {len(node.wikilinks_out)} outlinks despite {node.lines} lines of content "
@@ -670,6 +707,7 @@ class AnomalyDetector:
         4. The chain is a SINGLE prediction that carries the full reasoning path
         """
         pid = start_id
+        ari_memory = self._load_ari_memory()
 
         # Step 1: Find top dangling senders
         dangling = []
@@ -711,6 +749,10 @@ class AnomalyDetector:
         best_c = sorted(missing_candidates,
                         key=lambda n: len(n.wikilinks_out) + n.wikilinks_in * 2,
                         reverse=True)[0]
+
+        # Skip stale pair
+        if self._is_domain_pair_stale(top_dangler.domain, best_c.domain, ari_memory):
+            return pid
 
         evidence = (
             f"Multi-hop chain: '{top_dangler.title}' ({top_dangler.domain}) is a dangling sender "
@@ -911,8 +953,12 @@ def main():
             content += f"Confidence: {p.confidence:.0%}. Type: {p.type}. "
             content += f"Phi impact estimate: +{p.phi_impact:.3f}.*\n"
 
-            # Sanitize filename
+            # Sanitize filename — strip extensions, reject short/empty titles
             safe_title = re.sub(r'[^\w\s-]', '', p.predicted_title).strip().replace(' ', '_')[:80]
+            safe_title = re.sub(r'\.md$', '', safe_title)  # strip double-extension
+            if len(safe_title) < 4:
+                print(f"[ARI] SKIP: '{p.predicted_title}' too short for filename")
+                return
             path = os.path.join(ARI_DIR, f"ARI_{date_str}_{safe_title}.md")
             with open(path, 'w', encoding='utf-8') as f:
                 f.write(content)
