@@ -173,8 +173,22 @@ class VaultGraph:
         if not os.path.isdir(concepts_dir):
             print(f"[ERROR] VaultGraph: Concepts directory not found: {concepts_dir}", file=sys.stderr)
             return
-        
-        for f in sorted(glob.glob(os.path.join(concepts_dir, "*.md"))):
+
+        # Collect all concept files: primary + sub-vaults
+        concept_files = sorted(glob.glob(os.path.join(concepts_dir, "*.md")))
+        # Scan sub-vault directories
+        sub_vaults = [
+            "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+            "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+            "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_&_Longevity",
+            "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods",
+        ]
+        for sv in sub_vaults:
+            sv_dir = os.path.join(self.paths.vault_root, "04 Resources", sv, "Concepts")
+            if os.path.isdir(sv_dir):
+                concept_files.extend(sorted(glob.glob(os.path.join(sv_dir, "*.md"))))
+
+        for f in concept_files:
             fn = os.path.basename(f)
             try:
                 with open(f, 'r', encoding='utf-8', errors='replace') as fh:

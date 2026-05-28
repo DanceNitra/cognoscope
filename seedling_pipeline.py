@@ -27,6 +27,24 @@ from datetime import datetime
 
 VAULT_ROOT = os.path.expanduser("~/Obsidian Vault")
 CONCEPTS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Concepts")
+SUB_VAULTS = [
+    "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+    "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+    "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_\x26_Longevity",
+    "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods",
+]
+
+def _all_concept_files():
+    """Find all concept files across sub-vaults + flat."""
+    files = []
+    for sv in SUB_VAULTS:
+        d = os.path.join(VAULT_ROOT, "04 Resources", sv, "Concepts")
+        if os.path.isdir(d):
+            files.extend(glob.glob(os.path.join(d, "*.md")))
+    flat = os.path.join(VAULT_ROOT, "04 Resources", "Concepts")
+    if os.path.isdir(flat):
+        files.extend(glob.glob(os.path.join(flat, "*.md")))
+    return sorted(set(files))
 LOG_PATH = os.path.join(VAULT_ROOT, "log.md")
 
 MIN_LINES = 20
@@ -41,7 +59,7 @@ def load_vault() -> tuple[dict, dict]:
     backlinks = defaultdict(int)
     domain_concepts = defaultdict(list)
     
-    for f in glob.glob(os.path.join(CONCEPTS_DIR, "*.md")):
+    for f in _all_concept_files():
         name = os.path.basename(f).replace(".md", "")
         with open(f, encoding='utf-8', errors='replace') as fh:
             content = fh.read()

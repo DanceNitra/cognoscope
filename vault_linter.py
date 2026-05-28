@@ -21,15 +21,36 @@ from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(__file__))
-from athena_core import VaultPaths, VaultGraph, Logger, VAULT_PATHS, readiness_check
+from athena_core import VaultPaths, VaultGraph, Logger, readiness_check
 
 VAULT_ROOT = os.path.expanduser("~/Obsidian Vault")
 INDEX_FILE = os.path.join(VAULT_ROOT, "index.md")
 
+# All sub-vault concept directories
+SUB_VAULTS = [
+    "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+    "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+    "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_&_Longevity",
+    "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods",
+]
+
+def _all_concept_files(vault_root=None):
+    vr = vault_root or VAULT_ROOT
+    files = []
+    for sv in SUB_VAULTS:
+        d = os.path.join(vr, "04 Resources", sv, "Concepts")
+        if os.path.isdir(d):
+            files.extend(glob.glob(os.path.join(d, "*.md")))
+    # Also flat Concepts/
+    flat = os.path.join(vr, "04 Resources", "Concepts")
+    if os.path.isdir(flat):
+        files.extend(glob.glob(os.path.join(flat, "*.md")))
+    return sorted(files)
+
 
 def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
     """Run all 6 lint checks. Returns {issues: [...], score: int}."""
-    p = paths or VAULT_PATHS
+    p = paths or VaultPaths(vault_root=VAULT_ROOT)
     log = Logger("vault_linter")
     issues = []
     
@@ -66,7 +87,7 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
     # Also scan publications for links
     pub_files = glob.glob(os.path.join(p.pubs_dir, "*.md"))
     
-    for source_file in glob.glob(os.path.join(p.concepts_dir, "*.md")) + pub_files:
+    for source_file in _all_concept_files(p.vault_root) + pub_files:
         fname = os.path.basename(source_file)
         try:
             content = open(source_file, 'r', encoding='utf-8', errors='replace').read()
@@ -149,7 +170,7 @@ def lint(paths: VaultPaths | None = None, verbose: bool = True) -> dict:
         for match in re.finditer(r'\[\[([^\]]+)\]\]', index_content):
             concepts_in_index.add(match.group(1))
         missing = []
-        for f in glob.glob(os.path.join(p.concepts_dir, "*.md")):
+        for f in _all_concept_files(p.vault_root):
             title = os.path.splitext(os.path.basename(f))[0]
             if title not in concepts_in_index:
                 missing.append(title)

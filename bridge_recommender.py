@@ -34,6 +34,24 @@ import json, os, re, glob, sys, time
 from collections import defaultdict
 
 VAULT_CONCEPTS = os.path.expanduser("~/Obsidian Vault/04 Resources/Concepts")
+VAULT_ROOT = os.path.expanduser("~/Obsidian Vault")
+SUB_VAULTS = [
+    "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+    "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+    "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_\x26_Longevity",
+    "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods",
+]
+
+def _get_all_concept_files():
+    files = []
+    for sv in SUB_VAULTS:
+        d = os.path.join(VAULT_ROOT, "04 Resources", sv, "Concepts")
+        if os.path.isdir(d):
+            files.extend(glob.glob(os.path.join(d, "*.md")))
+    flat = os.path.join(VAULT_ROOT, "04 Resources", "Concepts")
+    if os.path.isdir(flat):
+        files.extend(glob.glob(os.path.join(flat, "*.md")))
+    return sorted(set(files))
 VAULT_PUBS = os.path.expanduser("~/Obsidian Vault/04 Resources/Publications")
 CACHE_PATH = os.path.expanduser("~/cognoscope/.bridge_cache.json")
 
@@ -46,7 +64,7 @@ def load_vault():
     domains = {}
     neighbor_sets = defaultdict(set)
 
-    for f in glob.glob(os.path.join(VAULT_CONCEPTS, "*.md")):
+    for f in _get_all_concept_files():
         title = os.path.splitext(os.path.basename(f))[0]
         all_files[title] = f
 
@@ -121,7 +139,7 @@ def load_vault():
 def _get_concept_mtime() -> float:
     """Return latest modification time of any concept file."""
     latest = 0.0
-    for f in glob.glob(os.path.join(VAULT_CONCEPTS, "*.md")):
+    for f in _get_all_concept_files():
         try:
             mtime = os.path.getmtime(f)
             if mtime > latest:

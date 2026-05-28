@@ -24,6 +24,11 @@ import json, os, re, glob, sys
 from collections import defaultdict
 
 VAULT_PATH = os.path.expanduser("~/Obsidian Vault/04 Resources/Concepts")
+SUB_VAULTS = [
+    "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+    "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+    "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_&_Longevity",
+    "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods", ]
 
 
 def load_graph():
@@ -34,7 +39,18 @@ def load_graph():
     domains = {}
     note_sizes = {}
 
-    for f in glob.glob(os.path.join(VAULT_PATH, "*.md")):
+    concepts_root = os.path.expanduser("~/Obsidian Vault/04 Resources")
+    concept_files = []
+    # Flat concepts
+    flat_dir = os.path.join(concepts_root, "Concepts")
+    if os.path.isdir(flat_dir):
+        concept_files.extend(glob.glob(os.path.join(flat_dir, "*.md")))
+    # Sub-vaults
+    for sv in SUB_VAULTS:
+        sv_dir = os.path.join(concepts_root, sv, "Concepts")
+        if os.path.isdir(sv_dir):
+            concept_files.extend(glob.glob(os.path.join(sv_dir, "*.md")))
+    for f in sorted(set(concept_files)):
         title = os.path.splitext(os.path.basename(f))[0]
         all_files[title] = f
 
@@ -288,7 +304,16 @@ if __name__ == '__main__':
     from collections import defaultdict
     outgoing_count = {}
     all_files = {}
-    for f in glob.glob(os.path.expanduser("~/Obsidian Vault/04 Resources/Concepts/*.md")):
+    concepts_root = os.path.expanduser("~/Obsidian Vault/04 Resources")
+    concept_files = []
+    flat_dir = os.path.join(concepts_root, "Concepts")
+    if os.path.isdir(flat_dir):
+        concept_files.extend(glob.glob(os.path.join(flat_dir, "*.md")))
+    for sv in SUB_VAULTS:
+        sv_dir = os.path.join(concepts_root, sv, "Concepts")
+        if os.path.isdir(sv_dir):
+            concept_files.extend(glob.glob(os.path.join(sv_dir, "*.md")))
+    for f in sorted(set(concept_files)):
         title = os.path.splitext(os.path.basename(f))[0]
         all_files[title] = f
     for title, f in all_files.items():
