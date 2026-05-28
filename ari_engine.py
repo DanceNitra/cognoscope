@@ -32,6 +32,19 @@ PUBS_DIR = os.path.join(VAULT_ROOT, "04 Resources/Publications")
 ARI_DIR = os.path.join(VAULT_ROOT, "04 Resources/ARI")
 DISTILLED_DIR = os.path.join(VAULT_ROOT, "04 Resources/Distilled")
 ARI_MEMORY_PATH = os.path.join(ARI_DIR, "ari_memory.json")
+
+# Sub-vault concept directories (all 12)
+SUB_VAULTS = [
+    "Vault_AI", "Vault_Software_Engineering", "Vault_Neuroscience",
+    "Vault_Finance", "Vault_Statistics", "Vault_Psychology",
+    "Vault_Causal_Inference", "Vault_Physiology", "Vault_Health_&_Longevity",
+    "Vault_True_Meta", "Vault_Cell_Biology", "Vault_Research_Methods",
+]
+ALL_CONCEPT_DIRS = (
+    [os.path.join(VAULT_ROOT, "04 Resources", sv, "Concepts") for sv in SUB_VAULTS]
+    + [CONCEPTS_DIR]
+)
+
 os.makedirs(ARI_DIR, exist_ok=True)
 
 
@@ -65,54 +78,61 @@ class GraphLoader:
         self._load()
 
     def _load(self):
-        for f in sorted(glob.glob(os.path.join(CONCEPTS_DIR, "*.md"))):
-            fn = os.path.basename(f)
-            with open(f, 'r', encoding='utf-8', errors='replace') as fh:
-                raw = fh.read()
+        """Load ALL concept notes from ALL sub-vault dirs + flat Concepts/."""
+        self.nodes = {}
+        self.domains = defaultdict(list)
+        
+        for concept_dir in ALL_CONCEPT_DIRS:
+            if not os.path.isdir(concept_dir):
+                continue
+            for f in sorted(glob.glob(os.path.join(concept_dir, "*.md"))):
+                fn = os.path.basename(f)
+                with open(f, 'r', encoding='utf-8', errors='replace') as fh:
+                    raw = fh.read()
 
-            # Parse frontmatter
-            fm = re.search(r'^---\n(.*?)\n---', raw, re.DOTALL)
-            metadata = {}
-            if fm:
-                for line in fm.group(1).strip().split('\n'):
-                    if ': ' in line:
-                        key, val = line.split(': ', 1)
-                        metadata[key.strip()] = val.strip()
+                # Parse frontmatter
+                fm = re.search(r'^---\n(.*?)\n---', raw, re.DOTALL)
+                metadata = {}
+                if fm:
+                    for line in fm.group(1).strip().split('\n'):
+                        if ': ' in line:
+                            key, val = line.split(': ', 1)
+                            metadata[key.strip()] = val.strip()
 
-            title = fn.replace('.md', '')
-            title_match = re.search(r'^# (.+)$', raw, re.MULTILINE)
-            if title_match:
-                title = title_match.group(1).strip()
-            # Also check YAML title
-            yt = metadata.get('title', '')
-            if yt:
-                title = yt
+                title = fn.replace('.md', '')
+                title_match = re.search(r'^# (.+)$', raw, re.MULTILINE)
+                if title_match:
+                    title = title_match.group(1).strip()
+                # Also check YAML title
+                yt = metadata.get('title', '')
+                if yt:
+                    title = yt
 
-            status = metadata.get('status', 'unknown').strip('# ')
-            domain = metadata.get('domain', 'General')
+                status = metadata.get('status', 'unknown').strip('# ')
+                domain = metadata.get('domain', 'General')
 
-            # Tags
-            tags_str = metadata.get('tags', '')
-            tags = []
-            if tags_str.startswith('['):
-                tags = [t.strip().strip("'\"") for t in tags_str.strip('[]').split(',') if t.strip()]
-            elif tags_str.startswith('#'):
-                tags = [t.strip('# ') for t in tags_str.split() if t.startswith('#')]
-            elif tags_str:
-                tags = [tags_str]
+                # Tags
+                tags_str = metadata.get('tags', '')
+                tags = []
+                if tags_str.startswith('['):
+                    tags = [t.strip().strip("'\"") for t in tags_str.strip('[]').split(',') if t.strip()]
+                elif tags_str.startswith('#'):
+                    tags = [t.strip('# ') for t in tags_str.split() if t.startswith('#')]
+                elif tags_str:
+                    tags = [tags_str]
 
-            # Aliases
-            aliases_raw = raw.split('---')[1] if '---' in raw else ''
-            aliases = list(set(re.findall(r'aliases:\n(\s+- .+\n?)+', raw)))
-            # simpler: find lines starting with "  - "
-            alias_list = []
-            in_alias = False
-            for line in raw.split('\n'):
-                if line.startswith('aliases:'):
-                    in_alias = True
-                    continue
-                if in_alias:
-                    m = re.match(r'\s*-\s*(.+)$', line)
+                # Aliases
+                aliases_raw = raw.split('---')[1] if '---' in raw else ''
+                aliases = list(set(re.findall(r'aliases:\n(\s+- .+\n?)+', raw)))
+                # simpler: find lines starting with "  - "
+                alias_list = []
+                in_alias = False
+                for line in raw.split('\n'):
+                    if line.startswith('aliases:'):
+                        in_alias = True
+                        continue
+                    if in_alias:
+                        m = re.match(r'\s*-\s*(.+)$', line)
                     if m:
                         alias_list.append(m.group(1).strip().strip("'\""))
                     elif not line.strip().startswith('-'):
@@ -129,7 +149,7 @@ class GraphLoader:
             date = metadata.get('date', metadata.get('created', ''))
 
             node = ConceptNode(
-                file=os.path.join(CONCEPTS_DIR, fn), title=title, status=status, domain=domain,
+                file=f, title=title, status=status, domain=domain,
                 tags=tags, aliases=aliases, lines=lines,
                 wikilinks_out=wikilinks_out, wikilinks_in=0,
                 has_sources=has_sources, date=date
