@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.0] — 2026-05-29
+
+### Added
+
+#### Analysis Package — Causal Agent Evaluation
+
+- `analysis/optimal_fingerprint.py` — Climate-science optimal fingerprinting adapted for agent behavior. Ridge regression + bootstrap structural uncertainty across multi-ensemble runs.
+- `analysis/agent_profile.py` — Behavioral profiler. Extracts `AgentBehaviorFingerprint` from agent event traces (accuracy, guardrail hit rate, reflection, tool diversity, latency per task type). Integrates with athena.py via fingerprint hook.
+- `analysis/agent_evaluator.py` — Full evaluation pipeline orchestrator. Runs baseline/variant/noise ensembles, profiles each run, runs optimal fingerprinting, produces structured `EvalResult` with summary report.
+- `athena.py` — Added `AgentProfiler` integration: each `Athena.run()` now generates a fingerprint. Available as `summary['fingerprint']`.
+
+#### Detection Criteria Fixed
+- Optimal fingerprinting now uses proper SNR-based detection (SNR >= 2.0 = detected, >= 1.0 = inconclusive, < 1.0 = not detected). Previously used flawed noise_std division.
+
+# Changelog
+
 ## [0.1.0] — 2026-05-19
 
 ### Added

@@ -17,12 +17,15 @@ Optimal fingerprinting for agents answers: regress agent behavior patterns
 framework with structural uncertainty quantification.
 
 Usage:
-    python3 optimal_fingerprint.py  # Run demo with synthetic agent data
+    cd ~/cognoscope && python3 -c "from analysis.optimal_fingerprint import main; main()"
+    python3 analysis/optimal_fingerprint.py  # standalone
 """
+
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import json
-import sys
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -318,10 +321,13 @@ class OptimalFingerprint:
                 snr = abs(treatment_effect_) / max(structural_uncertainty_, 0.01)
 
                 # Detection criteria (parallel to climate attribution)
-                if snr >= self.detection_threshold / max(noise_std[0], 0.01):
+                # SNR > 2.0 = detected (signal clearly above noise)
+                # SNR > 1.0 = inconclusive
+                # SNR <= 1.0 = not detected
+                if snr >= 2.0:
                     attrib = "detected"
-                    conf = min(1.0, sign_fraction * (1 + snr * 0.5))
-                elif snr >= self.noise_threshold / max(noise_std[0], 0.01):
+                    conf = min(1.0, sign_fraction * (1 + snr * 0.3))
+                elif snr >= 1.0:
                     attrib = "inconclusive"
                     conf = sign_fraction
                 else:

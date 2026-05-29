@@ -133,29 +133,29 @@ class GraphLoader:
                         continue
                     if in_alias:
                         m = re.match(r'\s*-\s*(.+)$', line)
-                    if m:
-                        alias_list.append(m.group(1).strip().strip("'\""))
-                    elif not line.strip().startswith('-'):
-                        in_alias = False
-            aliases = alias_list
+                        if m:
+                            alias_list.append(m.group(1).strip().strip("'\""))
+                        elif not line.strip().startswith('-'):
+                            in_alias = False
+                aliases = alias_list
 
-            # Extract wikilinks
-            wikilinks_out = list(set(re.findall(r'\[\[([^\]]+?)(?:\|[^\]]+)?\]\]', raw)))
-            # Remove self-references
-            wikilinks_out = [w for w in wikilinks_out if w != title]
+                # Extract wikilinks
+                wikilinks_out = list(set(re.findall(r'\[\[([^\]]+?)(?:\|[^\]]+)?\]\]', raw)))
+                # Remove self-references
+                wikilinks_out = [w for w in wikilinks_out if w != title]
 
-            lines = len(raw.split('\n'))
-            has_sources = bool(re.search(r'(?:^|\\n)sources:', raw, re.MULTILINE))
-            date = metadata.get('date', metadata.get('created', ''))
+                lines = len(raw.split('\n'))
+                has_sources = bool(re.search(r'(?:^|\\n)sources:', raw, re.MULTILINE))
+                date = metadata.get('date', metadata.get('created', ''))
 
-            node = ConceptNode(
-                file=f, title=title, status=status, domain=domain,
-                tags=tags, aliases=aliases, lines=lines,
-                wikilinks_out=wikilinks_out, wikilinks_in=0,
-                has_sources=has_sources, date=date
-            )
-            self.nodes[title] = node
-            self.domains[domain].append(title)
+                node = ConceptNode(
+                    file=f, title=title, status=status, domain=domain,
+                    tags=tags, aliases=aliases, lines=lines,
+                    wikilinks_out=wikilinks_out, wikilinks_in=0,
+                    has_sources=has_sources, date=date
+                )
+                self.nodes[title] = node
+                self.domains[domain].append(title)
 
         # Compute in-links (who links to whom)
         title_to_title = {}

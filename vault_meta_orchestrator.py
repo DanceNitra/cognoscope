@@ -351,13 +351,22 @@ def measure_serendipity(scored: list[dict], history: list[dict] = None) -> dict:
                 except OSError:
                     pass
     
-    # Composite serendipity score
+    # Composite serendipity score (asymptotic: never saturates)
+    # Uses 1 - 1/(1 + x/cap) — at cap: 0.5, at 2×cap: 0.67, at 10×cap: 0.91
     # Weight: expansions (0.4), bridges (0.3), ARI (0.2), active domains (0.1)
+    def _asymp(x: float, cap: float) -> float:
+        return 1.0 - 1.0 / (1.0 + x / max(cap, 1.0)) if x >= 0 else 0.0
+    
+    s_exp = _asymp(recent_expansions, 20)
+    s_bridge = _asymp(bridge_count, 10)
+    s_ari = _asymp(ari_count, 5)
+    s_domains = _asymp(len(active_sub_vaults), 8)
+    
     s_score = (
-        0.4 * min(recent_expansions / 20, 1.0) +     # ~20 expansions/week = max
-        0.3 * min(bridge_count / 10, 1.0) +           # ~10 bridges/week = max
-        0.2 * min(ari_count / 5, 1.0) +               # ~5 ARI posts/week = max
-        0.1 * min(len(active_sub_vaults) / 8, 1.0)    # ~8 active domains = max
+        0.4 * s_exp +
+        0.3 * s_bridge +
+        0.2 * s_ari +
+        0.1 * s_domains
     )
     
     return {
@@ -455,21 +464,22 @@ def compute_si_axis(scored: list[dict]) -> dict:
     stale_ratio = immunity["stale_count"] / max(len(scored), 1)
     beta = round(0.28 + 0.5 * stale_ratio, 3)  # base from Breaktruth #12 + adjustment
     
-    # Status
+    # Status — clear chain (all elif after the first if)
     status = "optimal"
     if s > 0.8 and i < 0.3:
         status = "immune_overwhelm"
     elif s < 0.2 and i > 0.8:
         status = "understimulated"
-    # Decoupled: high S AND high I BUT low coupling (α < 0.3) — they're operating independently
-    if s > 0.6 and i > 0.5 and coupling < 0.3:
+    elif s > 0.6 and i > 0.5 and coupling < 0.3:
+        # Decoupled: high S AND high I BUT low coupling — operating independently
         status = "decoupled_warning"
-    # Stale-dominant: high I but high stale/critical (immune system overwhelmed by backlog)
     elif i > 0.6 and immunity["stale_count"] + immunity["critical_count"] > 20:
+        # Immune backlog: high I but overwhelmed by stale/critical
         status = "immune_backlog"
-    # Generative-dominant: high S but declining quality
     elif s > 0.6 and immunity["avg_Q"] < 0.5:
+        # Generative-dominant: high S but declining quality
         status = "quality_drift"
+    # else stay optimal
     
     measurement = {
         "timestamp": now.isoformat(),

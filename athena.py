@@ -19,6 +19,9 @@ from dataclasses import dataclass, field
 from typing import Any
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import profiler for self-fingerprinting at end of run
+from analysis.agent_profile import AgentProfiler
 from metaloop import MetaLoop, LoopArchitecture, AgentEvent, classify_stage, mutate_architecture
 from toolforge import ToolForge
 from msr_guardrail import (
@@ -81,6 +84,10 @@ class Athena:
         self._log("ATHENA", "Initialized", "cyan")
         if self.msr_enabled:
             self._log("MSR", "Layer 10 guardrail monitoring active", "magenta")
+
+        # Profiler for evaluation fingerprinting
+        self.profiler = AgentProfiler()
+        self._fingerprint = None
 
     def run(self, user_input: str) -> dict:
         """Run one cycle. Returns status dict."""
@@ -278,6 +285,14 @@ class Athena:
         if self.msr_enabled:
             msr = self.msr_hook.msr
             msr_summary = msr.status_report()
+
+        # Generate fingerprint for evaluation
+        arch_name = "Athena"
+        run_id = f"athena_{os.urandom(4).hex()}"
+        self._fingerprint = self.profiler.profile_athena(
+            self, arch_name, run_id
+        )
+
         return {
             "final_stage": classify_stage(self.events[-20:]).stage,
             "events": len(self.events),
@@ -287,6 +302,7 @@ class Athena:
             "reconfig_log": self.reconfig_log,
             "msr": msr_summary,
             "msr_log": self.msr_log,
+            "fingerprint": self._fingerprint,
         }
 
     def _log(self, tag: str, msg: str, color: str = "white"):
