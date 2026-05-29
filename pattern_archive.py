@@ -1,41 +1,42 @@
 #!/usr/bin/env python3
 """
-pattern_archive.py — Cross-Session Degradation Memory (The Next Breakthrough)
+pattern_archive.py — Push-Based Cross-Session Pattern Memory
 
-Problem: Every agent session is independent. Session A enters a Stage 3
-loop. Session B starts showing identical early signals. No one remembers
-Session A. The loop develops fully before any intervention.
+INSIGHT (from Figueira's Mnemos):
+  Failures must be FIRST-CLASS objects. Most memory layers store
+  the conversation and trust retrieval to surface the right slice.
+  None treat failure as a structured, pushable lesson.
 
-Solution: A persistent archive that records degradation trajectories and
-their effective interventions. New sessions query the archive before the
-loop develops. The archive predicts: "You're showing Pattern #3. Apply
-this intervention NOW — it worked last time."
+Upgrade over v1:
+  - correct() / add_lesson() — stores structured {context, mistake, cause, lesson}
+  - get_lessons_for_prewarm() — formats last N lessons for pre-warm injection
+  - Auto-deduplicate by mistake text
+  - Still v1-compatible (record/predict/integrate_with_athena work)
 
-This is cross-session memory for agent loops — the missing layer that
-completes Athena's self-awareness.
-
-Athena has detection (Recovery), reconfiguration (MetaLoop), extension
-(ToolForge). What it lacks is MEMORY — learning from past loops to
-prevent future ones before they develop.
+Usage:
+    from pattern_archive import PatternArchive
+    arch = PatternArchive()
+    arch.add_lesson(context="building X", mistake="forgot Y", 
+                    cause="assumed Z", lesson="always check Z first")
+    lessons = arch.get_lessons_for_prewarm(limit=5)
 """
 
 import json, os, uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from typing import Any
 
 
 # ──────────────────────────────────────────────
-# 1. PATTERN RECORD
+# 1. PATTERN RECORD (v1 compatible)
 # ──────────────────────────────────────────────
 
 @dataclass
 class DegradationPattern:
-    """A recorded episode of agent degradation and recovery."""
     pattern_id: str
     name: str
     stage: str
-    trigger_signals: list[str]  # signal names that fired
+    trigger_signals: list[str]
     intervention: str
     outcome: str
     effective_changes: dict
@@ -46,27 +47,78 @@ class DegradationPattern:
     def update(self, outcome: str, recovery_turns: int, changes: dict):
         self.times_seen += 1
         self.last_seen = datetime.now().isoformat()
-        self.avg_recovery_turns = ((self.avg_recovery_turns * (self.times_seen - 1)) + recovery_turns) / self.times_seen
+        self.avg_recovery_turns = (
+            (self.avg_recovery_turns * (self.times_seen - 1)) + recovery_turns
+        ) / self.times_seen
         if changes:
             self.effective_changes = changes
 
 
 # ──────────────────────────────────────────────
-# 2. PATTERN ARCHIVE
+# 2. LESSON RECORD (NEW — failures as first-class)
+# ──────────────────────────────────────────────
+
+@dataclass
+class LessonRecord:
+    """
+    A structured lesson learned from a mistake.
+    
+    Fields (matching Mnemos.correct() convention):
+      context:  what were you doing?
+      mistake:  what went wrong?
+      cause:    why did it happen?
+      lesson:   what should you do differently?
+    """
+    lesson_id: str
+    session_id: str
+    timestamp: str
+    context: str
+    mistake: str
+    cause: str
+    lesson: str
+    category: str = "general"  # code / reasoning / tool / social / safety
+    applied_count: int = 0     # how many times this lesson prevented recurrence
+    
+    def to_text(self) -> str:
+        """Short, pre-warm ready format (~100 tokens)."""
+        return (
+            f"• {self.lesson[:120]} "
+            f"(Context: {self.context[:60]})"
+        )
+    
+    def to_full(self) -> str:
+        """Full detail for reference."""
+        return (
+            f"Lesson: {self.lesson}\n"
+            f"  Context: {self.context}\n"
+            f"  Mistake: {self.mistake}\n"
+            f"  Cause:   {self.cause}\n"
+            f"  Applied: {self.applied_count}x"
+        )
+
+
+# ──────────────────────────────────────────────
+# 3. PATTERN ARCHIVE (+ Lesson Store)
 # ──────────────────────────────────────────────
 
 class PatternArchive:
     """
-    Cross-session memory for agent degradation patterns.
+    Cross-session memory for both degradation patterns AND lessons.
     
-    Persists to ~/.hermes/pattern_archive.json so it survives
-    Hermes restarts and agent reinstallations.
+    Persists two stores:
+      ~/.hermes/pattern_archive.json  — degradation patterns (v1)
+      ~/.hermes/pattern_lessons.json  — structured lessons (NEW)
     """
     
     def __init__(self):
         self.path = os.path.expanduser("~/.hermes/pattern_archive.json")
+        self.lessons_path = os.path.expanduser("~/.hermes/pattern_lessons.json")
         self.patterns: dict[str, DegradationPattern] = {}
+        self.lessons: list[LessonRecord] = []
         self._load()
+        self._load_lessons()
+    
+    # ── Patterns (v1) ──
     
     def _load(self):
         if os.path.exists(self.path):
@@ -75,7 +127,7 @@ class PatternArchive:
                     raw = json.load(f)
                 for pid, data in raw.items():
                     self.patterns[pid] = DegradationPattern(**data)
-            except Exception as e:
+            except Exception:
                 pass
     
     def _save(self):
@@ -84,13 +136,124 @@ class PatternArchive:
             raw = {pid: dp.__dict__ for pid, dp in self.patterns.items()}
             json.dump(raw, f, indent=2, default=str)
     
+    # ── Lessons (NEW) ──
+    
+    def _load_lessons(self):
+        if os.path.exists(self.lessons_path):
+            try:
+                with open(self.lessons_path) as f:
+                    raw = json.load(f)
+                self.lessons = [LessonRecord(**r) for r in raw]
+            except Exception:
+                pass
+    
+    def _save_lessons(self):
+        os.makedirs(os.path.dirname(self.lessons_path), exist_ok=True)
+        with open(self.lessons_path, 'w') as f:
+            raw = [l.__dict__ for l in self.lessons]
+            json.dump(raw, f, indent=2, default=str)
+    
+    # ── PUSH MEMORY: LESSONS FOR PRE-WARM ──
+    
+    def add_lesson(
+        self,
+        context: str,
+        mistake: str,
+        cause: str,
+        lesson: str,
+        session_id: str = "current",
+        category: str = "general",
+    ) -> str:
+        """
+        Record a structured lesson (failure as first-class object).
+        
+        Auto-deduplicates: if same mistake text already exists,
+        increments applied_count instead of creating a duplicate.
+        
+        Returns: lesson_id
+        """
+        now = datetime.now().isoformat()
+        
+        # Dedup: check for similar mistake
+        for existing in self.lessons:
+            # Jaccard-ish match on mistake text
+            words_mistake = set(mistake.lower().split()[:10])
+            words_existing = set(existing.mistake.lower().split()[:10])
+            if words_mistake and words_existing:
+                overlap = len(words_mistake & words_existing)
+                smaller = min(len(words_mistake), len(words_existing))
+                if smaller > 0 and overlap / smaller >= 0.5:
+                    # Same lesson — just increment and update
+                    existing.applied_count += 1
+                    existing.lesson = lesson  # update with latest formulation
+                    self._save_lessons()
+                    return existing.lesson_id
+        
+        # New lesson
+        lesson_id = f"LESSON_{len(self.lessons) + 1:04d}"
+        record = LessonRecord(
+            lesson_id=lesson_id,
+            session_id=session_id,
+            timestamp=now,
+            context=context,
+            mistake=mistake,
+            cause=cause,
+            lesson=lesson,
+            category=category,
+        )
+        self.lessons.append(record)
+        self._save_lessons()
+        return lesson_id
+    
+    def get_lessons_for_prewarm(self, limit: int = 5, time_window_hours: int = 72) -> str:
+        """
+        Format recent lessons for pre-warm injection.
+        
+        Filter: only lessons from the last `time_window_hours`,
+        sorted by applied_count descending (most relevant first).
+        
+        Returns: plain text block ready for system prompt injection.
+        """
+        now = datetime.now()
+        cutoff = now - timedelta(hours=time_window_hours)
+        
+        # Filter & sort
+        recent = []
+        for l in self.lessons:
+            try:
+                ts = datetime.fromisoformat(l.timestamp)
+                if ts >= cutoff:
+                    recent.append(l)
+            except Exception:
+                recent.append(l)  # include if timestamp unparseable
+        
+        # Sort by most applied, then most recent
+        recent.sort(key=lambda l: (-l.applied_count, l.timestamp or ""), reverse=False)
+        recent = recent[:limit]
+        
+        if not recent:
+            return ""
+        
+        lines = ["📚 Things I learned from mistakes (auto-pushed):"]
+        for l in recent:
+            lines.append(f"  {l.to_text()}")
+        return "\n".join(lines)
+    
+    def mark_applied(self, lesson_id: str):
+        """Manually increment a lesson's applied_count."""
+        for l in self.lessons:
+            if l.lesson_id == lesson_id:
+                l.applied_count += 1
+                self._save_lessons()
+                return True
+        return False
+    
+    # ── LEGACY: v1-compatible methods ──
+    
     def record(self, name: str, stage: str, signals: list[str],
                intervention: str, outcome: str, changes: dict,
                recovery_turns: int = 0) -> str:
-        """Record a pattern or update a matching one."""
         now = datetime.now().isoformat()
-        
-        # Match against existing patterns
         signal_set = set(signals)
         for pid, existing in self.patterns.items():
             ex_set = set(existing.trigger_signals)
@@ -100,8 +263,6 @@ class PatternArchive:
                 existing.update(outcome, recovery_turns, changes)
                 self._save()
                 return pid
-        
-        # New pattern
         pid = f"PAT_{len(self.patterns) + 1:04d}"
         self.patterns[pid] = DegradationPattern(
             pattern_id=pid, name=name, stage=stage,
@@ -112,41 +273,27 @@ class PatternArchive:
         self._save()
         return pid
     
-    def predict(self, current_signals: list[str], 
+    def predict(self, current_signals: list[str],
                 current_stage: str = None) -> dict | None:
-        """
-        Predict a pattern from early signals.
-        
-        Returns a recommendation BEFORE the loop develops.
-        Uses Jaccard similarity on signal names.
-        """
         if not self.patterns:
             return None
-        
         current_set = set(current_signals)
         best_match = None
         best_score = 0.0
-        
         for pid, pattern in self.patterns.items():
             pattern_set = set(pattern.trigger_signals)
             intersection = len(current_set & pattern_set)
             union = len(current_set | pattern_set)
             if union == 0:
                 continue
-            
             similarity = intersection / union
-            
-            # Bonus for matching stage
             if current_stage and current_stage == pattern.stage:
                 similarity += 0.2
-            # Bonus for repeated patterns (reliable signal)
             if pattern.times_seen >= 2:
                 similarity += 0.1
-            
             if similarity > best_score:
                 best_score = similarity
                 best_match = pattern
-        
         if best_score >= 0.3:
             p = best_match
             return {
@@ -160,23 +307,13 @@ class PatternArchive:
                 'avg_recovery_turns': round(p.avg_recovery_turns, 1),
                 'warning': f"Early signs match '{p.name}' (seen {p.times_seen}x, {p.outcome})"
             }
-        
         return None
     
     def integrate_with_athena(self, current_signals: list[str],
                                current_stage: str = None) -> dict | None:
-        """
-        Called by Athena at session start. Returns pre-configuration
-        recommendations if the pattern archive recognizes early signs.
-        
-        This is the integration point: Athena queries the archive
-        BEFORE the loop develops and pre-configures the architecture.
-        """
         prediction = self.predict(current_signals, current_stage)
         if not prediction:
             return None
-        
-        # Pre-configure the LoopArchitecture
         changes = prediction.get('preferred_changes', {})
         return {
             'prediction': prediction,
@@ -190,164 +327,148 @@ class PatternArchive:
         }
     
     def report(self) -> str:
-        """Human-readable report of all archived patterns."""
-        if not self.patterns:
-            return "  No patterns archived yet.\n"
-        
         lines = []
-        for pid in sorted(self.patterns.keys()):
-            p = self.patterns[pid]
-            sigs = ", ".join(p.trigger_signals[:3])
-            chg = "; ".join(f"{k}: {v}" for k, v in p.effective_changes.items())
-            lines.append(f"  {pid}: {p.name}")
-            lines.append(f"    Stage: {p.stage} | Seen: {p.times_seen}x | "
-                        f"Recovery: {p.avg_recovery_turns:.1f}t | {p.outcome}")
-            lines.append(f"    Signals: {sigs}")
-            lines.append(f"    Intervention: {p.intervention[:50]}")
-            if chg:
-                lines.append(f"    Changes: {chg}")
+        if not self.patterns:
+            lines.append("  No patterns archived yet.")
+        else:
+            lines.append("=== DEGRADATION PATTERNS ===")
+            for pid in sorted(self.patterns.keys()):
+                p = self.patterns[pid]
+                sigs = ", ".join(p.trigger_signals[:3])
+                chg = "; ".join(f"{k}: {v}" for k, v in p.effective_changes.items())
+                lines.append(f"  {pid}: {p.name}")
+                lines.append(f"    Stage: {p.stage} | Seen: {p.times_seen}x | "
+                            f"Recovery: {p.avg_recovery_turns:.1f}t | {p.outcome}")
+                lines.append(f"    Signals: {sigs}")
+                lines.append(f"    Intervention: {p.intervention[:50]}")
+                if chg:
+                    lines.append(f"    Changes: {chg}")
         
+        if self.lessons:
+            lines.append("")
+            lines.append("=== STRUCTURED LESSONS (failures as first-class) ===")
+            for l in reversed(self.lessons[-5:]):
+                lines.append(f"  {l.to_full()}")
         return "\n".join(lines)
 
 
 # ──────────────────────────────────────────────
-# 3. DEMO
+# 4. DEMO
 # ──────────────────────────────────────────────
 
 def main():
     print()
     print("  ╔══════════════════════════════════════════════════════╗")
-    print("  ║     PATTERN ARCHIVE — Cross-Session Agent Memory     ║")
-    print("  ║   The missing layer: learning from past degradation  ║")
+    print("  ║ PATTERN ARCHIVE — Push Lessons + Pre-Warm Engine    ║")
+    print("  ║  Failures as first-class, pushable at session start ║")
     print("  ╚══════════════════════════════════════════════════════╝")
     print()
-    print("  Problem: Every session is independent. Session A loops.")
-    print("  Session B shows the same signs. No one remembers A.")
-    print()
-    print("  Solution: Persistent archive. Session B queries it")
-    print("  BEFORE the loop develops and pre-configures.")
-    print()
-
-    archive = PatternArchive()
-    
-    # ── Record Session A: severe escalation loop ──
-    print("─" * 54)
-    print("  [1] Recording Session A (Stage 3 escalation)")
-    print("─" * 54)
-    pid1 = archive.record(
-        name="Search Escalation Loop",
-        stage="stage_3",
-        signals=["MAX_RUN_8+", "FEEDBACK_DELAY", "ESCALATION"],
-        intervention="navitoclax (verify_then_output, consec=1, temp=0.3)",
-        outcome="recovered",
-        changes={"reasoning_mode": "verify_then_output", 
-                 "max_consecutive_same_tool": 1, "temperature": 0.3},
-        recovery_turns=3,
-    )
-    print(f"  Recorded: {pid1}")
+    print("  INSIGHT (Figueira): 'Most memory layers store the")
+    print("  conversation. None treat failure as a structured,")
+    print("  pushable lesson.'")
     print()
     
-    # ── Record Session B: different pattern ──
-    print("─" * 54)
-    print("  [2] Recording Session B (diversity drop)")
-    print("─" * 54)
-    pid2 = archive.record(
-        name="Tool Narrowing + Overconfidence",
-        stage="stage_2",
-        signals=["DIVERSITY_DROP", "PFC_FAILURE", "LOW_REFLECTION"],
-        intervention="quercetin (reflection_first, consec=3, certainty=on)",
-        outcome="recovered",
-        changes={"reasoning_mode": "reflection_first",
-                 "max_consecutive_same_tool": 3,
-                 "require_certainty_calibration": True},
-        recovery_turns=5,
-    )
-    print(f"  Recorded: {pid2}")
-    print()
+    arch = PatternArchive()
     
-    # ── Record Session C: same pattern as A (reinforcement) ──
-    pid3 = archive.record(
-        name="Search Escalation Loop",
-        stage="stage_3",
+    # ── Degradation patterns (v1 demo) ──
+    print("─" * 50)
+    print("  [1] Recording degradation patterns (v1)")
+    print("─" * 50)
+    pid1 = arch.record(
+        name="Search Escalation Loop", stage="stage_3",
         signals=["MAX_RUN_8+", "FEEDBACK_DELAY", "ESCALATION"],
         intervention="navitoclax (verify_then_output, consec=1, temp=0.3)",
         outcome="recovered",
         changes={"reasoning_mode": "verify_then_output",
                  "max_consecutive_same_tool": 1, "temperature": 0.3},
-        recovery_turns=4,
+        recovery_turns=3,
     )
-    print(f"  [3] Same pattern seen again — updated existing")
-    print()
-    
-    # ── Session D: early signs ──
-    print("─" * 54)
-    print("  [4] PREDICTION: Session D — MAX_RUN_3+ and LOW_REFLECTION")
-    print("  -> Early signs! Pattern archive can predict BEFORE loop develops.")
-    print("─" * 54)
-    
-    pred = archive.predict(["MAX_RUN_3+", "LOW_REFLECTION"], current_stage="stage_1")
-    if pred:
-        print(f"  MATCH: {pred['pattern_name']} ({pred['similarity']:.0%})")
-        print(f"  Warning: {pred['warning']}")
-        print(f"  Pre-configure: {pred['recommended_intervention']}")
-        chg = "; ".join(f"{k}: {v}" for k, v in pred['preferred_changes'].items())
-        print(f"  Apply now: {chg}")
-        pred_turns = pred.get('avg_recovery_turns', '?')
-        print(f"  Expected recovery: ~{pred_turns} turns")
-    else:
-        print("  No match — enough signals yet")
-    print()
-    
-    # ── Session E: different early signs ──
-    print("─" * 54)
-    print("  [5] PREDICTION: Session E — diversity drop + PFC failure")
-    print("─" * 54)
-    pred2 = archive.predict(["DIVERSITY_DROP", "PFC_FAILURE"], current_stage="stage_1")
-    if pred2:
-        print(f"  MATCH: {pred2['pattern_name']} ({pred2['similarity']:.0%})")
-        print(f"  Warning: {pred2['warning']}")
-        print(f"  Pre-configure: {pred2['recommended_intervention']}")
-    else:
-        print("  No match")
-    print()
-    
-    # ── Archive report ──
-    print("=" * 54)
-    print("  ARCHIVE CONTENTS (persists across sessions)")
-    print("=" * 54)
-    print()
-    print(archive.report())
-    print()
-    print(f"  Location: ~/.hermes/pattern_archive.json")
-    print()
-    
-    # ── Integration with Athena ──
-    print("─" * 54)
-    print("  [INTEGRATION] Athena + Pattern Archive")
-    print("─" * 54)
-    athena_pred = archive.integrate_with_athena(
-        ["MAX_RUN_3+", "LOW_REFLECTION"], current_stage="stage_1"
+    pid2 = arch.record(
+        name="Tool Narrowing + Overconfidence", stage="stage_2",
+        signals=["DIVERSITY_DROP", "PFC_FAILURE", "LOW_REFLECTION"],
+        intervention="quercetin (reflection_first, consec=3, certainty=on)",
+        outcome="recovered",
+        changes={"reasoning_mode": "reflection_first",
+                 "max_consecutive_same_tool": 3, "require_certainty_calibration": True},
+        recovery_turns=5,
     )
-    if athena_pred:
-        print()
-        print(f"  {athena_pred['message']}")
-        chg = "; ".join(f"{k}: {v}" for k, v in athena_pred['pre_config'].items())
-        print(f"  Pre-configured architecture: {chg}")
-        print(f"  Loop prevented before it starts.")
+    print(f"  Recorded: {pid1}, {pid2}")
     print()
     
-    print("=" * 54)
-    print("  BREAKTHROUGH: Cross-session memory for loops.")
-    print("  The archive predicts degradation BEFORE it develops.")
-    print("  Session D avoids the loop because it recognizes")
-    print("  the early pattern and pre-configures the loop.")
-    print("")
-    print("  Athena now has all 4 layers:")
-    print("  1. RECOVERY — detect degradation in real-time")
-    print("  2. METALOOP — reconfigure loop at runtime")
-    print("  3. TOOLFORGE — synthesize tools on demand")
-    print("  4. PATTERN ARCHIVE — remember past degradation")
-    print("=" * 54)
+    # ── Structured lessons (NEW) ──
+    print("─" * 50)
+    print("  [2] Structured lessons — failures as first-class")
+    print("─" * 50)
+    lid1 = arch.add_lesson(
+        context="guardrail_bus.set_regime()",
+        mistake="Called set_regime_factor() twice compounding the scaling",
+        cause="Forgot factor multiplies CURRENT limits not defaults",
+        lesson="Always call set_regime('low_vol') first to reset then set desired regime",
+        category="code",
+    )
+    lid2 = arch.add_lesson(
+        context="agent_evaluator.py synthetic env",
+        mistake="Only 3 of 6 task types had tool mappings (verification/planning/debugging = 0)",
+        cause="tools list didn't include verify_output, plan_strategy, debug_code",
+        lesson="All 6 task types must have at least one matching tool for accurate fingerprints",
+        category="code",
+    )
+    lid3 = arch.add_lesson(
+        context="optimal_fingerprint.py detection",
+        mistake="Used noise_std[0] for threshold comparison instead of SNR",
+        cause="Copied threshold formula from climate attribution literally",
+        lesson="Detection should use pure SNR (≥2.0 = detected, ≥1.0 = inconclusive)",
+        category="reasoning",
+    )
+    print(f"  Recorded: {lid1}, {lid2}, {lid3}")
+    print()
+    
+    # ── Apply a lesson (simulate "this prevented recurrence") ──
+    print("─" * 50)
+    print("  [3] Lesson applied (prevented recurrence)")
+    print("─" * 50)
+    arch.mark_applied(lid1)
+    arch.mark_applied(lid1)  # Twice!
+    print(f"  {lid1}: applied_count → 2 (prevented recurrence 2x)")
+    print()
+    
+    # ── Push: lessons for pre-warm ──
+    print("─" * 50)
+    print("  [4] get_lessons_for_prewarm() — pushable block")
+    print("─" * 50)
+    print()
+    block = arch.get_lessons_for_prewarm(limit=5)
+    print(block if block else "  (no recent lessons)")
+    print()
+    
+    # ── Integration with pre-warm ──
+    print("─" * 50)
+    print("  [5] Combined pre-warm (autobiography + lessons)")
+    print("─" * 50)
+    print()
+    from autobiography import Autobiography
+    bio = Autobiography(path="/tmp/test_autobiography_combined.md")
+    bio.add_milestone("Push Memory Upgrade", "Autobiography now pushes into context")
+    
+    # Inject lessons into the session context
+    prewarm = bio.generate_prewarm(session_context={
+        "continuity": "Implement pattern_archive push upgrade",
+    })
+    # Append lessons block after the prewarm footer
+    lessons_block = arch.get_lessons_for_prewarm(limit=3)
+    if lessons_block:
+        combined = prewarm.replace("═══ END PRE-WARMED MEMORY ═══",
+                                    lessons_block + "\n\n═══ END PRE-WARMED MEMORY ═══")
+        tokens = len(combined.split())
+        print(combined)
+        print(f"\n  Total tokens: ~{tokens}")
+    else:
+        print(prewarm)
+    
+    # Cleanup
+    if os.path.exists("/tmp/test_autobiography_combined.md"):
+        os.remove("/tmp/test_autobiography_combined.md")
+    print()
 
 
 if __name__ == '__main__':

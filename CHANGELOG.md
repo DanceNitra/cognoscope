@@ -1,6 +1,26 @@
 # Changelog
 
-## [0.2.0] — 2026-05-29
+## [0.3.0] — 2026-05-29
+
+### Added
+
+#### Push Memory — Agent Self-Model
+
+- `autobiography.py` — **Push-based** living self-model. `generate_prewarm()` produces a ~500 token context block at session start. The agent reads it because it's ALREADY in context — no tool call needed. Five sources: identity, momentum, lessons (from `correct()`), patterns, session continuity.
+- `pattern_archive.py` — Added structured `add_lesson()` and `get_lessons_for_prewarm()`. Failures are **first-class objects**: {context, mistake, cause, lesson, category}. Auto-deduplicates by mistake text.
+- `hermes_selfaware.py` — Rewritten for push integration:
+  - `--startup` / `--inject`: generates pre-warm block for system prompt injection
+  - `--cache`: loads from `.memory_prewarm.json` (~1ms vs ~50ms)
+  - `--correct`: record a correction mid-session (mirrors Mnemos.correct())
+- `.memory_prewarm.json` — file-based cache for zero-parsing pre-warm loading
+
+#### Insight (from Figueira's "Agent memory is push, not pull")
+Every memory layer ships with the same broken assumption: "The agent will call your memory tool when it needs a memory." It won't. Not reliably. Not at the right moment. Push memory at session start — the one moment the agent is GUARANTEED to look.
+
+### Changed
+- `autobiography.py` — v2 rewrite with push engine, `correct()` method, pre-warm cache
+- `pattern_archive.py` — v2 rewrite with lesson store, pre-warm formatting
+- `hermes_selfaware.py` — full push integration with 4 CLI commands
 
 ### Added
 

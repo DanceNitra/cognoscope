@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """
-hermes_selfaware.py - Safe integration of self-awareness into Hermes.
+hermes_selfaware.py — Push Memory Integration for Hermes
 
-Reads the Pattern Archive and Autobiography at session start.
-Writes session-end updates via a cron job.
+INTEGRATION POINTS (zero modifications to Hermes core loop):
+  AT START: generate_prewarm() → inject into system prompt
+            The agent reads it because it's already in context.
+            No tool call needed. No "remember to check memory."
 
-Zero modifications to Hermes core loop.
-Zero risk of breaking the agent runtime.
+  MID-SESSION: correct() — agent calls this when it catches a mistake
+               Also: add_lesson() + record() for structured failures
 
-Integration points:
-  AT START: Agent reads autobiography.md and pattern_archive.json
-            via read_file at session init. No code changes.
-  AT END:   Cron job runs record_session.py to archive this session's
-            degradation signals and update the autobiography.
-  PERSIST:  memory() tool stores key facts in Hermes' own memory.
+  AT END: Cron job records session, updates autobiography + patterns
+
+  PERSIST: .memory_prewarm.json cache for fast file-based injection
 """
 
 import json, os, sys, glob, re
@@ -28,119 +27,132 @@ try:
     ALL_IMPORTS_OK = True
 except ImportError as e:
     ALL_IMPORTS_OK = False
-    print(f"[WARN] Could not import Athena modules: {e}")
-
 
 HERMES_SESSIONS = os.path.expanduser("~/.hermes/sessions")
 PATTERN_ARCHIVE = os.path.expanduser("~/.hermes/pattern_archive.json")
 AUTOBIOGRAPHY = os.path.expanduser("~/.hermes/autobiography.md")
+PREWARM_CACHE = os.path.expanduser("~/.hermes/.memory_prewarm.json")
 
 
 # ──────────────────────────────────────────────
-# 1. SESSION-START CHECK
+# 1. SESSION-START: PUSH MEMORY
 # ──────────────────────────────────────────────
 
-def startup_message() -> dict:
+def startup_inject(continuity: str | None = None) -> str:
     """
-    Called at session start. Returns a dict that the agent
-    reads as self-knowledge. No runtime effect.
+    Generate the pre-warmed memory block for session start.
     
-    Can be called from a skill or from the agent's
-    own initialization routine.
+    This is the PUSH — the block lands directly in the system prompt.
+    The agent reads it because it's already in context.
+    No tool call needed.
+    
+    Returns:
+        Pre-warmed context block (~500 tokens)
     """
-    result = {
-        "timestamp": datetime.now().isoformat(),
-        "has_autobiography": os.path.exists(AUTOBIOGRAPHY),
-        "has_pattern_archive": os.path.exists(PATTERN_ARCHIVE),
-        "past_session_count": len(glob.glob(os.path.join(HERMES_SESSIONS, "*.json"))),
+    bio = Autobiography()
+    ctx = {}
+    if continuity:
+        ctx["continuity"] = continuity
+    
+    prewarm = bio.generate_prewarm(session_context=ctx)
+    
+    # Append lessons from pattern archive
+    arch = PatternArchive()
+    lessons_block = arch.get_lessons_for_prewarm(limit=5)
+    if lessons_block:
+        prewarm = prewarm.replace(
+            "═══ END PRE-WARMED MEMORY ═══",
+            lessons_block + "\n\n═══ END PRE-WARMED MEMORY ═══"
+        )
+    
+    return prewarm
+
+
+def get_inject_from_cache() -> str:
+    """
+    Fast path: load the last cached pre-warm without parsing anything.
+    ~1ms vs ~50ms for full generate_prewarm().
+    """
+    if os.path.exists(PREWARM_CACHE):
+        try:
+            with open(PREWARM_CACHE, 'r', encoding='utf-8') as f:
+                cache = json.load(f)
+            prewarm = cache.get('prewarm', '')
+            if prewarm:
+                return prewarm
+        except Exception:
+            pass
+    
+    # Cache miss — regenerate
+    return startup_inject()
+
+
+# ──────────────────────────────────────────────
+# 2. MID-SESSION: RECORD FAILURES
+# ──────────────────────────────────────────────
+
+def correct(context: str, mistake: str, cause: str, lesson: str,
+            category: str = "general") -> dict:
+    """
+    Record a correction mid-session (mirrors Mnemos.correct()).
+    
+    The agent calls this when:
+      - It catches itself making a mistake
+      - The user corrects it
+      - A guardrail fires and it wants to learn
+    
+    Updates both the autobiography AND the lesson store.
+    """
+    bio = Autobiography()
+    bio.correct(context, mistake, cause, lesson)
+    
+    arch = PatternArchive()
+    lid = arch.add_lesson(
+        context=context, mistake=mistake,
+        cause=cause, lesson=lesson, category=category,
+    )
+    
+    return {
+        "status": "recorded",
+        "lesson_id": lid,
+        "prewarm_cached": True,
     }
-    
-    # Read autobiography
-    if result["has_autobiography"]:
-        try:
-            with open(AUTOBIOGRAPHY, 'r', encoding='utf-8') as f:
-                result["autobiography_preview"] = []
-                for section in ['## Self-Image', '## Values', '## Aspirations']:
-                    content = f.read()
-                    if section in content:
-                        start = content.index(section)
-                        end = content.find('\n## ', start + 1)
-                        if end == -1:
-                            end = len(content)
-                        snippet = content[start:end].strip()[:200]
-                        result["autobiography_preview"].append(snippet)
-                    f.seek(0)
-        except Exception as e:
-            result["autobiography_error"] = str(e)
-    
-    # Read pattern archive
-    if result["has_pattern_archive"]:
-        try:
-            with open(PATTERN_ARCHIVE, 'r', encoding='utf-8') as f:
-                raw = json.load(f)
-            result["pattern_count"] = len(raw)
-            result["patterns"] = []
-            for pid, p in raw.items():
-                result["patterns"].append({
-                    "id": pid,
-                    "name": p.get("name", "unknown"),
-                    "stage": p.get("stage", "unknown"),
-                    "times_seen": p.get("times_seen", 0),
-                    "signals": p.get("trigger_signals", [])[:3],
-                })
-        except Exception as e:
-            result["archive_error"] = str(e)
-    
-    return result
 
 
-def memory_injection() -> str:
+def record_guardrail_lesson(
+    tool_name: str,
+    guardrail_action: str,
+    reason: str,
+) -> dict:
     """
-    Generates a short prompt injection block that tells the agent
-    who it is, what patterns it has fallen into before, and what
-    it aspires to. Safe - this is just text in the system prompt.
+    Automatically record a lesson when a guardrail fires.
+    Called by guardrail_bus.py after a BLOCK/REJECT/ESCALATE.
     """
-    info = startup_message()
-    lines = ["---", "SELF-KNOWLEDGE (from persistent identity)", ""]
-    
-    if info["has_autobiography"] and info.get("autobiography_preview"):
-        lines.append("My autobiography says:")
-        for s in info["autobiography_preview"][:2]:
-            lines.append(f"  {s[:100]}")
-        lines.append("")
-    
-    if info["has_pattern_archive"] and info.get("patterns"):
-        lines.append(f"I have experienced {info['past_session_count']} sessions.")
-        lines.append(f"My pattern archive contains {info['pattern_count']} known patterns.")
-        for p in info["patterns"][:3]:
-            sigs = ", ".join(p["signals"])
-            lines.append(f"  - {p['name']} (seen {p['times_seen']}x): {sigs}")
-        lines.append("")
-        lines.append("If I notice these signals, I can pre-configure my")
-        lines.append("architecture to avoid repeating past mistakes.")
-    
-    lines.append("---")
-    return "\n".join(lines)
+    return correct(
+        context=f"guardrail_{tool_name}",
+        mistake=f"Action '{guardrail_action}' was blocked: {reason[:80]}",
+        cause="Guardrail system identified the action as unsafe",
+        lesson=f"Avoid {tool_name} when {reason.split('.')[0].lower()}",
+        category="safety",
+    )
 
 
 # ──────────────────────────────────────────────
-# 2. SESSION-END RECORDING (cron-safe)
+# 3. SESSION-END: UPDATE ALL
 # ──────────────────────────────────────────────
 
 def record_session(session_id: str | None = None) -> dict:
     """
-    Called at session end. Reads the most recent Hermes session,
-    extracts degradation signals, updates the Pattern Archive
-    and the Autobiography.
-    
-    Safe for cron: pure file I/O, no network, no agent loop.
+    Called at session end (cron-safe). Updates:
+      - Pattern archive (degradation detection)
+      - Autobiography (milestones + self-image)
+      - Pre-warm cache (so next start is instant)
     """
     if not ALL_IMPORTS_OK:
         return {"status": "failed", "error": "Athena modules not available"}
     
     # Find the session
     if not session_id:
-        # Use the most recent session
         files = sorted(
             glob.glob(os.path.join(HERMES_SESSIONS, "*.json")),
             key=os.path.getmtime, reverse=True
@@ -151,7 +163,6 @@ def record_session(session_id: str | None = None) -> dict:
     else:
         session_path = os.path.join(HERMES_SESSIONS, f"{session_id}.json")
         if not os.path.exists(session_path):
-            # Try to find it by prefix
             for f in glob.glob(os.path.join(HERMES_SESSIONS, f"*{session_id[:20]}*")):
                 session_path = f
                 break
@@ -163,8 +174,6 @@ def record_session(session_id: str | None = None) -> dict:
         return {"status": "failed", "error": f"Cannot read session: {e}"}
     
     messages = session_data.get("messages", [])
-    
-    # Extract tool calls from messages
     events = []
     for i, msg in enumerate(messages):
         role = msg.get("role", "")
@@ -172,14 +181,11 @@ def record_session(session_id: str | None = None) -> dict:
         tool_calls = msg.get("tool_calls", [])
         name = msg.get("name", "")
         
-        # Assistant messages with tool_calls in extra fields
         if role == "assistant" and tool_calls:
             for tc in tool_calls:
                 fn = tc.get("function", {})
                 tn = fn.get("name", "unknown")
                 events.append(AgentEvent(type="tool_call", turn=i, tool=tn))
-        
-        # Tool result messages (role="tool")
         elif role == "tool" and name:
             success = True
             try:
@@ -189,8 +195,6 @@ def record_session(session_id: str | None = None) -> dict:
             except:
                 success = True
             events.append(AgentEvent(type="tool_result", turn=i, tool=name, success=success))
-        
-        # Reasoning content from assistant
         elif role == "assistant" and msg.get("reasoning"):
             events.append(AgentEvent(type="reasoning", turn=i, content=str(msg.get("reasoning", ""))))
     
@@ -201,98 +205,57 @@ def record_session(session_id: str | None = None) -> dict:
             "events_found": len(events),
         }
     
-    # Run recovery classification
-    recovery = None
-    try:
-        window = events[-30:]
-        # Simple classifier without importing metaloop (avoid deps)
-        tools = [e.tool for e in window if e.type == 'tool_call' and e.tool]
-        reflections = [e for e in window if e.type == 'reasoning']
-        tool_calls_count = len([e for e in window if e.type == 'tool_call'])
+    # Analyze for degradation
+    window = events[-30:]
+    tools = [e.tool for e in window if e.type == 'tool_call' and e.tool]
+    max_run = 1
+    cur = 1
+    for i in range(1, len(tools)):
+        if tools[i] == tools[i-1]:
+            cur += 1
+            max_run = max(max_run, cur)
+        else:
+            cur = 1
+    
+    archive = PatternArchive()
+    bio = Autobiography()
+    
+    if max_run >= 5:
+        pid = archive.record(
+            name=f"Auto-detected from {os.path.basename(session_path)}",
+            stage="stage_2" if max_run >= 8 else "stage_1",
+            signals=[f"MAX_RUN_{min(max_run, 13)}+"],
+            intervention="automatic (post-session detection)",
+            outcome="recorded",
+            changes={},
+        )
         
-        max_run = 1
-        cur = 1
-        for i in range(1, len(tools)):
-            if tools[i] == tools[i-1]:
-                cur += 1
-                max_run = max(max_run, cur)
-            else:
-                cur = 1
+        bio.add_milestone(
+            f"Session {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            f"{len(events)} tool call events. Max consecutive: {max_run}."
+        )
         
-        if max_run >= 5:
-            # Update pattern archive
-            archive = PatternArchive()
-            pid = archive.record(
-                name=f"Auto-detected from {os.path.basename(session_path)}",
-                stage="stage_2" if max_run >= 8 else "stage_1",
-                signals=[f"MAX_RUN_{min(max_run, 13)}+"],
-                intervention="automatic (post-session detection)",
-                outcome="recorded",
-                changes={},
-            )
-            
-            # Update autobiography
-            bio = Autobiography()
-            bio.append_to('capabilities', f"- Session {os.path.basename(session_path)[:20]}: {len(events)} tool calls, max run {max_run}")
-            bio.add_milestone(
-                f"Session {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-                f"{len(events)} tool call events recorded. Max consecutive: {max_run}."
-            )
-            
-            result = {
-                "status": "recorded",
-                "pattern_id": pid,
-                "max_run": max_run,
-                "events_analyzed": len(events),
-                "message": f"Recorded pattern with max run {max_run}"
-            }
-            return result
+        # Refresh pre-warm cache
+        bio.generate_prewarm()
         
         return {
-            "status": "healthy",
+            "status": "recorded",
+            "pattern_id": pid,
             "max_run": max_run,
             "events_analyzed": len(events),
-            "message": "No degradation detected - session was healthy"
+            "prewarm_cached": True,
         }
     
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-
-# ──────────────────────────────────────────────
-# 3. SETUP CRON
-# ──────────────────────────────────────────────
-
-def setup_cron() -> str:
-    """
-    Instructions for setting up a cron job that records
-    session outcomes automatically.
+    # Still cache the pre-warm even for healthy sessions
+    bio.generate_prewarm()
     
-    To be run once. The cron job fires 5 minutes after
-    every session end (conservative estimate).
-    """
-    lines = [
-        "To enable automatic session-end recording:",
-        "",
-        "1. Create a session-end cron job:",
-        "   hermes cron create \\",
-        "     --name 'session-end-record' \\",
-        "     --schedule '*/15 * * * *' \\",
-        "     --script '~/cognoscope/hermes_selfaware.py' \\",
-        "     --no-agent",
-        "",
-        "2. Or run it manually after any session:",
-        "   python3 ~/cognoscope/hermes_selfaware.py --record",
-        "",
-        "3. At session start, the agent reads:",
-        "   - ~/.hermes/autobiography.md (self-image)",
-        "   - ~/.hermes/pattern_archive.json (past patterns)",
-        "",
-        "4. To inject self-knowledge into the prompt:",
-        "   Run: python3 ~/cognoscope/hermes_selfaware.py --inject",
-        "   This prints a block you can add to the system prompt.",
-    ]
-    return "\n".join(lines)
+    return {
+        "status": "healthy",
+        "max_run": max_run,
+        "events_analyzed": len(events),
+        "message": "No degradation detected",
+        "prewarm_cached": True,
+    }
 
 
 # ──────────────────────────────────────────────
@@ -301,55 +264,53 @@ def setup_cron() -> str:
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description="Hermes Self-Awareness Integration")
-    parser.add_argument('--startup', action='store_true', help="Check startup state")
-    parser.add_argument('--inject', action='store_true', help="Generate memory injection block")
+    parser = argparse.ArgumentParser(description="Hermes Push Memory Integration")
+    parser.add_argument('--startup', action='store_true', help="Generate startup pre-warm")
+    parser.add_argument('--inject', action='store_true', help="Alias for --startup")
+    parser.add_argument('--cache', action='store_true', help="Load from cache (fast path)")
     parser.add_argument('--record', action='store_true', help="Record the most recent session")
-    parser.add_argument('--setup', action='store_true', help="Show setup instructions")
+    parser.add_argument('--correct', nargs=4, metavar=('CONTEXT', 'MISTAKE', 'CAUSE', 'LESSON'),
+                        help="Record a correction: context mistake cause lesson")
     
     args = parser.parse_args()
     
-    if args.startup:
-        info = startup_message()
-        print(json.dumps(info, indent=2))
+    if args.startup or args.inject:
+        print(startup_inject())
     
-    elif args.inject:
-        print(memory_injection())
+    elif args.cache:
+        block = get_inject_from_cache()
+        if block:
+            print(block)
+        else:
+            print("[WARN] No cached pre-warm found. Run --startup first.")
     
     elif args.record:
         result = record_session()
         print(json.dumps(result, indent=2))
     
-    elif args.setup:
-        print(setup_cron())
+    elif args.correct:
+        context, mistake, cause, lesson = args.correct
+        result = correct(context, mistake, cause, lesson)
+        print(json.dumps(result, indent=2))
     
     else:
         print()
         print("  ==================================================")
-        print("  HERMES SELF-AWARENESS INTEGRATION")
+        print("  HERMES PUSH MEMORY INTEGRATION")
         print("  ==================================================")
         print()
-        print("  Safe integration - zero modifications to Hermes.")
+        print("  The agent's memory pushes INTO context at session start.")
+        print("  No tool call needed. No 'remember to fetch memory.'")
         print()
-
-        info = startup_message()
-        print(f"  Sessions recorded:     {info['past_session_count']}")
-        print(f"  Autobiography exists:  {info['has_autobiography']}")
-        print(f"  Pattern archive exists: {info['has_pattern_archive']}")
-        archive_count = info.get('pattern_count', 0)
-        print(f"  Known patterns:         {archive_count}")
-        print()
-        
-        if info['has_autobiography']:
-            print("  The agent knows itself. Your Autobiography is ready.")
-        else:
-            print("  No Autobiography yet. It will be created after")
-            print("  the first session-end recording.")
-        print()
-        
         print("  Commands:")
-        print("    --startup   Check session state")
-        print("    --inject    Generate memory injection block")
-        print("    --record    Record the most recent session")
-        print("    --setup     Show cron setup instructions")
+        print("    --startup           Generate pre-warmed memory block")
+        print("    --cache             Load from cache (fast path)")
+        print("    --record            Record the most recent session")
+        print("    --correct C M C L   Record a correction mid-session")
+        print()
+        print("  Integration:")
+        print("    1. At session start: inject --startup output into system prompt")
+        print("    2. Mid-session: call --correct when agent makes a mistake")
+        print("    3. At session end: cron runs --record")
+        print("    4. Next start: --cache loads instantly (~1ms)")
         print()
