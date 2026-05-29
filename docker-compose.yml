@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  cognoscope:
+    build: .
+    container_name: cognoscope
+    command: python cli.py status
+    volumes:
+      - ./cli.py:/app/cli.py
+      - ./.swarm:/app/.swarm
+      - ./.polygraph:/app/.polygraph
+    profiles:
+      - dashboard
+
+  cognoscope-layers:
+    build: .
+    container_name: cognoscope-layers
+    command: python cli.py layers
+    profiles:
+      - layers
+
+  cognoscope-test:
+    build: .
+    container_name: cognoscope-test
+    command: python test_integration.py
+    profiles:
+      - test

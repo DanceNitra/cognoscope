@@ -20,6 +20,34 @@ Published in vault: "the first system that detects hypocrisy in autonomous agent
 ### Changed
 - `swarm_conductor.py` — NEW (814 lines, 34KB)
 
+### Added (Phase B — Hardening)
+
+#### B1 — CLI Dashboard (`cli.py`)
+- `cognoscope status` — full dashboard: all 13 layer status, polygraph alarms, swarm pool, dream loop, guardrail history, codebase file sizes
+- `cognoscope layers` — table of all 13 layers with load status
+- `cognoscope polygraph` — alarm log with score, category, action
+- `cognoscope agents` — swarm pool table: agent ID, status, load, tasks, trust, capabilities
+- `cognoscope guardrail` — guardrail history by decision type
+- `cognoscope dream` — dream loop run summary, active patterns, consolidated lessons
+
+#### B2 — Integration Tests (`test_integration.py`)
+- 16 tests covering all 13 layers + autobiography + pattern archive + A2A mesh
+- All pass: 16/16 ✅
+- Single-layer testing: `python test_integration.py L12`
+- Tests verify module instantiation, API contract adherence, and method existence
+
+#### B3 — Docker Infrastructure
+- `Dockerfile` — python:3.12-slim with numpy + sympy, cognoscope baked in
+- `docker-compose.yml` — 3 profiles: dashboard, layers, test
+- `requirements.txt` — numpy, sympy pins
+
+#### B4 — Real-time Monitor (`monitor.py`)
+- `python monitor.py --snapshot` — one-shot polygraph + guardrail + swarm report
+- `python monitor.py --live` — continuous 30s polling loop with JSON history persistence
+
+#### Documentation
+- `README.md` — quick start, 13-layer table, CLI commands, test commands
+
 ## [0.5.0] — 2026-05-29
 
 ### Added
