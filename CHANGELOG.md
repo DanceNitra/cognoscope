@@ -31,6 +31,16 @@ DiscoveryService (AgentCard registry)
   - **A2A Orchestrator**: 2 complex goals decomposed into 3 sub-tasks each, 6/6 success ✅
   - **A2A Chain**: research→build→verify chain, 3/3 success ✅
 
+#### Agent Polygraph — Level 12: Cognitive Dissonance Detection
+
+- `agent_polygraph.py` — First system that detects when an agent's actions contradict its declared values:
+  - **DeclarationExtractor**: scans autobiography.md for value statements (safety, quality, learning, transparency, efficiency, collaboration). Uses keyword pattern matching with emphasis weighting.
+  - **ActionMonitor**: records guardrail violations, tool loops, session metrics. Connects to guardrail_bus events.
+  - **AgentPolygraph**: computes hypocrisy score per category using formula `hypocrisy = decl_weight × effective_severity` with amplification for repeated violations. Correction threshold (default 0.35) triggers self-correction. Escalation threshold (default 0.65) raises alarm.
+  - **Polygraph integration**: guardrail_bus automatically feeds every guardrail hit into polygraph via `run_polygraph_check()`.
+- Demo verified: Phase A (clean agent) → hypocrisy=0.00. Phase B (contradictory agent) → safety hypocrisy=1.00, 34 violations, correction triggered. Phase C (escalation) → 116 violations, polygraph alarm saved.
+- `guardrail_bus.py` — updated with polygraph hook: `run_polygraph_check()` method, automatic guardrail_history logging.
+
 ## [0.4.0] — 2026-05-29
 
 ### Added

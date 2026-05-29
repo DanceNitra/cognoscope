@@ -43,6 +43,13 @@ from immune_guardrail import (
     ImmuneGuardrailConfig, AdaptiveImmunity, GuardrailDomain
 )
 
+# Polygraph integration (opt-in)
+try:
+    from agent_polygraph import AgentPolygraph
+    POLYGRAPH_AVAILABLE = True
+except ImportError:
+    POLYGRAPH_AVAILABLE = False
+
 
 # ──────────────────────────────────────────────
 # 1. SHARED DECISION MODEL
@@ -150,6 +157,14 @@ class GuardrailBus:
             self.msr = msr
 
         self.turn = 0
+        self.guardrail_history: list[dict] = []
+        
+        # Polygraph integration
+        if POLYGRAPH_AVAILABLE:
+            from agent_polygraph import AgentPolygraph
+            self.polygraph: AgentPolygraph | None = AgentPolygraph()
+        else:
+            self.polygraph = None
         self.decisions: list[GuardrailDecision] = []
         self._log: list[dict] = []
         self._current_regime: str = DEFAULT_REGIME
@@ -279,6 +294,17 @@ class GuardrailBus:
         )
 
         self.decisions.append(decision)
+        
+        # Feed polygraph (L12)
+        if self.polygraph:
+            dec_val = immune_result.decision.value if hasattr(immune_result, 'decision') else str(immune_result)
+            entry = {
+                "tool": tool_name,
+                "decision": decision.action.value,
+                "immune_result": dec_val,
+            }
+            self.guardrail_history.append(entry)
+        
         return decision
 
     def record_guardrail_hit(
@@ -300,6 +326,13 @@ class GuardrailBus:
         )
         self.msr.record_guardrail_hit(msr_event)
         self.msr.record_action(tool=tool_name)
+
+    def run_polygraph_check(self) -> dict | None:
+        """Run the Agent Polygraph (L12) on accumulated guardrail history."""
+        if not self.polygraph:
+            return None
+        reports = self.polygraph.run_full_report(guardrail_history=self.guardrail_history)
+        return self.polygraph.get_summary()
 
     # ── COMBINATION LOGIC ──
 
