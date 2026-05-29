@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.0] — 2026-05-29
+
+### Added
+
+#### Swarm Conductor — Level 13: Multi-Agent Orchestrator
+
+- `swarm_conductor.py` — First complete multi-agent orchestration layer on the A2A protocol (L11):
+  - **AgentPool**: in-memory + persistent pool (`agents.json`). Register, spawn, kill, heartbeat. Agent health detection (30s heartbeat timeout, auto-revive). Filter by capability, tag, availability.
+  - **TaskRouter**: capability-weighted routing with load balancing (round-robin, least-loaded, trust-weighted, capability-weighted). Priority queues, starvation prevention via skip-and-rotate. Active task tracking.
+  - **ConflictResolver**: resource locking with TTL, exclusive locks, deadlock detection (circular dependency), automatic resolution (holder loses), conflict logging.
+  - **SwarmConductor**: top-level orchestrator connecting pool + router + resolver. Full health check (uptime, pool stats, queue stats, conflicts). Polygraph integration (per-agent hypocrisy tracking). Guardrail integration (per-agent safety checks).
+  - **AgentStatusWatcher**: background watcher that marks stale agents as dead, revives reconnecting agents.
+- Demo verified: 5 agents registered (Athena, Hephaestus, Hermes, Demeter, Ares), 8 tasks routed, 3 completed (2 success, 1 fail), conflict resolution tested (lock acquire, lock contention, deadlock detection).
+
+#### Breaktruth #16 — The Agent Polygraph
+Published in vault: "the first system that detects hypocrisy in autonomous agents by comparing declared values against real actions." Breaktruth MOC updated.
+
+### Changed
+- `swarm_conductor.py` — NEW (814 lines, 34KB)
+
 ## [0.5.0] — 2026-05-29
 
 ### Added
