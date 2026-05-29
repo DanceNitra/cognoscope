@@ -11,6 +11,19 @@
 - `analysis/agent_evaluator.py` — Full evaluation pipeline orchestrator. Runs baseline/variant/noise ensembles, profiles each run, runs optimal fingerprinting, produces structured `EvalResult` with summary report.
 - `athena.py` — Added `AgentProfiler` integration: each `Athena.run()` now generates a fingerprint. Available as `summary['fingerprint']`.
 
+#### Immune Guardrail Layer (Layer 9)
+
+- `immune_guardrail.py` — Immune-inspired guardrail orchestrator. Three layers:
+  - **Innate immunity**: Hard-coded limits (position size, daily loss, drawdown, leverage) — immune privileged, agent cannot override
+  - **Adaptive immunity**: Pattern matching from past guardrail events. Learns which tool/ticker combos are dangerous
+  - **Circuit breaker**: Progressive levels (WARN → REJECT → FREEZE → ESCALATE)
+
+#### Guardrail Integration Bus
+
+- `guardrail_bus.py` — Event bus connecting 3 layers: ImmuneGuardrail (L9) → MSR (L10) → Athena. Single entry point for all guardrail checks.
+- **Regime-adaptive thresholds**: `set_regime('high_vol')` tightens all innate limits by 50%, `crisis` factor 0.3 widens drawdown tolerance
+- Full pipeline demo: normal → BLOCK → drawdown → tool storm → MSR drift detection
+
 #### Detection Criteria Fixed
 - Optimal fingerprinting now uses proper SNR-based detection (SNR >= 2.0 = detected, >= 1.0 = inconclusive, < 1.0 = not detected). Previously used flawed noise_std division.
 
