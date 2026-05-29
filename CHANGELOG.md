@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.5.0] — 2026-05-29
+
+### Added
+
+#### A2A Protocol — Level 11: Agent-to-Agent Communication Layer
+
+- `a2a_protocol.py` — Google's Agent2Agent protocol implemented in cognoscope: AgentCard (public metadata, capability vector, skills), A2ATask lifecycle (submitted→working→input-required→completed→failed→canceled), Message with Parts (text/file/data/code/error), Artifact, DiscoveryService (skill-based + capability-based lookup), A2AClient (task routing), A2AAgent (task processing with capability-weighted stochastic execution).
+- `a2a_mesh_adapter.py` — Three adapters bridging A2A with existing cognoscope infrastructure:
+  - **A2AMeshAdapter**: wraps agents via A2A protocol with AgentCard registration via DiscoveryService — supports execute(), execute_chain() (CHAIN topology), execute_pipeline() (PIPELINE topology)
+  - **A2ASocialMeshAdapter**: trust-adjusted routing with social scoring (capability × trust × success × exploration), reputation crisis detection, cold-start boost for untested agents
+  - **A2AOrchestratorAdapter**: decomposes complex goals into typed sub-tasks (retrieval/synthesis/execution/verification/planning), routes through configurable topology (chain/pipeline/mesh), retries failures on different agents
+
+#### A2A Architecture
+
+```
+DiscoveryService (AgentCard registry)
+    │
+    ├── A2AMeshAdapter       → Basic routing (agent_mesh via A2A)
+    ├── A2ASocialMeshAdapter → Trust-adjusted routing (social_mesh via A2A)
+    └── A2AOrchestratorAdapter → Complex task decomposition (mesh_orchestrator via A2A)
+```
+
+### Verified
+
+- `a2a_protocol.py` — 4 agents registered, 3 tasks routed, 100% success
+- `a2a_mesh_adapter.py` — 4 demos:
+  - **A2A Mesh**: 6 tasks, 6/6 success ✅
+  - **A2A Social Mesh**: 5 tasks, trust-adjusted routing with exploration (avg trust 0.60)
+  - **A2A Orchestrator**: 2 complex goals decomposed into 3 sub-tasks each, 6/6 success ✅
+  - **A2A Chain**: research→build→verify chain, 3/3 success ✅
+
 ## [0.4.0] — 2026-05-29
 
 ### Added
