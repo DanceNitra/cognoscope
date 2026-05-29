@@ -275,7 +275,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.startup or args.inject:
-        print(startup_inject())
+        # Fast path: try cache first
+        cached = Autobiography.load_prewarm_from_cache()
+        if cached:
+            print(cached)
+        else:
+            print(startup_inject())
     
     elif args.cache:
         block = get_inject_from_cache()

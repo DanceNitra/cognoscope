@@ -1,6 +1,37 @@
 # Changelog
 
-## [0.3.0] — 2026-05-29
+## [0.4.0] — 2026-05-29
+
+### Added
+
+#### Dream Loop — Background Session Analysis
+
+- `dream_loop.py` — The Dreaming Agent: overnight session analysis engine. Analyzes all new Hermes sessions since last run, extracts tool patterns, detects cross-session patterns (tool_churn, guardrail_spike, low_diversity), consolidates lessons (merge by Jaccard > 0.4, archive stale > 72h), records patterns to archive, refreshes pre-warm cache.
+- `~/.hermes/.dream_state.json` — persists processed session IDs so it only processes new ones each run.
+- Cron job `dream-loop` at 03:00 nightly (no_agent=True, 0 tokens). Script at `~/.hermes/scripts/dream_loop.py`.
+
+#### Pattern Detection (4 detectors)
+
+| Pattern | Severity | What | Recommendation |
+|:--------|:--------:|:-----|:--------------|
+| tool_churn | 🔴 high | ≥8 consecutive same tool in any session | Tighten max_consecutive |
+| guardrail_spike | 🟡 medium | ≥3 guardrail hits per session | Review triggers |
+| low_tool_diversity | 🟡 medium | ≤2 unique tools with >20 messages | Force tool rotation |
+| tool_dominance | 🟢 low | One tool >60% of all calls | Distribute work |
+
+#### Breaktruth #15 — The Dreaming Agent
+Published in vault: "the first agent that dreams about its own sessions, consolidates memory overnight, and refreshes its identity before morning." Breaktruth MOC updated.
+
+#### Hermes Self-Aware CLI
+
+- `hermes_selfaware.py --startup` now tries cache first (fast path ~1ms), falls back to generation (~50ms).
+
+### Changed
+- `dream_loop.py` — NEW (682 lines, 26KB)
+- `hermes_selfaware.py` — startup cache fast path
+- `hermes-self-knowledge` skill — updated references
+
+
 
 ### Added
 
